@@ -14,6 +14,8 @@ const links = [
   { href: "/moodboard", label: "Moodboard" },
   { href: "/profile", label: "Profile" },
   { href: "/premium", label: "Premium" },
+  { href: "/login", label: "Login" },
+  { href: "/signup", label: "Signup" },
 ];
 
 export default function Navbar() {
