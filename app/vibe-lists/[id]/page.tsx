@@ -79,7 +79,7 @@ export default function VibeListDetailPage() {
     ? places.filter((place) => place.vibe === list.vibe).slice(0, 3)
     : [];
 
-  const canDelete = Boolean(list && currentUserId === list.user_id);
+  const canEdit = Boolean(list && currentUserId === list.user_id);
 
   if (loading) {
     return (
@@ -145,14 +145,23 @@ export default function VibeListDetailPage() {
               </p>
             </div>
 
-            {canDelete && (
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                className="rounded-full bg-[#D8B77A] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] disabled:opacity-60"
-              >
-                {deleting ? "Eliminazione..." : "Elimina lista"}
-              </button>
+            {canEdit && (
+              <div className="flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href={`/vibe-lists/${list.id}/edit`}
+                  className="rounded-full border border-[#D8B77A] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+                >
+                  Modifica lista
+                </Link>
+
+                <button
+                  onClick={handleDelete}
+                  disabled={deleting}
+                  className="rounded-full bg-[#D8B77A] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] disabled:opacity-60"
+                >
+                  {deleting ? "Eliminazione..." : "Elimina lista"}
+                </button>
+              </div>
             )}
           </div>
 
