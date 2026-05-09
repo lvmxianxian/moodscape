@@ -1,29 +1,88 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import { supabase } from "@/lib/supabase";
 import { places, vibeLists } from "@/lib/mock-data";
 
-const user = {
-  name: "Valeria",
-  username: "@valeria.vibes",
-  bio: "Esploratrice di posti romantici, librerie nascoste e vibe cinematografiche a Roma.",
-  avatar: "🌙",
-  followers: 128,
-  following: 42,
-};
+const favoriteVibes = Array.from(
+  new Set(places.map((place) => place.vibe)),
+).slice(0, 4);
 
-const favoriteVibes = Array.from(new Set(places.map((place) => place.vibe))).slice(
-  0,
-  4,
-);
-
-const frequentMoods = Array.from(new Set(places.map((place) => place.mood))).slice(
-  0,
-  4,
-);
+const frequentMoods = Array.from(
+  new Set(places.map((place) => place.mood)),
+).slice(0, 4);
 
 const savedPlaces = places.slice(0, 3);
 const createdLists = vibeLists.slice(0, 3);
 
 export default function ProfilePage() {
+  const [email, setEmail] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setEmail(data.session?.user.email ?? null);
+      setLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user.email ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#F7F4EF] px-6 py-16 text-[#1A1A2E]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-8 shadow-xl shadow-black/5">
+          <p className="text-[#5A5A6E]">Caricamento profilo...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!email) {
+    return (
+      <main className="min-h-screen bg-[#F7F4EF] px-6 py-16 text-[#1A1A2E]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-8 shadow-xl shadow-black/5">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+            Profilo
+          </p>
+
+          <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-6xl">
+            Accedi per vedere il tuo profilo.
+          </h1>
+
+          <p className="mt-5 max-w-xl text-lg leading-8 text-[#5A5A6E]">
+            Il profilo ora è collegato a Supabase. Quando accedi, MoodScape può
+            iniziare a collegare salvataggi, liste e preferenze al tuo account.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/login"
+              className="rounded-full bg-[#5B4FCF] px-7 py-3 text-center font-semibold text-white"
+            >
+              Accedi
+            </Link>
+
+            <Link
+              href="/signup"
+              className="rounded-full border border-[#D8D2F0] bg-white px-7 py-3 text-center font-semibold text-[#1A1A2E]"
+            >
+              Crea account
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
       <div className="mx-auto max-w-6xl">
@@ -31,29 +90,35 @@ export default function ProfilePage() {
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-5">
               <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#EDE9FF] text-4xl">
-                {user.avatar}
+                🌙
               </div>
 
               <div>
                 <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
-                  Profilo creator
+                  Profilo reale
                 </p>
 
                 <h1 className="mt-2 text-4xl font-bold tracking-tight">
-                  {user.name}
+                  Valeria
                 </h1>
 
                 <p className="mt-1 text-sm font-semibold text-[#5B4FCF]">
-                  {user.username}
+                  {email}
                 </p>
 
-                <p className="mt-3 max-w-xl text-[#5A5A6E]">{user.bio}</p>
+                <p className="mt-3 max-w-xl text-[#5A5A6E]">
+                  Questo profilo ora legge la sessione Supabase. I dati sotto
+                  sono ancora demo, ma l’account è reale.
+                </p>
               </div>
             </div>
 
-            <button className="rounded-full bg-[#5B4FCF] px-6 py-3 font-semibold text-white">
-              Modifica profilo
-            </button>
+            <Link
+              href="/moodboard"
+              className="rounded-full bg-[#5B4FCF] px-6 py-3 text-center font-semibold text-white"
+            >
+              Apri moodboard
+            </Link>
           </div>
 
           <div className="mt-8 grid gap-4 sm:grid-cols-4">
@@ -68,12 +133,12 @@ export default function ProfilePage() {
             </div>
 
             <div className="rounded-3xl bg-[#F7F4EF] p-5">
-              <p className="text-3xl font-bold">{user.followers}</p>
+              <p className="text-3xl font-bold">128</p>
               <p className="mt-1 text-sm text-[#5A5A6E]">Follower</p>
             </div>
 
             <div className="rounded-3xl bg-[#F7F4EF] p-5">
-              <p className="text-3xl font-bold">{user.following}</p>
+              <p className="text-3xl font-bold">42</p>
               <p className="mt-1 text-sm text-[#5A5A6E]">Following</p>
             </div>
           </div>
@@ -166,16 +231,6 @@ export default function ProfilePage() {
               ))}
             </div>
           </div>
-        </section>
-
-        <section className="mt-10 rounded-[2rem] bg-[#1A1A2E] p-6 text-white shadow-xl shadow-black/10">
-          <h2 className="text-2xl font-bold">Prossimo step reale</h2>
-
-          <p className="mt-3 max-w-2xl leading-7 text-white/70">
-            Quando aggiungeremo login e database, questa pagina userà i dati
-            reali dell’utente: liste create, posti salvati, follower e preferenze
-            personali.
-          </p>
         </section>
       </div>
     </main>
