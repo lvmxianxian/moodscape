@@ -48,9 +48,9 @@ export default function MoodboardPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F7F4EF] px-6 py-16 text-[#1A1A2E]">
-        <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-8 shadow-xl shadow-black/5">
-          <p className="text-[#5A5A6E]">Caricamento moodboard...</p>
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
+          <p className="text-[#425653]">Caricamento moodboard...</p>
         </div>
       </main>
     );
@@ -58,17 +58,22 @@ export default function MoodboardPage() {
 
   if (!email) {
     return (
-      <main className="min-h-screen bg-[#F7F4EF] px-6 py-16 text-[#1A1A2E]">
-        <div className="mx-auto max-w-3xl rounded-[2rem] bg-white p-8 shadow-xl shadow-black/5">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
             Moodboard personale
           </p>
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mt-5 font-serif text-4xl font-bold tracking-tight text-[#2A160E] md:text-6xl">
             Accedi per vedere i tuoi luoghi salvati.
           </h1>
 
-          <p className="mt-5 max-w-xl text-lg leading-8 text-[#5A5A6E]">
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-[#C99A57]" />
+            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+          </div>
+
+          <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
             La Moodboard ora è collegata a Supabase. Quando accedi, vedrai qui i
             luoghi che hai salvato davvero.
           </p>
@@ -76,14 +81,14 @@ export default function MoodboardPage() {
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
               href="/login"
-              className="rounded-full bg-[#5B4FCF] px-7 py-3 text-center font-semibold text-white"
+              className="rounded-full bg-[#0E3532] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
             >
               Accedi
             </Link>
 
             <Link
               href="/signup"
-              className="rounded-full border border-[#D8D2F0] bg-white px-7 py-3 text-center font-semibold text-[#1A1A2E]"
+              className="rounded-full border border-[#C99A57] bg-[#F4EFE5] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
             >
               Crea account
             </Link>
@@ -94,70 +99,79 @@ export default function MoodboardPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
-      <div className="mx-auto max-w-6xl">
-        <section className="mt-12">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+      <div className="mx-auto max-w-7xl">
+        <section className="mt-8">
+          <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
             Moodboard personale
           </p>
 
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
             I tuoi luoghi salvati.
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5A5A6E]">
-            Questa pagina ora legge i salvataggi reali dal database Supabase per:
-            <span className="font-semibold text-[#5B4FCF]"> {email}</span>
+          <div className="mt-6 flex max-w-3xl items-center gap-3">
+            <div className="h-px flex-1 bg-[#C99A57]" />
+            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+          </div>
+
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
+            Questa pagina legge i salvataggi reali dal database Supabase per{" "}
+            <span className="font-bold text-[#0E3532]">{email}</span>.
           </p>
         </section>
 
         {savedPlaces.length === 0 ? (
-          <section className="mt-10 rounded-[2rem] bg-white p-8 shadow-xl shadow-black/5">
-            <h2 className="text-3xl font-bold">Non hai ancora salvato luoghi.</h2>
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Non hai ancora salvato luoghi.
+            </h2>
 
-            <p className="mt-4 max-w-xl leading-7 text-[#5A5A6E]">
+            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
               Vai nel Vibe Feed, apri un luogo e clicca “Salva nella
               moodboard”. Poi torna qui.
             </p>
 
             <Link
               href="/feed"
-              className="mt-6 inline-flex rounded-full bg-[#5B4FCF] px-6 py-3 font-semibold text-white"
+              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
             >
               Apri il Feed
             </Link>
           </section>
         ) : (
-          <section className="mt-10 grid gap-6 md:grid-cols-3">
+          <section className="mt-12 grid gap-6 md:grid-cols-3">
             {savedPlaces.map((place) => (
               <article
                 key={place.slug}
-                className="rounded-[2rem] bg-white p-5 shadow-lg shadow-black/5"
+                className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
               >
-                <div className="flex h-48 items-end rounded-[1.5rem] bg-[#EDE9FF] p-4">
-                  <span className="rounded-full bg-[#1A1A2E] px-4 py-2 text-xs font-semibold text-white">
+                <div className="flex h-48 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
+                  <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
                     {place.vibe}
                   </span>
                 </div>
 
                 <div className="mt-5">
-                  <p className="text-sm font-semibold text-[#5B4FCF]">
+                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     {place.city} · {place.area}
                   </p>
 
-                  <h2 className="mt-2 text-xl font-bold">{place.name}</h2>
+                  <h2 className="mt-3 font-serif text-2xl font-bold text-[#2A160E]">
+                    {place.name}
+                  </h2>
 
-                  <p className="mt-1 text-sm font-semibold text-[#5B4FCF]">
+                  <p className="mt-2 text-sm font-bold text-[#0E3532]">
                     Mood: {place.mood}
                   </p>
 
-                  <p className="mt-4 text-sm leading-6 text-[#5A5A6E]">
+                  <p className="mt-4 text-sm leading-6 text-[#425653]">
                     {place.description}
                   </p>
 
                   <Link
                     href={`/place/${place.slug}`}
-                    className="mt-5 inline-flex text-sm font-semibold text-[#5B4FCF]"
+                    className="mt-5 inline-flex text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
                   >
                     Apri dettaglio →
                   </Link>
@@ -167,10 +181,12 @@ export default function MoodboardPage() {
           </section>
         )}
 
-        <section className="mt-12 rounded-[2rem] bg-[#1A1A2E] p-6 text-white shadow-lg shadow-black/10">
-          <h2 className="text-2xl font-bold">Ora questa parte è reale</h2>
+        <section className="mt-12 rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5] shadow-xl shadow-[#0E3532]/10">
+          <h2 className="font-serif text-3xl font-bold text-[#D8B77A]">
+            Ora questa parte è reale
+          </h2>
 
-          <p className="mt-3 max-w-2xl leading-7 text-white/70">
+          <p className="mt-4 max-w-2xl leading-7 text-[#F4EFE5]/75">
             Il bottone “Salva nella moodboard” scrive su Supabase e questa
             pagina legge i dati salvati dall’utente loggato.
           </p>
