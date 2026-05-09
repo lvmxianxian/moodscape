@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import AuthButton from "./AuthButton";
 
 const links = [
   { href: "/", label: "Home" },
@@ -14,7 +15,6 @@ const links = [
   { href: "/moodboard", label: "Moodboard" },
   { href: "/profile", label: "Profile" },
   { href: "/premium", label: "Premium" },
-  { href: "/login", label: "Login" },
   { href: "/signup", label: "Signup" },
 ];
 
@@ -41,12 +41,7 @@ export default function Navbar() {
         </div>
 
         <div className="hidden lg:block">
-          <Link
-            href="/premium"
-            className="rounded-full bg-[#5B4FCF] px-4 py-2 text-sm font-semibold text-white"
-          >
-            Upgrade
-          </Link>
+          <AuthButton />
         </div>
 
         <button
@@ -70,6 +65,10 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <div className="pt-2">
+              <AuthButton />
+            </div>
           </div>
         </div>
       )}
