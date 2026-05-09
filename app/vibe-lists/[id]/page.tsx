@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { places } from "@/lib/mock-data";
 
 type DbVibeList = {
   id: string;
+  user_id: string;
   title: string;
   city: string;
   vibe: string;
@@ -18,14 +19,25 @@ type DbVibeList = {
 
 export default function VibeListDetailPage() {
   const params = useParams<{ id: string }>();
+  const router = useRouter();
+
   const [list, setList] = useState<DbVibeList | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function loadList() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setCurrentUserId(session?.user.id ?? null);
+
       const { data } = await supabase
         .from("vibe_lists")
-        .select("id,title,city,vibe,description,visibility,created_at")
+        .select("id,user_id,title,city,vibe,description,visibility,created_at")
         .eq("id", params.id)
         .maybeSingle();
 
@@ -36,9 +48,38 @@ export default function VibeListDetailPage() {
     loadList();
   }, [params.id]);
 
+  async function handleDelete() {
+    if (!list) return;
+
+    const confirmed = window.confirm(
+      "Vuoi davvero eliminare questa Vibe List?",
+    );
+
+    if (!confirmed) return;
+
+    setDeleting(true);
+    setMessage("");
+
+    const { error } = await supabase
+      .from("vibe_lists")
+      .delete()
+      .eq("id", list.id)
+      .eq("user_id", currentUserId);
+
+    if (error) {
+      setMessage(error.message);
+      setDeleting(false);
+      return;
+    }
+
+    router.push("/vibe-lists");
+  }
+
   const suggestedPlaces = list
     ? places.filter((place) => place.vibe === list.vibe).slice(0, 3)
     : [];
+
+  const canDelete = Boolean(list && currentUserId === list.user_id);
 
   if (loading) {
     return (
@@ -80,26 +121,46 @@ export default function VibeListDetailPage() {
         </Link>
 
         <section className="mt-8 rounded-[2rem] bg-[#0E3532] p-8 text-[#F4EFE5] shadow-2xl shadow-[#0E3532]/10">
-          <p className="inline-flex rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-            {list.vibe}
-          </p>
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div>
+              <p className="inline-flex rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
+                {list.vibe}
+              </p>
 
-          <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-            {list.title}
-          </h1>
+              <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
+                {list.title}
+              </h1>
 
-          <div className="mt-6 flex max-w-3xl items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+              <div className="mt-6 flex max-w-3xl items-center gap-3">
+                <div className="h-px flex-1 bg-[#C99A57]" />
+                <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+              </div>
+
+              <p className="mt-5 text-lg font-semibold text-[#D8B77A]">
+                {list.city} · {list.visibility}
+              </p>
+
+              <p className="mt-6 max-w-2xl text-lg leading-8 text-[#F4EFE5]/75">
+                {list.description || "Nessuna descrizione per questa lista."}
+              </p>
+            </div>
+
+            {canDelete && (
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="rounded-full bg-[#D8B77A] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] disabled:opacity-60"
+              >
+                {deleting ? "Eliminazione..." : "Elimina lista"}
+              </button>
+            )}
           </div>
 
-          <p className="mt-5 text-lg font-semibold text-[#D8B77A]">
-            {list.city} · {list.visibility}
-          </p>
-
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#F4EFE5]/75">
-            {list.description || "Nessuna descrizione per questa lista."}
-          </p>
+          {message && (
+            <div className="mt-6 rounded-2xl bg-[#F4EFE5] p-4 text-sm font-bold text-[#2A160E]">
+              {message}
+            </div>
+          )}
         </section>
 
         <section className="mt-12">

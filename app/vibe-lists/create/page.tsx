@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 const vibes = [
@@ -14,6 +14,9 @@ const vibes = [
 ];
 
 export default function CreateVibeListPage() {
+  const [email, setEmail] = useState<string | null>(null);
+  const [checkingSession, setCheckingSession] = useState(true);
+
   const [title, setTitle] = useState("");
   const [city, setCity] = useState("Roma");
   const [vibe, setVibe] = useState("Dolce vita");
@@ -22,6 +25,19 @@ export default function CreateVibeListPage() {
   const [message, setMessage] = useState("");
   const [createdId, setCreatedId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function checkSession() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setEmail(session?.user.email ?? null);
+      setCheckingSession(false);
+    }
+
+    checkSession();
+  }, []);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -64,6 +80,58 @@ export default function CreateVibeListPage() {
     setLoading(false);
   }
 
+  if (checkingSession) {
+    return (
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+          Caricamento...
+        </div>
+      </main>
+    );
+  }
+
+  if (!email) {
+    return (
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
+          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
+            Crea Vibe List
+          </p>
+
+          <h1 className="mt-5 font-serif text-4xl font-bold text-[#2A160E] md:text-6xl">
+            Accedi per creare una lista.
+          </h1>
+
+          <div className="mt-6 flex items-center gap-3">
+            <div className="h-px flex-1 bg-[#C99A57]" />
+            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+          </div>
+
+          <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
+            Le Vibe Lists reali vengono salvate su Supabase e collegate al tuo
+            account. Per crearne una devi prima accedere.
+          </p>
+
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <Link
+              href="/login"
+              className="rounded-full bg-[#0E3532] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+            >
+              Accedi
+            </Link>
+
+            <Link
+              href="/signup"
+              className="rounded-full border border-[#C99A57] bg-[#F4EFE5] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+            >
+              Crea account
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
       <div className="mx-auto max-w-7xl">
@@ -89,8 +157,8 @@ export default function CreateVibeListPage() {
           </div>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-            Ora questo form salva davvero la lista su Supabase e la collega
-            all’utente loggato.
+            Stai creando una lista come{" "}
+            <span className="font-bold text-[#0E3532]">{email}</span>.
           </p>
         </section>
 
