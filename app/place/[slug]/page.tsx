@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { places } from "@/lib/mock-data";
+import SavePlaceButton from "@/components/SavePlaceButton";
 
 export function generateStaticParams() {
   return places.map((place) => ({
@@ -103,12 +104,7 @@ export default async function PlaceDetailPage({
                 </div>
               </div>
 
-              <Link
-                href="/moodboard"
-                className="mt-8 block rounded-full bg-[#5B4FCF] px-6 py-3 text-center font-semibold text-white"
-              >
-                Salva nella moodboard
-              </Link>
+              <SavePlaceButton placeSlug={place.slug} />
 
               <Link
                 href="/map"
