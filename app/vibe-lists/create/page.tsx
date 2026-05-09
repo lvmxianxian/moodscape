@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { supabase } from "@/lib/supabase";
 
 const vibes = [
   "Dolce vita",
@@ -18,11 +19,49 @@ export default function CreateVibeListPage() {
   const [vibe, setVibe] = useState("Dolce vita");
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState("Pubblica");
-  const [created, setCreated] = useState(false);
+  const [message, setMessage] = useState("");
+  const [createdId, setCreatedId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setCreated(true);
+    setLoading(true);
+    setMessage("");
+    setCreatedId(null);
+
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+
+    if (!session) {
+      setMessage("Devi accedere per creare una Vibe List.");
+      setLoading(false);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("vibe_lists")
+      .insert({
+        user_id: session.user.id,
+        title,
+        city,
+        vibe,
+        description,
+        visibility,
+      })
+      .select("id")
+      .single();
+
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setCreatedId(data.id);
+      setMessage("Vibe List creata davvero nel database ✓");
+      setTitle("");
+      setDescription("");
+    }
+
+    setLoading(false);
   }
 
   return (
@@ -50,9 +89,8 @@ export default function CreateVibeListPage() {
           </div>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-            Le Vibe Lists sono raccolte di luoghi create dagli utenti intorno a
-            una vibe specifica. In questa demo il form non salva ancora su
-            database, ma simula il flusso reale.
+            Ora questo form salva davvero la lista su Supabase e la collega
+            all’utente loggato.
           </p>
         </section>
 
@@ -69,6 +107,7 @@ export default function CreateVibeListPage() {
                 value={title}
                 onChange={(event) => setTitle(event.target.value)}
                 placeholder="Es. Roma romantic ruins"
+                required
                 className="mt-2 w-full rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] px-4 py-3 text-[#0E3532] outline-none focus:border-[#C99A57]"
               />
             </div>
@@ -80,6 +119,7 @@ export default function CreateVibeListPage() {
               <input
                 value={city}
                 onChange={(event) => setCity(event.target.value)}
+                required
                 className="mt-2 w-full rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] px-4 py-3 text-[#0E3532] outline-none focus:border-[#C99A57]"
               />
             </div>
@@ -128,10 +168,26 @@ export default function CreateVibeListPage() {
 
             <button
               type="submit"
-              className="mt-6 w-full rounded-full bg-[#0E3532] px-6 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              disabled={loading}
+              className="mt-6 w-full rounded-full bg-[#0E3532] px-6 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5] disabled:opacity-60"
             >
-              Crea lista demo
+              {loading ? "Creazione..." : "Crea lista reale"}
             </button>
+
+            {message && (
+              <div className="mt-5 rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 text-sm font-bold text-[#2A160E]">
+                {message}
+              </div>
+            )}
+
+            {createdId && (
+              <Link
+                href={`/vibe-lists/${createdId}`}
+                className="mt-4 block rounded-full border border-[#C99A57] bg-[#F4EFE5] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+              >
+                Apri lista creata →
+              </Link>
+            )}
           </form>
 
           <aside className="rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5] shadow-xl shadow-[#0E3532]/10">
@@ -157,23 +213,6 @@ export default function CreateVibeListPage() {
                   "Qui comparirà la descrizione della lista che stai creando."}
               </p>
             </div>
-
-            {created && (
-              <div className="mt-6 rounded-3xl bg-[#D8B77A] p-5 text-[#0E3532]">
-                <p className="font-bold">Lista creata nella demo ✓</p>
-                <p className="mt-2 text-sm">
-                  Nel prossimo step collegheremo questo flusso a login, profilo
-                  utente e database.
-                </p>
-              </div>
-            )}
-
-            <Link
-              href="/vibe-lists"
-              className="mt-6 block rounded-full bg-[#F4EFE5] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-            >
-              Torna alle Vibe Lists
-            </Link>
           </aside>
         </section>
       </div>
