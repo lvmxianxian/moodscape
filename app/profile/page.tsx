@@ -3,38 +3,74 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { places, vibeLists } from "@/lib/mock-data";
+import { places } from "@/lib/mock-data";
 
-const favoriteVibes = Array.from(
-  new Set(places.map((place) => place.vibe)),
-).slice(0, 4);
+type SavedPlaceRow = {
+  place_slug: string;
+};
 
-const frequentMoods = Array.from(
-  new Set(places.map((place) => place.mood)),
-).slice(0, 4);
-
-const savedPlaces = places.slice(0, 3);
-const createdLists = vibeLists.slice(0, 3);
+type DbVibeList = {
+  id: string;
+  title: string;
+  city: string;
+  vibe: string;
+  description: string | null;
+  visibility: string;
+  created_at: string;
+};
 
 export default function ProfilePage() {
   const [email, setEmail] = useState<string | null>(null);
+  const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
+  const [createdLists, setCreatedLists] = useState<DbVibeList[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      setEmail(data.session?.user.email ?? null);
-      setLoading(false);
-    });
+    async function loadProfileData() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setEmail(session?.user.email ?? null);
-      setLoading(false);
-    });
+      if (!session) {
+        setEmail(null);
+        setLoading(false);
+        return;
+      }
 
-    return () => subscription.unsubscribe();
+      setEmail(session.user.email ?? null);
+
+      const { data: savedData } = await supabase
+        .from("saved_places")
+        .select("place_slug")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      const { data: listData } = await supabase
+        .from("vibe_lists")
+        .select("id,title,city,vibe,description,visibility,created_at")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      setSavedSlugs(
+        savedData ? savedData.map((row: SavedPlaceRow) => row.place_slug) : [],
+      );
+
+      setCreatedLists(listData ?? []);
+      setLoading(false);
+    }
+
+    loadProfileData();
   }, []);
+
+  const savedPlaces = places.filter((place) => savedSlugs.includes(place.slug));
+
+  const favoriteVibes = Array.from(
+    new Set(savedPlaces.map((place) => place.vibe)),
+  ).slice(0, 4);
+
+  const frequentMoods = Array.from(
+    new Set(savedPlaces.map((place) => place.mood)),
+  ).slice(0, 4);
 
   if (loading) {
     return (
@@ -64,8 +100,8 @@ export default function ProfilePage() {
           </div>
 
           <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
-            Il profilo è collegato a Supabase. Quando accedi, MoodScape può
-            collegare salvataggi, liste e preferenze al tuo account.
+            Il profilo è collegato a Supabase. Quando accedi, MoodScape mostra i
+            tuoi luoghi salvati e le Vibe Lists che hai creato.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -112,8 +148,8 @@ export default function ProfilePage() {
                 </p>
 
                 <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-                  Questo profilo legge la sessione Supabase. I dati sotto sono
-                  ancora demo, ma l’account è reale.
+                  Questo profilo ora legge dati reali da Supabase: luoghi salvati
+                  e Vibe Lists create dall’utente loggato.
                 </p>
               </div>
             </div>
@@ -138,21 +174,21 @@ export default function ProfilePage() {
               <p className="font-serif text-4xl font-bold text-[#2A160E]">
                 {createdLists.length}
               </p>
-              <p className="mt-1 text-sm text-[#425653]">Vibe Lists</p>
+              <p className="mt-1 text-sm text-[#425653]">Vibe Lists create</p>
             </div>
 
             <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
               <p className="font-serif text-4xl font-bold text-[#2A160E]">
-                128
+                {favoriteVibes.length}
               </p>
-              <p className="mt-1 text-sm text-[#425653]">Follower</p>
+              <p className="mt-1 text-sm text-[#425653]">Vibe salvate</p>
             </div>
 
             <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
               <p className="font-serif text-4xl font-bold text-[#2A160E]">
-                42
+                {frequentMoods.length}
               </p>
-              <p className="mt-1 text-sm text-[#425653]">Following</p>
+              <p className="mt-1 text-sm text-[#425653]">Mood ricorrenti</p>
             </div>
           </div>
         </section>
@@ -163,16 +199,22 @@ export default function ProfilePage() {
               Vibe preferite
             </h2>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {favoriteVibes.map((vibe) => (
-                <span
-                  key={vibe}
-                  className="rounded-full border border-[#D8B77A] bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
-                >
-                  {vibe}
-                </span>
-              ))}
-            </div>
+            {favoriteVibes.length === 0 ? (
+              <p className="mt-5 leading-7 text-[#425653]">
+                Salva qualche luogo per vedere qui le tue vibe preferite.
+              </p>
+            ) : (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {favoriteVibes.map((vibe) => (
+                  <span
+                    key={vibe}
+                    className="rounded-full border border-[#D8B77A] bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
+                  >
+                    {vibe}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
@@ -180,16 +222,22 @@ export default function ProfilePage() {
               Mood frequenti
             </h2>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {frequentMoods.map((mood) => (
-                <span
-                  key={mood}
-                  className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
-                >
-                  {mood}
-                </span>
-              ))}
-            </div>
+            {frequentMoods.length === 0 ? (
+              <p className="mt-5 leading-7 text-[#425653]">
+                Salva qualche luogo per vedere qui i mood più presenti.
+              </p>
+            ) : (
+              <div className="mt-5 flex flex-wrap gap-2">
+                {frequentMoods.map((mood) => (
+                  <span
+                    key={mood}
+                    className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
+                  >
+                    {mood}
+                  </span>
+                ))}
+              </div>
+            )}
           </div>
         </section>
 
@@ -208,19 +256,26 @@ export default function ProfilePage() {
               </Link>
             </div>
 
-            <div className="mt-5 space-y-3">
-              {createdLists.map((list) => (
-                <div
-                  key={list.title}
-                  className="rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4"
-                >
-                  <p className="font-bold text-[#2A160E]">{list.title}</p>
-                  <p className="mt-1 text-sm text-[#425653]">
-                    {list.city} · {list.vibe} · {list.places} posti
-                  </p>
-                </div>
-              ))}
-            </div>
+            {createdLists.length === 0 ? (
+              <p className="mt-5 leading-7 text-[#425653]">
+                Non hai ancora creato Vibe Lists.
+              </p>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {createdLists.map((list) => (
+                  <Link
+                    key={list.id}
+                    href={`/vibe-lists/${list.id}`}
+                    className="block rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
+                  >
+                    <p className="font-bold text-[#2A160E]">{list.title}</p>
+                    <p className="mt-1 text-sm text-[#425653]">
+                      {list.city} · {list.vibe} · {list.visibility}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
@@ -237,20 +292,26 @@ export default function ProfilePage() {
               </Link>
             </div>
 
-            <div className="mt-5 space-y-3">
-              {savedPlaces.map((place) => (
-                <Link
-                  key={place.slug}
-                  href={`/place/${place.slug}`}
-                  className="block rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
-                >
-                  <p className="font-bold text-[#2A160E]">{place.name}</p>
-                  <p className="mt-1 text-sm text-[#425653]">
-                    {place.area} · {place.mood} · {place.vibe}
-                  </p>
-                </Link>
-              ))}
-            </div>
+            {savedPlaces.length === 0 ? (
+              <p className="mt-5 leading-7 text-[#425653]">
+                Non hai ancora salvato luoghi.
+              </p>
+            ) : (
+              <div className="mt-5 space-y-3">
+                {savedPlaces.map((place) => (
+                  <Link
+                    key={place.slug}
+                    href={`/place/${place.slug}`}
+                    className="block rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
+                  >
+                    <p className="font-bold text-[#2A160E]">{place.name}</p>
+                    <p className="mt-1 text-sm text-[#425653]">
+                      {place.area} · {place.mood} · {place.vibe}
+                    </p>
+                  </Link>
+                ))}
+              </div>
+            )}
           </div>
         </section>
       </div>
