@@ -31,7 +31,7 @@ export default function AuthButton() {
     return (
       <button
         onClick={handleLogout}
-        className="rounded-full bg-[#1A1A2E] px-4 py-2 text-sm font-semibold text-white"
+        className="rounded-full bg-[#0E3532] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#F4EFE5] transition hover:bg-[#2A160E]"
       >
         Logout
       </button>
@@ -41,7 +41,7 @@ export default function AuthButton() {
   return (
     <Link
       href="/login"
-      className="rounded-full bg-[#5B4FCF] px-4 py-2 text-sm font-semibold text-white"
+      className="rounded-full bg-[#0E3532] px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-[#F4EFE5] transition hover:bg-[#2A160E]"
     >
       Login
     </Link>
