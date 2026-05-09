@@ -27,46 +27,54 @@ export default function PremiumPage() {
   );
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
-      <div className="mx-auto max-w-6xl">
+    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+      <div className="mx-auto max-w-7xl">
         <section className="mt-8 text-center">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+          <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
             MoodScape Premium
           </p>
 
-          <h1 className="mx-auto mt-4 max-w-4xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mx-auto mt-8 max-w-5xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
             Sblocca percorsi, moodboard e suggerimenti più personalizzati.
           </h1>
 
-          <p className="mx-auto mt-5 max-w-2xl text-lg leading-8 text-[#5A5A6E]">
+          <div className="mx-auto mt-6 flex max-w-3xl items-center gap-3">
+            <div className="h-px flex-1 bg-[#C99A57]" />
+            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+            <div className="h-px flex-1 bg-[#C99A57]" />
+          </div>
+
+          <p className="mx-auto mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
             Questa è una pagina demo. Il pagamento non è attivo: più avanti
             collegheremo Stripe, login utente e gestione abbonamento.
           </p>
         </section>
 
-        <section className="mt-10 grid gap-6 md:grid-cols-2">
+        <section className="mt-12 grid gap-6 md:grid-cols-2">
           <article
             onClick={() => setSelectedPlan("free")}
-            className={`cursor-pointer rounded-[2rem] p-6 shadow-xl shadow-black/5 transition ${
+            className={`cursor-pointer rounded-[2rem] border p-6 shadow-xl shadow-[#0E3532]/5 transition ${
               selectedPlan === "free"
-                ? "bg-[#EDE9FF] ring-2 ring-[#5B4FCF]"
-                : "bg-white"
+                ? "border-[#C99A57] bg-[#F8F2E8]"
+                : "border-[#D8B77A]/50 bg-[#F8F2E8]"
             }`}
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C99A57]">
               Free
             </p>
 
-            <h2 className="mt-4 text-3xl font-bold">Gratis</h2>
+            <h2 className="mt-5 font-serif text-4xl font-bold text-[#2A160E]">
+              Gratis
+            </h2>
 
-            <p className="mt-3 text-[#5A5A6E]">
+            <p className="mt-4 text-[#425653]">
               Per iniziare a esplorare mood, vibe e luoghi consigliati.
             </p>
 
             <ul className="mt-6 space-y-3">
               {freeFeatures.map((feature) => (
                 <li key={feature} className="flex gap-3 text-sm">
-                  <span className="font-bold text-[#5B4FCF]">✓</span>
+                  <span className="font-bold text-[#C99A57]">✓</span>
                   <span>{feature}</span>
                 </li>
               ))}
@@ -74,7 +82,7 @@ export default function PremiumPage() {
 
             <Link
               href="/explore"
-              className="mt-8 block rounded-full bg-white px-6 py-3 text-center font-semibold text-[#1A1A2E]"
+              className="mt-8 block rounded-full border border-[#C99A57] bg-[#F4EFE5] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
             >
               Continua gratis
             </Link>
@@ -82,21 +90,23 @@ export default function PremiumPage() {
 
           <article
             onClick={() => setSelectedPlan("premium")}
-            className={`cursor-pointer rounded-[2rem] p-6 shadow-xl shadow-black/5 transition ${
+            className={`cursor-pointer rounded-[2rem] border p-6 shadow-xl shadow-[#0E3532]/10 transition ${
               selectedPlan === "premium"
-                ? "bg-[#1A1A2E] text-white ring-2 ring-[#5B4FCF]"
-                : "bg-white text-[#1A1A2E]"
+                ? "border-[#C99A57] bg-[#0E3532] text-[#F4EFE5]"
+                : "border-[#D8B77A]/50 bg-[#F8F2E8] text-[#0E3532]"
             }`}
           >
-            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#BDB7FF]">
+            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
               Premium
             </p>
 
-            <h2 className="mt-4 text-3xl font-bold">€4,99/mese</h2>
+            <h2 className="mt-5 font-serif text-4xl font-bold">
+              €4,99/mese
+            </h2>
 
             <p
-              className={`mt-3 ${
-                selectedPlan === "premium" ? "text-white/70" : "text-[#5A5A6E]"
+              className={`mt-4 ${
+                selectedPlan === "premium" ? "text-[#F4EFE5]/75" : "text-[#425653]"
               }`}
             >
               Per chi vuole creare, salvare e ottimizzare esperienze più
@@ -106,7 +116,7 @@ export default function PremiumPage() {
             <ul className="mt-6 space-y-3">
               {premiumFeatures.map((feature) => (
                 <li key={feature} className="flex gap-3 text-sm">
-                  <span className="font-bold text-[#BDB7FF]">✓</span>
+                  <span className="font-bold text-[#D8B77A]">✓</span>
                   <span>{feature}</span>
                 </li>
               ))}
@@ -117,37 +127,34 @@ export default function PremiumPage() {
                 event.stopPropagation();
                 alert("Demo: il checkout Stripe verrà aggiunto più avanti.");
               }}
-              className="mt-8 w-full rounded-full bg-[#5B4FCF] px-6 py-3 text-center font-semibold text-white"
+              className="mt-8 w-full rounded-full bg-[#D8B77A] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
             >
               Simula upgrade
             </button>
           </article>
         </section>
 
-        <section className="mt-10 rounded-[2rem] bg-white p-6 shadow-xl shadow-black/5">
-          <h2 className="text-2xl font-bold">Cosa faremo nella versione reale</h2>
+        <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+          <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+            Cosa faremo nella versione reale
+          </h2>
 
-          <div className="mt-5 grid gap-4 md:grid-cols-3">
-            <div className="rounded-3xl bg-[#F7F4EF] p-5">
-              <p className="font-bold text-[#5B4FCF]">1. Login</p>
-              <p className="mt-2 text-sm leading-6 text-[#5A5A6E]">
-                L’utente dovrà avere un profilo per gestire il piano.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-[#F7F4EF] p-5">
-              <p className="font-bold text-[#5B4FCF]">2. Stripe</p>
-              <p className="mt-2 text-sm leading-6 text-[#5A5A6E]">
-                Il checkout verrà collegato a un abbonamento vero.
-              </p>
-            </div>
-
-            <div className="rounded-3xl bg-[#F7F4EF] p-5">
-              <p className="font-bold text-[#5B4FCF]">3. Paywall</p>
-              <p className="mt-2 text-sm leading-6 text-[#5A5A6E]">
-                Le feature premium saranno bloccate per gli utenti free.
-              </p>
-            </div>
+          <div className="mt-6 grid gap-4 md:grid-cols-3">
+            {[
+              ["1. Login", "L’utente dovrà avere un profilo per gestire il piano."],
+              ["2. Stripe", "Il checkout verrà collegato a un abbonamento vero."],
+              ["3. Paywall", "Le feature premium saranno bloccate per gli utenti free."],
+            ].map(([title, text]) => (
+              <div
+                key={title}
+                className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5"
+              >
+                <p className="font-bold text-[#0E3532]">{title}</p>
+                <p className="mt-2 text-sm leading-6 text-[#425653]">
+                  {text}
+                </p>
+              </div>
+            ))}
           </div>
         </section>
       </div>

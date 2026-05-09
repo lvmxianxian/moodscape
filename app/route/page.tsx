@@ -37,42 +37,48 @@ export default function RoutePage() {
   const [saved, setSaved] = useState(false);
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
-      <div className="mx-auto max-w-6xl">
+    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+      <div className="mx-auto max-w-7xl">
         <section className="mt-8">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
+          <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
             Vibe Route
           </p>
 
-          <h1 className="mt-4 max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+          <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
             Un itinerario costruito sulla tua atmosfera.
           </h1>
 
-          <p className="mt-5 max-w-2xl text-lg leading-8 text-[#5A5A6E]">
+          <div className="mt-6 flex max-w-3xl items-center gap-3">
+            <div className="h-px flex-1 bg-[#C99A57]" />
+            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+          </div>
+
+          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
             Questa è una demo di percorso. Più avanti la route verrà generata
             automaticamente da una Vibe List, con mappa, tempi reali e
             ottimizzazione AI per utenti premium.
           </p>
         </section>
 
-        <section className="mt-10 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-[2rem] bg-white p-6 shadow-xl shadow-black/5">
-            <div className="flex items-center justify-between gap-4">
+        <section className="mt-12 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+            <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
               <div>
-                <p className="text-sm font-semibold text-[#5B4FCF]">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                   Roma · 3 tappe · 3 ore circa
                 </p>
-                <h2 className="mt-2 text-3xl font-bold">
+
+                <h2 className="mt-3 font-serif text-4xl font-bold text-[#2A160E]">
                   Dark Academia Morning
                 </h2>
               </div>
 
               <button
                 onClick={() => setSaved(!saved)}
-                className={`rounded-full px-5 py-3 font-semibold ${
+                className={`rounded-full px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] ${
                   saved
-                    ? "bg-[#1A1A2E] text-white"
-                    : "bg-[#5B4FCF] text-white"
+                    ? "bg-[#2A160E] text-[#F4EFE5]"
+                    : "bg-[#0E3532] text-[#F4EFE5]"
                 }`}
               >
                 {saved ? "Salvata ✓" : "Salva route"}
@@ -83,25 +89,27 @@ export default function RoutePage() {
               {routeStops.map((stop, index) => (
                 <article
                   key={stop.name}
-                  className="relative rounded-3xl border border-[#E8E1D8] p-5"
+                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-5"
                 >
                   <div className="flex gap-4">
-                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#EDE9FF] font-bold text-[#5B4FCF]">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#0E3532] font-bold text-[#F4EFE5]">
                       {index + 1}
                     </div>
 
                     <div>
-                      <p className="text-sm font-semibold text-[#5B4FCF]">
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                         {stop.time} · {stop.duration}
                       </p>
 
-                      <h3 className="mt-1 text-2xl font-bold">{stop.name}</h3>
+                      <h3 className="mt-2 font-serif text-3xl font-bold text-[#2A160E]">
+                        {stop.name}
+                      </h3>
 
-                      <p className="mt-1 text-sm text-[#5A5A6E]">
+                      <p className="mt-2 text-sm font-semibold text-[#0E3532]">
                         {stop.area} · {stop.vibe}
                       </p>
 
-                      <p className="mt-4 leading-7 text-[#4B4B5F]">
+                      <p className="mt-4 leading-7 text-[#425653]">
                         {stop.description}
                       </p>
                     </div>
@@ -111,44 +119,41 @@ export default function RoutePage() {
             </div>
           </div>
 
-          <aside className="rounded-[2rem] bg-[#1A1A2E] p-6 text-white shadow-xl shadow-black/10">
-            <h2 className="text-2xl font-bold">Riepilogo percorso</h2>
+          <aside className="rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5] shadow-xl shadow-[#0E3532]/10">
+            <h2 className="font-serif text-3xl font-bold text-[#D8B77A]">
+              Riepilogo percorso
+            </h2>
 
-            <div className="mt-6 space-y-4 text-white/80">
-              <div className="rounded-3xl bg-white/10 p-4">
-                <p className="text-sm uppercase tracking-[0.2em] text-white/50">
-                  Mood
-                </p>
-                <p className="mt-2 text-xl font-bold text-white">Curioso</p>
-              </div>
-
-              <div className="rounded-3xl bg-white/10 p-4">
-                <p className="text-sm uppercase tracking-[0.2em] text-white/50">
-                  Vibe
-                </p>
-                <p className="mt-2 text-xl font-bold text-white">
-                  Dark academia
-                </p>
-              </div>
-
-              <div className="rounded-3xl bg-white/10 p-4">
-                <p className="text-sm uppercase tracking-[0.2em] text-white/50">
-                  Budget
-                </p>
-                <p className="mt-2 text-xl font-bold text-white">€–€€</p>
-              </div>
+            <div className="mt-6 space-y-4">
+              {[
+                ["Mood", "Curioso"],
+                ["Vibe", "Dark academia"],
+                ["Budget", "€–€€"],
+              ].map(([label, value]) => (
+                <div
+                  key={label}
+                  className="rounded-3xl border border-[#D8B77A]/30 bg-[#F4EFE5]/10 p-4"
+                >
+                  <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
+                    {label}
+                  </p>
+                  <p className="mt-2 font-serif text-2xl font-bold text-[#F4EFE5]">
+                    {value}
+                  </p>
+                </div>
+              ))}
             </div>
 
             <Link
               href="/map"
-              className="mt-8 block rounded-full bg-white px-6 py-3 text-center font-semibold text-[#1A1A2E]"
+              className="mt-8 block rounded-full bg-[#F4EFE5] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
             >
               Vedi sulla mappa
             </Link>
 
             <Link
               href="/vibe-lists"
-              className="mt-3 block rounded-full border border-white/20 px-6 py-3 text-center font-semibold text-white"
+              className="mt-3 block rounded-full border border-[#D8B77A] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
             >
               Torna alle Vibe Lists
             </Link>
