@@ -23,14 +23,11 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-[#D8B77A]/30 bg-[#F4EFE5]/95 backdrop-blur">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-[#0E3532]">
-        <Link
-          href="/"
-          className="font-serif text-2xl font-bold tracking-[0.18em]"
-        >
-          MOODSCAPE
+        <Link href="/" className="text-xl font-bold tracking-tight">
+          MoodScape
         </Link>
 
-        <div className="hidden items-center gap-5 text-xs font-semibold uppercase tracking-[0.12em] lg:flex">
+        <div className="hidden items-center gap-5 text-sm font-semibold lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
@@ -62,7 +59,7 @@ export default function Navbar() {
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl border border-[#D8B77A]/30 bg-[#F8F2E8] px-4 py-3 text-sm font-semibold text-[#0E3532]"
+                className="rounded-2xl border border-[#D8B77A]/40 bg-[#F8F2E8] px-4 py-3 text-sm font-semibold text-[#0E3532]"
               >
                 {link.label}
               </Link>
