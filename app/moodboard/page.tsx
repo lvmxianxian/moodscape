@@ -3,54 +3,44 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { places } from "@/lib/mock-data";
+import { places, vibeLists } from "@/lib/mock-data";
 
-type SavedPlaceRow = {
-  place_slug: string;
-};
+const favoriteVibes = Array.from(
+  new Set(places.map((place) => place.vibe)),
+).slice(0, 4);
 
-export default function MoodboardPage() {
+const frequentMoods = Array.from(
+  new Set(places.map((place) => place.mood)),
+).slice(0, 4);
+
+const savedPlaces = places.slice(0, 3);
+const createdLists = vibeLists.slice(0, 3);
+
+export default function ProfilePage() {
   const [email, setEmail] = useState<string | null>(null);
-  const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function loadSavedPlaces() {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      if (!session) {
-        setEmail(null);
-        setLoading(false);
-        return;
-      }
-
-      setEmail(session.user.email ?? null);
-
-      const { data, error } = await supabase
-        .from("saved_places")
-        .select("place_slug")
-        .eq("user_id", session.user.id)
-        .order("created_at", { ascending: false });
-
-      if (!error && data) {
-        setSavedSlugs(data.map((row: SavedPlaceRow) => row.place_slug));
-      }
-
+    supabase.auth.getSession().then(({ data }) => {
+      setEmail(data.session?.user.email ?? null);
       setLoading(false);
-    }
+    });
 
-    loadSavedPlaces();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setEmail(session?.user.email ?? null);
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
-
-  const savedPlaces = places.filter((place) => savedSlugs.includes(place.slug));
 
   if (loading) {
     return (
       <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
-          <p className="text-[#425653]">Caricamento moodboard...</p>
+          <p className="text-[#425653]">Caricamento profilo...</p>
         </div>
       </main>
     );
@@ -61,11 +51,11 @@ export default function MoodboardPage() {
       <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
         <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-            Moodboard personale
+            Profilo
           </p>
 
           <h1 className="mt-5 font-serif text-4xl font-bold tracking-tight text-[#2A160E] md:text-6xl">
-            Accedi per vedere i tuoi luoghi salvati.
+            Accedi per vedere il tuo profilo.
           </h1>
 
           <div className="mt-6 flex items-center gap-3">
@@ -74,8 +64,8 @@ export default function MoodboardPage() {
           </div>
 
           <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
-            La Moodboard ora è collegata a Supabase. Quando accedi, vedrai qui i
-            luoghi che hai salvato davvero.
+            Il profilo è collegato a Supabase. Quando accedi, MoodScape può
+            collegare salvataggi, liste e preferenze al tuo account.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -101,95 +91,167 @@ export default function MoodboardPage() {
   return (
     <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
       <div className="mx-auto max-w-7xl">
-        <section className="mt-8">
-          <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
-            Moodboard personale
-          </p>
+        <section className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5 md:p-8">
+          <div className="flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+            <div className="flex items-center gap-5">
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border border-[#D8B77A] bg-[#0E3532] text-4xl text-[#F4EFE5]">
+                🌙
+              </div>
 
-          <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
-            I tuoi luoghi salvati.
-          </h1>
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
+                  Profilo reale
+                </p>
 
-          <div className="mt-6 flex max-w-3xl items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-          </div>
+                <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-[#2A160E]">
+                  Valeria
+                </h1>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-            Questa pagina legge i salvataggi reali dal database Supabase per{" "}
-            <span className="font-bold text-[#0E3532]">{email}</span>.
-          </p>
-        </section>
+                <p className="mt-2 text-sm font-bold text-[#0E3532]">
+                  {email}
+                </p>
 
-        {savedPlaces.length === 0 ? (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 shadow-xl shadow-[#0E3532]/5">
-            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-              Non hai ancora salvato luoghi.
-            </h2>
-
-            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-              Vai nel Vibe Feed, apri un luogo e clicca “Salva nella
-              moodboard”. Poi torna qui.
-            </p>
+                <p className="mt-4 max-w-xl leading-7 text-[#425653]">
+                  Questo profilo legge la sessione Supabase. I dati sotto sono
+                  ancora demo, ma l’account è reale.
+                </p>
+              </div>
+            </div>
 
             <Link
-              href="/feed"
-              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              href="/moodboard"
+              className="rounded-full bg-[#0E3532] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
             >
-              Apri il Feed
+              Apri moodboard
             </Link>
-          </section>
-        ) : (
-          <section className="mt-12 grid gap-6 md:grid-cols-3">
-            {savedPlaces.map((place) => (
-              <article
-                key={place.slug}
-                className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
+          </div>
+
+          <div className="mt-8 grid gap-4 sm:grid-cols-4">
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
+              <p className="font-serif text-4xl font-bold text-[#2A160E]">
+                {savedPlaces.length}
+              </p>
+              <p className="mt-1 text-sm text-[#425653]">Luoghi salvati</p>
+            </div>
+
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
+              <p className="font-serif text-4xl font-bold text-[#2A160E]">
+                {createdLists.length}
+              </p>
+              <p className="mt-1 text-sm text-[#425653]">Vibe Lists</p>
+            </div>
+
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
+              <p className="font-serif text-4xl font-bold text-[#2A160E]">
+                128
+              </p>
+              <p className="mt-1 text-sm text-[#425653]">Follower</p>
+            </div>
+
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
+              <p className="font-serif text-4xl font-bold text-[#2A160E]">
+                42
+              </p>
+              <p className="mt-1 text-sm text-[#425653]">Following</p>
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Vibe preferite
+            </h2>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {favoriteVibes.map((vibe) => (
+                <span
+                  key={vibe}
+                  className="rounded-full border border-[#D8B77A] bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
+                >
+                  {vibe}
+                </span>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Mood frequenti
+            </h2>
+
+            <div className="mt-5 flex flex-wrap gap-2">
+              {frequentMoods.map((mood) => (
+                <span
+                  key={mood}
+                  className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
+                >
+                  {mood}
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+                Liste create
+              </h2>
+
+              <Link
+                href="/vibe-lists/create"
+                className="text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
               >
-                <div className="flex h-48 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                  <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                    {place.vibe}
-                  </span>
+                Crea lista →
+              </Link>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {createdLists.map((list) => (
+                <div
+                  key={list.title}
+                  className="rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4"
+                >
+                  <p className="font-bold text-[#2A160E]">{list.title}</p>
+                  <p className="mt-1 text-sm text-[#425653]">
+                    {list.city} · {list.vibe} · {list.places} posti
+                  </p>
                 </div>
+              ))}
+            </div>
+          </div>
 
-                <div className="mt-5">
-                  <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    {place.city} · {place.area}
+          <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
+            <div className="flex items-center justify-between gap-4">
+              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+                Luoghi salvati
+              </h2>
+
+              <Link
+                href="/moodboard"
+                className="text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+              >
+                Apri moodboard →
+              </Link>
+            </div>
+
+            <div className="mt-5 space-y-3">
+              {savedPlaces.map((place) => (
+                <Link
+                  key={place.slug}
+                  href={`/place/${place.slug}`}
+                  className="block rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
+                >
+                  <p className="font-bold text-[#2A160E]">{place.name}</p>
+                  <p className="mt-1 text-sm text-[#425653]">
+                    {place.area} · {place.mood} · {place.vibe}
                   </p>
-
-                  <h2 className="mt-3 font-serif text-2xl font-bold text-[#2A160E]">
-                    {place.name}
-                  </h2>
-
-                  <p className="mt-2 text-sm font-bold text-[#0E3532]">
-                    Mood: {place.mood}
-                  </p>
-
-                  <p className="mt-4 text-sm leading-6 text-[#425653]">
-                    {place.description}
-                  </p>
-
-                  <Link
-                    href={`/place/${place.slug}`}
-                    className="mt-5 inline-flex text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-                  >
-                    Apri dettaglio →
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </section>
-        )}
-
-        <section className="mt-12 rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5] shadow-xl shadow-[#0E3532]/10">
-          <h2 className="font-serif text-3xl font-bold text-[#D8B77A]">
-            Ora questa parte è reale
-          </h2>
-
-          <p className="mt-4 max-w-2xl leading-7 text-[#F4EFE5]/75">
-            Il bottone “Salva nella moodboard” scrive su Supabase e questa
-            pagina legge i dati salvati dall’utente loggato.
-          </p>
+                </Link>
+              ))}
+            </div>
+          </div>
         </section>
       </div>
     </main>
