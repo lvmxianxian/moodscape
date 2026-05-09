@@ -10,7 +10,6 @@ const links = [
   { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
   { href: "/vibe-lists", label: "Vibe Lists" },
-  { href: "/vibe-lists/create", label: "Crea lista" },
   { href: "/route", label: "Route" },
   { href: "/moodboard", label: "Moodboard" },
   { href: "/profile", label: "Profile" },
@@ -22,18 +21,21 @@ export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#E8E1D8] bg-[#F7F4EF]/95 backdrop-blur">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 text-[#1A1A2E]">
-        <Link href="/" className="text-xl font-bold tracking-tight">
-          MoodScape
+    <header className="sticky top-0 z-50 border-b border-[#D8B77A]/30 bg-[#F4EFE5]/95 backdrop-blur">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-[#0E3532]">
+        <Link
+          href="/"
+          className="font-serif text-2xl font-bold tracking-[0.18em]"
+        >
+          MOODSCAPE
         </Link>
 
-        <div className="hidden items-center gap-5 text-sm font-semibold lg:flex">
+        <div className="hidden items-center gap-5 text-xs font-semibold uppercase tracking-[0.12em] lg:flex">
           {links.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-[#4B4B5F] transition hover:text-[#5B4FCF]"
+              className="text-[#0E3532]/70 transition hover:text-[#C99A57]"
             >
               {link.label}
             </Link>
@@ -46,21 +48,21 @@ export default function Navbar() {
 
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-full bg-white px-4 py-2 text-sm font-semibold text-[#1A1A2E] shadow-sm lg:hidden"
+          className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-semibold text-[#0E3532] lg:hidden"
         >
           {open ? "Chiudi" : "Menu"}
         </button>
       </nav>
 
       {open && (
-        <div className="border-t border-[#E8E1D8] bg-[#F7F4EF] px-6 py-4 lg:hidden">
+        <div className="border-t border-[#D8B77A]/30 bg-[#F4EFE5] px-6 py-4 lg:hidden">
           <div className="mx-auto grid max-w-6xl gap-3">
             {links.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl bg-white px-4 py-3 text-sm font-semibold text-[#1A1A2E] shadow-sm"
+                className="rounded-2xl border border-[#D8B77A]/30 bg-[#F8F2E8] px-4 py-3 text-sm font-semibold text-[#0E3532]"
               >
                 {link.label}
               </Link>
