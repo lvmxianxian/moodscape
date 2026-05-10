@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import PlaceImage from "@/components/PlaceImage";
 
 const routes = [
   {
@@ -16,8 +15,15 @@ const routes = [
       "Un percorso morbido tra viste panoramiche, scorci iconici e tappe perfette per una serata romantica.",
     price: "€9",
     duration: "2h 30min",
-    stops: ["Giardino degli Aranci", "Aventino", "Trastevere", "Belvedere serale", "Drink finale"],
+    stops: "5 tappe",
     image: "/places/giardino-aranci.webp",
+    includes: [
+      "Itinerario ordinato tappa per tappa",
+      "Mappa mentale del percorso",
+      "Suggerimenti su orari e momenti migliori",
+      "Moodboard estetica del percorso",
+      "Accesso permanente nella tua area personale",
+    ],
   },
   {
     slug: "dark-academia-walk",
@@ -28,8 +34,15 @@ const routes = [
       "Biblioteche, cortili silenziosi e luoghi con atmosfera letteraria per una giornata lenta e curiosa.",
     price: "€7",
     duration: "2h",
-    stops: ["Biblioteca Angelica", "Centro storico", "Caffè letterario", "Cortile nascosto"],
+    stops: "4 tappe",
     image: "/places/biblioteca-angelica.jpg",
+    includes: [
+      "Itinerario ordinato tappa per tappa",
+      "Luoghi silenziosi e suggestivi",
+      "Consigli per pause lettura e foto",
+      "Moodboard dark academia",
+      "Accesso permanente nella tua area personale",
+    ],
   },
   {
     slug: "hidden-garden-route",
@@ -40,8 +53,15 @@ const routes = [
       "Una selezione di spazi verdi, cortili e pause tranquille per staccare dal ritmo della città.",
     price: "€8",
     duration: "2h 15min",
-    stops: ["Villa Borghese", "Giardino segreto", "Passeggiata lenta", "Pausa verde", "Vista finale"],
+    stops: "5 tappe",
     image: "/places/villa-borghese.jpg",
+    includes: [
+      "Itinerario rilassato e mobile-first",
+      "Tappe verdi e poco caotiche",
+      "Suggerimenti per pause lente",
+      "Moodboard natural e quiet luxury",
+      "Accesso permanente nella tua area personale",
+    ],
   },
   {
     slug: "golden-hour-photo-walk",
@@ -52,8 +72,15 @@ const routes = [
       "Un itinerario visivo pensato per foto, architetture, dettagli estetici e luce calda di fine giornata.",
     price: "€10",
     duration: "3h",
-    stops: ["Chiostro del Bramante", "Scorcio architettonico", "Piazza nascosta", "Golden hour spot", "Galleria", "Vista finale"],
+    stops: "6 tappe",
     image: "/places/chiostro-bramante.png",
+    includes: [
+      "Percorso pensato per foto e contenuti",
+      "Tappe ordinate per luce e atmosfera",
+      "Suggerimenti per orari golden hour",
+      "Moodboard visiva del percorso",
+      "Accesso permanente nella tua area personale",
+    ],
   },
   {
     slug: "neon-nightlife-route",
@@ -64,84 +91,57 @@ const routes = [
       "Una serata tra posti vivi, atmosfere notturne e tappe sociali da fare con amici o nuove conoscenze.",
     price: "€12",
     duration: "3h 30min",
-    stops: ["Galleria Sciarra", "Aperitivo", "Locale notturno", "Passeggiata neon", "Chiusura serata"],
+    stops: "5 tappe",
     image: "/places/galleria-sciarra.jpg",
+    includes: [
+      "Itinerario serale pronto da seguire",
+      "Tappe sociali e fotogeniche",
+      "Suggerimenti per iniziare e chiudere la serata",
+      "Moodboard nightlife",
+      "Accesso permanente nella tua area personale",
+    ],
   },
 ];
 
-export default function RouteDetailPage() {
+export default function CheckoutRoutePage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
 
-  const [saved, setSaved] = useState(false);
-  const [loadingSave, setLoadingSave] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
   const route = useMemo(() => {
     return routes.find((item) => item.slug === params.slug) ?? null;
   }, [params.slug]);
 
-  useEffect(() => {
-    async function checkSaved() {
-      if (!route) return;
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("saved_routes")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("route_slug", route.slug)
-        .maybeSingle();
-
-      setSaved(Boolean(data));
-    }
-
-    checkSaved();
-  }, [route]);
-
-  async function handleSave() {
+  async function handlePurchase() {
     if (!route) return;
 
-    setLoadingSave(true);
+    setLoading(true);
     setMessage("");
 
     try {
       const {
         data: { user },
+        error: userError,
       } = await supabase.auth.getUser();
+
+      if (userError) {
+        setMessage(userError.message);
+        return;
+      }
 
       if (!user) {
         router.push("/login");
         return;
       }
 
-      if (saved) {
-        const { error } = await supabase
-          .from("saved_routes")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("route_slug", route.slug);
-
-        if (error) {
-          setMessage(error.message);
-          return;
-        }
-
-        setSaved(false);
-        setMessage("Percorso rimosso dai salvati.");
-        return;
-      }
-
-      const { error } = await supabase.from("saved_routes").upsert(
+      const { error } = await supabase.from("route_purchases").upsert(
         {
           user_id: user.id,
           route_slug: route.slug,
           route_title: route.title,
+          price: route.price,
         },
         {
           onConflict: "user_id,route_slug",
@@ -153,13 +153,15 @@ export default function RouteDetailPage() {
         return;
       }
 
-      setSaved(true);
-      setMessage("Percorso salvato.");
+      router.push("/my-routes");
+      router.refresh();
     } catch (error) {
-      console.error("Errore salvataggio percorso:", error);
-      setMessage("Non siamo riusciti a salvare il percorso. Riprova.");
+      console.error("Errore acquisto percorso:", error);
+      setMessage(
+        "Non siamo riusciti a completare l'acquisto demo. Riprova tra poco.",
+      );
     } finally {
-      setLoadingSave(false);
+      setLoading(false);
     }
   }
 
@@ -191,27 +193,27 @@ export default function RouteDetailPage() {
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-md pb-10">
         <Link
-          href="/routes"
+          href={`/routes/${route.slug}`}
           className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
         >
-          ← Percorsi
+          ← Torna al percorso
         </Link>
 
         <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-64 bg-[#F1F1EE]">
-            <PlaceImage
-              imageUrl={route.image}
-              title={route.title}
+          <div className="h-56 bg-[#F1F1EE]">
+            <img
+              src={route.image}
+              alt={route.title}
               className="h-full w-full object-cover"
             />
           </div>
 
           <div className="p-6">
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#7A7A73]">
-              Percorso premium
+              Checkout percorso
             </p>
 
-            <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight">
+            <h1 className="mt-3 text-3xl font-bold leading-tight tracking-tight">
               {route.title}
             </h1>
 
@@ -219,7 +221,7 @@ export default function RouteDetailPage() {
               {route.mood} · {route.vibe}
             </p>
 
-            <p className="mt-4 text-base leading-7 text-[#55554F]">
+            <p className="mt-4 text-sm leading-6 text-[#55554F]">
               {route.description}
             </p>
 
@@ -236,86 +238,70 @@ export default function RouteDetailPage() {
 
               <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
                 <p className="text-xs font-semibold text-[#7A7A73]">Tappe</p>
-                <p className="mt-1 text-sm font-bold">{route.stops.length}</p>
+                <p className="mt-1 text-sm font-bold">{route.stops}</p>
               </div>
             </div>
-
-            <div className="mt-6 grid gap-3">
-              <Link
-                href={`/checkout/${route.slug}`}
-                className="flex w-full items-center justify-center rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white"
-              >
-                Acquista percorso
-              </Link>
-
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={loadingSave}
-                className="w-full rounded-full bg-[#F7F7F5] px-6 py-4 text-sm font-bold text-[#111111] ring-1 ring-black/5 disabled:opacity-50"
-              >
-                {loadingSave
-                  ? "Salvataggio..."
-                  : saved
-                    ? "Percorso salvato"
-                    : "Salva percorso"}
-              </button>
-            </div>
-
-            {message ? (
-              <div className="mt-4 rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F] ring-1 ring-black/5">
-                {message}
-              </div>
-            ) : null}
           </div>
         </section>
 
         <section className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="text-lg font-bold tracking-tight">
-            Tappe del percorso
-          </h2>
+          <h2 className="text-lg font-bold tracking-tight">Cosa include</h2>
 
           <div className="mt-4 grid gap-3">
-            {route.stops.map((stop, index) => (
+            {route.includes.map((item) => (
               <div
-                key={`${stop}-${index}`}
-                className="flex items-center gap-4 rounded-[1.25rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5"
+                key={item}
+                className="flex gap-3 rounded-[1.25rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5"
               >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111111] text-sm font-bold text-white">
-                  {index + 1}
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold text-[#111111]">{stop}</p>
-                  <p className="mt-1 text-xs font-semibold text-[#7A7A73]">
-                    Tappa consigliata
-                  </p>
-                </div>
+                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xs font-bold text-white">
+                  ✓
+                </span>
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  {item}
+                </p>
               </div>
             ))}
           </div>
         </section>
 
         <section className="mt-4 rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
-            Come funziona
-          </p>
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
+                Totale
+              </p>
+              <p className="mt-2 text-4xl font-bold">{route.price}</p>
+            </div>
 
-          <h2 className="mt-3 text-2xl font-bold tracking-tight">
-            Acquista il percorso e ritrovalo nella tua area personale.
-          </h2>
+            <div className="rounded-full bg-white/10 px-4 py-2 text-xs font-bold text-white/70">
+              Demo
+            </div>
+          </div>
 
           <p className="mt-4 text-sm leading-6 text-white/65">
-            Il checkout è in modalità demo per l’MVP: nessun pagamento reale
-            viene effettuato. Dopo la conferma, il percorso viene aggiunto a
-            “I miei percorsi”.
+            Pagamento demo per MVP: nessun addebito reale verrà effettuato.
+            Il percorso verrà aggiunto alla tua area personale.
           </p>
 
-          <Link
-            href={`/checkout/${route.slug}`}
-            className="mt-5 flex w-full items-center justify-center rounded-full bg-white px-6 py-4 text-sm font-bold text-[#111111]"
+          {message ? (
+            <div className="mt-4 rounded-[1.25rem] bg-white/10 p-4 text-sm font-semibold leading-6 text-white">
+              {message}
+            </div>
+          ) : null}
+
+          <button
+            onClick={handlePurchase}
+            disabled={loading}
+            className="mt-5 w-full rounded-full bg-white px-6 py-4 text-sm font-bold text-[#111111] disabled:cursor-not-allowed disabled:opacity-60"
           >
-            Vai al checkout
+            {loading ? "Completamento..." : "Completa acquisto"}
+          </button>
+
+          <Link
+            href={`/routes/${route.slug}`}
+            className="mt-3 flex w-full items-center justify-center rounded-full bg-white/10 px-6 py-4 text-sm font-bold text-white"
+          >
+            Rivedi percorso
           </Link>
         </section>
       </div>
