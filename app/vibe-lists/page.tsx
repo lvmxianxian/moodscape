@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { vibeLists } from "@/lib/mock-data";
-import PlaceVisual from "@/components/PlaceVisual";
+import PlaceImage from "@/components/PlaceImage";
 
 type DbVibeList = {
   id: string;
@@ -50,130 +50,198 @@ export default function VibeListsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
-        <section className="mt-8 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
-              Vibe Lists
-            </p>
+        <section className="mx-auto max-w-md lg:max-w-7xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#7A7A73]">
+                Raccolte MoodScape
+              </p>
 
-            <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
-              Liste di posti costruite intorno a una vibe.
-            </h1>
+              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Vibe Lists.
+              </h1>
 
-            <div className="mt-6 flex max-w-3xl items-center gap-3">
-              <div className="h-px flex-1 bg-[#C99A57]" />
-              <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+              <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
+                Board visive di luoghi organizzate per atmosfera, mood e città.
+                Puoi creare liste personali o scoprire raccolte pubbliche.
+              </p>
             </div>
 
-            <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-              Qui vedi sia alcune liste demo sia le liste create davvero dagli
-              utenti e salvate su Supabase.
-            </p>
+            <Link
+              href="/vibe-lists/create"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xl text-white shadow-sm"
+            >
+              +
+            </Link>
+          </div>
+
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{dbLists.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Reali
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{vibeLists.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Demo
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">
+                {new Set(dbLists.map((list) => list.vibe)).size}
+              </p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Vibe
+              </p>
+            </div>
           </div>
 
           <Link
             href="/vibe-lists/create"
-            className="rounded-full bg-[#0E3532] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+            className="mt-5 flex items-center justify-center rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white"
           >
-            Crea nuova lista
+            Crea nuova Vibe List
           </Link>
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-            Liste reali
-          </h2>
+        <section className="mx-auto mt-8 max-w-md lg:max-w-7xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Liste reali</h2>
+
+            <Link
+              href="/community"
+              className="text-sm font-bold text-[#7A7A73]"
+            >
+              Community
+            </Link>
+          </div>
 
           {loading ? (
-            <p className="mt-4 text-[#425653]">Caricamento liste reali...</p>
+            <div className="mt-4 rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5">
+              Caricamento liste...
+            </div>
           ) : message ? (
-            <div className="mt-5 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 font-bold text-[#2A160E]">
-              {message}
+            <div className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h3 className="text-xl font-bold">Errore</h3>
+              <p className="mt-2 text-[#55554F]">{message}</p>
             </div>
           ) : dbLists.length === 0 ? (
-            <div className="mt-5 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
-              <p className="text-[#425653]">
-                Non ci sono ancora Vibe Lists reali. Crea la prima lista.
+            <div className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h3 className="text-2xl font-bold tracking-tight">
+                Non ci sono ancora liste reali.
+              </h3>
+
+              <p className="mt-3 leading-7 text-[#55554F]">
+                Crea una lista pubblica o privata per iniziare a costruire la
+                tua prima board.
               </p>
 
               <Link
                 href="/vibe-lists/create"
-                className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+                className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
               >
                 Crea lista
               </Link>
             </div>
           ) : (
-            <div className="mt-6 grid gap-6 md:grid-cols-3">
+            <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {dbLists.map((list) => (
                 <Link
                   key={list.id}
                   href={`/vibe-lists/${list.id}`}
-                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
+                  className="group overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10"
                 >
-                  <PlaceVisual vibe={list.vibe} className="h-44" />
+                  <PlaceImage
+                    imageUrl={null}
+                    name={list.title}
+                    vibe={list.vibe}
+                    className="h-56"
+                  />
 
-                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    {list.city} · {list.visibility}
-                  </p>
+                  <div className="p-2 pt-5">
+                    <p className="text-sm font-semibold text-[#7A7A73]">
+                      {list.city} · {list.visibility}
+                    </p>
 
-                  <h3 className="mt-3 font-serif text-3xl font-bold text-[#2A160E]">
-                    {list.title}
-                  </h3>
+                    <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                      {list.title}
+                    </h3>
 
-                  <p className="mt-4 text-sm leading-6 text-[#425653]">
-                    {list.description || "Nessuna descrizione."}
-                  </p>
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#55554F]">
+                      {list.description || "Lista creata dalla community."}
+                    </p>
 
-                  <p className="mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]">
-                    Apri lista →
-                  </p>
+                    <div className="mt-5 flex flex-wrap gap-2">
+                      <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                        {list.vibe}
+                      </span>
+
+                      <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                        Apri →
+                      </span>
+                    </div>
+                  </div>
                 </Link>
               ))}
             </div>
           )}
         </section>
 
-        <section className="mt-14">
-          <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-            Liste demo
-          </h2>
+        <section className="mx-auto mt-8 max-w-md pb-10 lg:max-w-7xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">Liste demo</h2>
 
-          <div className="mt-6 grid gap-6 md:grid-cols-3">
+            <p className="text-sm font-bold text-[#7A7A73]">
+              Ispirazione iniziale
+            </p>
+          </div>
+
+          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {vibeLists.map((list) => {
               const saved = savedDemoTitles.includes(list.title);
 
               return (
                 <article
                   key={list.title}
-                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
+                  className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5"
                 >
-                  <PlaceVisual vibe={list.vibe} className="h-44" />
+                  <PlaceImage
+                    imageUrl={null}
+                    name={list.title}
+                    vibe={list.vibe}
+                    className="h-56"
+                  />
 
-                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    {list.city} · {list.places} posti
-                  </p>
+                  <div className="p-2 pt-5">
+                    <p className="text-sm font-semibold text-[#7A7A73]">
+                      {list.city} · {list.places} luoghi
+                    </p>
 
-                  <h3 className="mt-3 font-serif text-3xl font-bold text-[#2A160E]">
-                    {list.title}
-                  </h3>
+                    <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                      {list.title}
+                    </h3>
 
-                  <p className="mt-4 text-sm leading-6 text-[#425653]">
-                    {list.description}
-                  </p>
+                    <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#55554F]">
+                      {list.description}
+                    </p>
 
-                  <button
-                    onClick={() => toggleSaveDemo(list.title)}
-                    className={`mt-6 w-full rounded-full px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] ${
-                      saved
-                        ? "bg-[#2A160E] text-[#F4EFE5]"
-                        : "bg-[#0E3532] text-[#F4EFE5]"
-                    }`}
-                  >
-                    {saved ? "Lista salvata ✓" : "Salva lista demo"}
-                  </button>
+                    <button
+                      onClick={() => toggleSaveDemo(list.title)}
+                      className={`mt-5 w-full rounded-full px-5 py-3 text-sm font-bold ${
+                        saved
+                          ? "bg-[#F1F1EE] text-[#111111]"
+                          : "bg-[#111111] text-white"
+                      }`}
+                    >
+                      {saved ? "Lista salvata ✓" : "Salva lista demo"}
+                    </button>
+                  </div>
                 </article>
               );
             })}
