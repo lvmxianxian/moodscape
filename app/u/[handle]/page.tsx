@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import PlaceImage from "@/components/PlaceImage";
+import { supabase } from "@/lib/supabase";
 
 const creators = [
   {
@@ -31,8 +35,7 @@ const creators = [
       {
         title: "Caffè silenziosi per un pomeriggio lento",
         vibe: "Cozy café",
-        description:
-          "Posti raccolti dove leggere, scrivere o parlare piano.",
+        description: "Posti raccolti dove leggere, scrivere o parlare piano.",
       },
     ],
   },
@@ -58,8 +61,7 @@ const creators = [
       {
         title: "Bookshop afternoon",
         vibe: "Bookshop afternoon",
-        description:
-          "Librerie e caffè dove passare un pomeriggio lento.",
+        description: "Librerie e caffè dove passare un pomeriggio lento.",
       },
       {
         title: "Roma da leggere",
@@ -97,8 +99,7 @@ const creators = [
       {
         title: "Secret garden route",
         vibe: "Secret garden",
-        description:
-          "Un percorso verde per chi ama scoprire angoli nascosti.",
+        description: "Un percorso verde per chi ama scoprire angoli nascosti.",
       },
     ],
   },
@@ -130,8 +131,7 @@ const creators = [
       {
         title: "Monti after dark",
         vibe: "Neon nightlife",
-        description:
-          "Una mini route serale tra luci, drink e conversazioni.",
+        description: "Una mini route serale tra luci, drink e conversazioni.",
       },
     ],
   },
@@ -163,8 +163,7 @@ const creators = [
       {
         title: "In cerca di bellezza",
         vibe: "Minimal chic",
-        description:
-          "Luoghi puliti, eleganti e visivi per ricaricare la mente.",
+        description: "Luoghi puliti, eleganti e visivi per ricaricare la mente.",
       },
     ],
   },
@@ -203,17 +202,116 @@ const creators = [
   },
 ];
 
-type PageProps = {
-  params: {
-    handle: string;
-  };
+type CommunityFollow = {
+  creator_handle: string;
+  follower_id: string;
 };
 
-export default function CreatorDetailPage({ params }: PageProps) {
-  const creator = creators.find((item) => item.handle === params.handle);
+export default function CreatorDetailPage() {
+  const params = useParams<{ handle: string }>();
+  const creatorMatch = creators.find((item) => item.handle === params.handle);
 
-  if (!creator) {
+  if (!creatorMatch) {
     notFound();
+  }
+
+  const creator = creatorMatch;
+  const creatorHandle = `@${creator.handle}`;
+
+  const [userId, setUserId] = useState<string | null>(null);
+  const [follows, setFollows] = useState<CommunityFollow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState("");
+
+  useEffect(() => {
+    async function loadFollowState() {
+      setLoading(true);
+      setActionMessage("");
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserId(session?.user.id ?? null);
+
+      const { data } = await supabase
+        .from("community_follows")
+        .select("creator_handle,follower_id")
+        .eq("creator_handle", creatorHandle);
+
+      setFollows(data ?? []);
+      setLoading(false);
+    }
+
+    loadFollowState();
+  }, [creatorHandle]);
+
+  const followed = useMemo(() => {
+    return Boolean(
+      userId &&
+        follows.some(
+          (follow) =>
+            follow.creator_handle === creatorHandle &&
+            follow.follower_id === userId,
+        ),
+    );
+  }, [creatorHandle, follows, userId]);
+
+  function requireLogin() {
+    if (!userId) {
+      setActionMessage("Per seguire un creator devi prima accedere.");
+      return false;
+    }
+
+    setActionMessage("");
+    return true;
+  }
+
+  async function toggleFollow() {
+    if (!requireLogin() || !userId) return;
+
+    if (followed) {
+      const { error } = await supabase
+        .from("community_follows")
+        .delete()
+        .eq("follower_id", userId)
+        .eq("creator_handle", creatorHandle);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setFollows((current) =>
+        current.filter(
+          (follow) =>
+            !(
+              follow.follower_id === userId &&
+              follow.creator_handle === creatorHandle
+            ),
+        ),
+      );
+
+      setActionMessage("Non segui più questo creator.");
+      return;
+    }
+
+    const newFollow = {
+      follower_id: userId,
+      creator_handle: creatorHandle,
+    };
+
+    const { error } = await supabase
+      .from("community_follows")
+      .insert(newFollow);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setFollows((current) => [...current, newFollow]);
+    setActionMessage("Ora segui questo creator.");
   }
 
   return (
@@ -275,9 +373,47 @@ export default function CreatorDetailPage({ params }: PageProps) {
               </div>
             </div>
 
+            {!userId && (
+              <div className="mt-6 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  Accedi per seguire questo creator.
+                </p>
+
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Accedi
+                  </Link>
+
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                  >
+                    Registrati
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {actionMessage && (
+              <div className="mt-6 rounded-[1.5rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                {actionMessage}
+              </div>
+            )}
+
             <div className="mt-6 grid gap-3">
-              <button className="rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white">
-                Segui creator
+              <button
+                onClick={toggleFollow}
+                disabled={loading}
+                className={`rounded-full px-6 py-4 text-sm font-bold disabled:opacity-60 ${
+                  followed
+                    ? "bg-[#F1F1EE] text-[#111111]"
+                    : "bg-[#111111] text-white"
+                }`}
+              >
+                {followed ? "Segui già ✓" : "Segui creator"}
               </button>
 
               <Link
@@ -285,6 +421,13 @@ export default function CreatorDetailPage({ params }: PageProps) {
                 className="rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
               >
                 Esplora questa vibe
+              </Link>
+
+              <Link
+                href="/community"
+                className="rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+              >
+                Apri community
               </Link>
             </div>
           </aside>
@@ -321,10 +464,10 @@ export default function CreatorDetailPage({ params }: PageProps) {
             </h2>
 
             <Link
-              href="/community"
+              href="/routes"
               className="text-sm font-bold text-[#7A7A73]"
             >
-              Community
+              Percorsi
             </Link>
           </div>
 
