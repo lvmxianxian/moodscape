@@ -4,90 +4,109 @@ import Link from "next/link";
 import { useState } from "react";
 import AuthButton from "./AuthButton";
 
-const primaryLinks = [
+const mainLinks = [
   { href: "/", label: "Home" },
-  { href: "/demo", label: "Demo" },
+  { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
   { href: "/events", label: "Events" },
-  { href: "/explore", label: "Mood Check" },
-  { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
-  { href: "/vibe-lists", label: "Vibe Lists" },
 ];
 
-const secondaryLinks = [
-  { href: "/moodboard", label: "Moodboard" },
-  { href: "/profile", label: "Profile" },
-  { href: "/premium", label: "Premium" },
+const menuLinks = [
+  { href: "/explore", label: "Mood Check", description: "Scegli mood e vibe" },
+  { href: "/vibe-lists", label: "Vibe Lists", description: "Raccolte e board" },
+  { href: "/moodboard", label: "Moodboard", description: "Luoghi salvati" },
+  { href: "/profile", label: "Profile", description: "Profilo personale" },
+  { href: "/premium", label: "Premium", description: "Funzioni avanzate" },
+  { href: "/demo", label: "Demo", description: "Presentazione MVP" },
 ];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-[#D8B77A]/30 bg-[#F4EFE5]/95 backdrop-blur">
-      <nav className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4 text-[#0E3532]">
-        <Link href="/" className="text-xl font-bold tracking-tight">
-          MoodScape
+    <header className="sticky top-0 z-50 border-b border-black/5 bg-[#F7F7F5]/90 backdrop-blur-xl">
+      <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 text-[#111111]">
+        <Link href="/" className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111111] text-lg text-white">
+            🌙
+          </div>
+
+          <div>
+            <p className="text-base font-bold leading-none tracking-tight">
+              MoodScape
+            </p>
+            <p className="mt-1 hidden text-xs font-medium text-[#7A7A73] sm:block">
+              Mood-based discovery
+            </p>
+          </div>
         </Link>
 
-        <div className="hidden items-center gap-5 text-sm font-semibold xl:flex">
-          {primaryLinks.map((link) => (
+        <div className="hidden items-center gap-1 rounded-full bg-white p-1 shadow-sm ring-1 ring-black/5 lg:flex">
+          {mainLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
-              className="text-[#0E3532]/70 transition hover:text-[#C99A57]"
+              className="rounded-full px-4 py-2 text-sm font-semibold text-[#55554F] transition hover:bg-[#111111] hover:text-white"
             >
               {link.label}
             </Link>
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 xl:flex">
-          {secondaryLinks.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="rounded-full border border-[#D8B77A]/50 bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532] transition hover:border-[#C99A57]"
-            >
-              {link.label}
-            </Link>
-          ))}
-
+        <div className="hidden items-center gap-3 lg:flex">
           <AuthButton />
+
+          <button
+            onClick={() => setOpen(!open)}
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg shadow-sm ring-1 ring-black/5"
+          >
+            {open ? "×" : "☰"}
+          </button>
         </div>
 
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-semibold text-[#0E3532] xl:hidden"
+          className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg shadow-sm ring-1 ring-black/5 lg:hidden"
         >
-          {open ? "Chiudi" : "Menu"}
+          {open ? "×" : "☰"}
         </button>
       </nav>
 
       {open && (
-        <div className="border-t border-[#D8B77A]/30 bg-[#F4EFE5] px-6 py-4 xl:hidden">
-          <div className="mx-auto grid max-w-6xl gap-3">
-            {[...primaryLinks, ...secondaryLinks].map((link) => (
+        <div className="border-t border-black/5 bg-[#F7F7F5] px-5 py-5">
+          <div className="mx-auto grid max-w-7xl gap-3 md:grid-cols-2 lg:grid-cols-3">
+            {[...mainLinks, ...menuLinks].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setOpen(false)}
-                className="rounded-2xl border border-[#D8B77A]/40 bg-[#F8F2E8] px-4 py-3 text-sm font-semibold text-[#0E3532]"
+                className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-0.5 hover:ring-black/10"
               >
-                {link.label}
+                <p className="text-base font-bold text-[#111111]">
+                  {link.label}
+                </p>
+
+                {"description" in link && (
+                  <p className="mt-2 text-sm font-medium text-[#7A7A73]">
+                    {link.description}
+                  </p>
+                )}
               </Link>
             ))}
 
             <Link
               href="/vibe-lists/create"
               onClick={() => setOpen(false)}
-              className="rounded-2xl bg-[#0E3532] px-4 py-3 text-sm font-bold text-[#F4EFE5]"
+              className="rounded-[1.5rem] bg-[#111111] p-5 text-white shadow-sm"
             >
-              Crea Vibe List
+              <p className="text-base font-bold">Create Vibe List</p>
+              <p className="mt-2 text-sm font-medium text-white/60">
+                Pubblica una nuova raccolta
+              </p>
             </Link>
 
-            <div className="pt-2">
+            <div className="rounded-[1.5rem] bg-white p-5 shadow-sm ring-1 ring-black/5 lg:hidden">
               <AuthButton />
             </div>
           </div>
