@@ -1,7 +1,81 @@
+"use client";
+
 import Link from "next/link";
-import { places } from "@/lib/mock-data";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+
+type DbPlace = {
+  slug: string;
+  name: string;
+  city: string;
+  area: string;
+  mood: string;
+  vibe: string;
+  description: string;
+  price: string;
+  time: string;
+};
 
 export default function FeedPage() {
+  const searchParams = useSearchParams();
+  const selectedMood = searchParams.get("mood");
+  const selectedVibe = searchParams.get("vibe");
+
+  const [places, setPlaces] = useState<DbPlace[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    async function loadPlaces() {
+      setLoading(true);
+      setMessage("");
+
+      let query = supabase
+        .from("places")
+        .select("slug,name,city,area,mood,vibe,description,price,time")
+        .order("created_at", { ascending: true });
+
+      if (selectedMood) {
+        query = query.eq("mood", selectedMood);
+      }
+
+      if (selectedVibe) {
+        query = query.eq("vibe", selectedVibe);
+      }
+
+      const { data, error } = await query;
+
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setPlaces(data ?? []);
+      }
+
+      setLoading(false);
+    }
+
+    loadPlaces();
+  }, [selectedMood, selectedVibe]);
+
+  const hasFilters = Boolean(selectedMood || selectedVibe);
+
+  const filterText = useMemo(() => {
+    if (selectedMood && selectedVibe) {
+      return `${selectedMood} · ${selectedVibe}`;
+    }
+
+    if (selectedMood) {
+      return selectedMood;
+    }
+
+    if (selectedVibe) {
+      return selectedVibe;
+    }
+
+    return "Tutti i mood e tutte le vibe";
+  }, [selectedMood, selectedVibe]);
+
   return (
     <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
       <div className="mx-auto max-w-7xl">
@@ -21,10 +95,64 @@ export default function FeedPage() {
           </div>
 
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#425653]">
-            Una selezione di luoghi, atmosfere e percorsi urbani costruiti
-            intorno a mood personali e vibe estetiche.
+            Il Feed legge i luoghi da Supabase e filtra in base alla scelta fatta
+            nella home.
           </p>
+
+          <div className="mt-6 flex flex-wrap items-center gap-3">
+            <div className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-bold text-[#0E3532]">
+              Filtro attivo: {filterText}
+            </div>
+
+            {hasFilters && (
+              <Link
+                href="/feed"
+                className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
+              >
+                Rimuovi filtri
+              </Link>
+            )}
+
+            <Link
+              href="/"
+              className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
+            >
+              Cambia mood
+            </Link>
+          </div>
         </section>
+
+        {loading && (
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 text-[#425653]">
+            Caricamento luoghi...
+          </section>
+        )}
+
+        {message && (
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 font-bold text-[#2A160E]">
+            {message}
+          </section>
+        )}
+
+        {!loading && !message && places.length === 0 && (
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Nessun luogo trovato per questa combinazione.
+            </h2>
+
+            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
+              Per ora il database ha pochi luoghi. Prova a rimuovere i filtri,
+              oppure scegli una vibe più vicina ai luoghi già inseriti.
+            </p>
+
+            <Link
+              href="/feed"
+              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+            >
+              Mostra tutti i luoghi
+            </Link>
+          </section>
+        )}
 
         <section className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {places.map((place) => (
