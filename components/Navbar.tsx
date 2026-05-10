@@ -8,6 +8,7 @@ const primaryLinks = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo" },
   { href: "/community", label: "Community" },
+  { href: "/events", label: "Events" },
   { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
