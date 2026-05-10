@@ -36,7 +36,7 @@ function FeedContent() {
       if (!cancelled) {
         setLoading(false);
         setMessage(
-          "Il caricamento sta impiegando troppo tempo. Controlla che la tabella places esista su Supabase e che le variabili Vercel siano corrette.",
+          "Il caricamento sta impiegando troppo tempo. Controlla Supabase e riprova.",
         );
       }
     }, 7000);
@@ -55,13 +55,8 @@ function FeedContent() {
           )
           .order("created_at", { ascending: true });
 
-        if (selectedMood) {
-          query = query.eq("mood", selectedMood);
-        }
-
-        if (selectedVibe) {
-          query = query.eq("vibe", selectedVibe);
-        }
+        if (selectedMood) query = query.eq("mood", selectedMood);
+        if (selectedVibe) query = query.eq("vibe", selectedVibe);
 
         const { data, error } = await query;
 
@@ -112,10 +107,7 @@ function FeedContent() {
         }
       } finally {
         window.clearTimeout(timeout);
-
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
@@ -133,79 +125,87 @@ function FeedContent() {
     if (selectedMood && selectedVibe) return `${selectedMood} · ${selectedVibe}`;
     if (selectedMood) return selectedMood;
     if (selectedVibe) return selectedVibe;
-    return "Tutti i mood e tutte le vibe";
+    return "All moods and vibes";
   }, [selectedMood, selectedVibe]);
 
   const visiblePlaces = places.length > 0 ? places : suggestedPlaces;
   const showingSuggestions = places.length === 0 && suggestedPlaces.length > 0;
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
-        <section className="mt-8">
-          <div className="inline-flex items-center gap-3 rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em]">
-            <span className="h-3 w-3 rounded-full bg-[#C99A57]" />
-            Vibe Feed
-          </div>
+        <section className="mx-auto max-w-md lg:max-w-7xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#7A7A73]">
+                MoodScape Feed
+              </p>
 
-          <h1 className="mt-10 max-w-4xl font-serif text-5xl font-bold leading-none tracking-tight text-[#2A160E] md:text-7xl">
-            Posti scelti secondo il tuo umore.
-          </h1>
-
-          <div className="mt-6 flex max-w-3xl items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-          </div>
-
-          <p className="mt-7 max-w-2xl text-lg leading-8 text-[#425653]">
-            Il Feed legge i luoghi da Supabase e filtra in base alla scelta
-            fatta nella home.
-          </p>
-
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-bold text-[#0E3532]">
-              Filtro attivo: {filterText}
+              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Places for your current vibe.
+              </h1>
             </div>
 
-            {hasFilters && (
-              <Link
-                href="/feed"
-                className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
-              >
-                Rimuovi filtri
-              </Link>
-            )}
-
             <Link
-              href="/"
-              className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
+              href="/explore"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-xl shadow-sm ring-1 ring-black/5"
             >
-              Cambia mood
+              ✦
             </Link>
+          </div>
+
+          <div className="mt-6 rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+                  Active filter
+                </p>
+
+                <p className="mt-1 text-base font-bold text-[#111111]">
+                  {filterText}
+                </p>
+              </div>
+
+              <div className="flex flex-wrap gap-2">
+                {hasFilters && (
+                  <Link
+                    href="/feed"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Clear
+                  </Link>
+                )}
+
+                <Link
+                  href="/"
+                  className="rounded-full bg-[#F1F1EE] px-5 py-3 text-sm font-bold text-[#111111]"
+                >
+                  Change mood
+                </Link>
+              </div>
+            </div>
           </div>
         </section>
 
         {loading && (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 text-[#425653]">
-            Caricamento luoghi...
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+            Loading places...
           </section>
         )}
 
         {!loading && message && (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-              Errore nel caricamento dei luoghi.
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Could not load places.
             </h2>
 
-            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-              {message}
-            </p>
+            <p className="mt-3 leading-7 text-[#55554F]">{message}</p>
 
             <Link
               href="/feed"
-              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
             >
-              Riprova
+              Try again
             </Link>
           </section>
         )}
@@ -214,74 +214,81 @@ function FeedContent() {
           !message &&
           places.length === 0 &&
           suggestedPlaces.length === 0 && (
-            <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-                Nessun luogo trovato.
+            <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+              <h2 className="text-2xl font-bold tracking-tight">
+                No places found.
               </h2>
 
-              <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-                Non ci sono luoghi disponibili per questa selezione. Prova senza
-                filtri oppure aggiungi più luoghi nella tabella places.
+              <p className="mt-3 leading-7 text-[#55554F]">
+                Try removing filters or adding more places in Supabase.
               </p>
 
               <Link
                 href="/feed"
-                className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+                className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
               >
-                Mostra tutti i luoghi
+                Show all places
               </Link>
             </section>
           )}
 
         {!loading && !message && showingSuggestions && (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
-            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-              Nessun match perfetto, ma questi sono vicini.
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+            <h2 className="text-2xl font-bold tracking-tight">
+              No perfect match, but these are close.
             </h2>
 
-            <p className="mt-3 max-w-2xl leading-7 text-[#425653]">
-              MoodScape non ha ancora un posto con esattamente questa
-              combinazione, quindi ti mostra luoghi con mood o vibe simili.
+            <p className="mt-3 leading-7 text-[#55554F]">
+              MoodScape is showing places with a similar mood or vibe.
             </p>
           </section>
         )}
 
         {!loading && !message && visiblePlaces.length > 0 && (
-          <section className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <section className="mx-auto mt-6 grid max-w-md gap-4 md:grid-cols-2 lg:max-w-7xl lg:grid-cols-3 xl:grid-cols-4">
             {visiblePlaces.map((place) => (
               <Link
                 key={place.slug}
                 href={`/place/${place.slug}`}
-                className="group overflow-hidden rounded-[2rem] border border-[#D8B77A]/40 bg-[#F8F2E8] p-4 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
+                className="group overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10"
               >
                 <PlaceImage
                   imageUrl={place.image_url}
                   name={place.name}
                   vibe={place.vibe}
+                  className="h-60"
                 />
 
-                <div className="mt-5">
+                <div className="p-2 pt-5">
                   <div className="flex items-start justify-between gap-3">
-                    <h2 className="font-serif text-2xl font-bold text-[#2A160E]">
-                      {place.name}
-                    </h2>
+                    <div>
+                      <h2 className="text-xl font-bold tracking-tight text-[#111111]">
+                        {place.name}
+                      </h2>
 
-                    <span className="rounded-full border border-[#D8B77A] px-3 py-1 text-xs font-bold text-[#0E3532]">
+                      <p className="mt-1 text-sm font-semibold text-[#7A7A73]">
+                        {place.city} · {place.area}
+                      </p>
+                    </div>
+
+                    <span className="shrink-0 rounded-full bg-[#F1F1EE] px-3 py-2 text-xs font-bold text-[#111111]">
                       {place.price}
                     </span>
                   </div>
 
-                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    {place.city} · {place.mood} · {place.time}
-                  </p>
-
-                  <p className="mt-4 text-sm leading-6 text-[#425653]">
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#55554F]">
                     {place.description}
                   </p>
 
-                  <p className="mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] transition group-hover:text-[#C99A57]">
-                    Apri dettaglio →
-                  </p>
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {place.mood}
+                    </span>
+
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {place.time}
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}
@@ -296,9 +303,9 @@ export default function FeedPage() {
   return (
     <Suspense
       fallback={
-        <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
-          <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-            Caricamento feed...
+        <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+          <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+            Loading feed...
           </div>
         </main>
       }
