@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type SavedPlaceRow = {
   place_slug: string;
@@ -185,12 +186,21 @@ export default function ProfilePage() {
               </div>
             </div>
 
-            <Link
-              href="/moodboard"
-              className="rounded-full bg-[#0E3532] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-            >
-              Apri moodboard
-            </Link>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="/moodboard"
+                className="rounded-full bg-[#0E3532] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              >
+                Apri moodboard
+              </Link>
+
+              <Link
+                href="/vibe-lists/create"
+                className="rounded-full border border-[#C99A57] bg-[#F4EFE5] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+              >
+                Crea lista
+              </Link>
+            </div>
           </div>
 
           {message && (
@@ -278,7 +288,7 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section className="mt-10 grid gap-6 md:grid-cols-2">
+        <section className="mt-10 grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
           <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
             <div className="flex items-center justify-between gap-4">
               <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
@@ -334,16 +344,21 @@ export default function ProfilePage() {
                 Non hai ancora salvato luoghi.
               </p>
             ) : (
-              <div className="mt-5 space-y-3">
-                {savedPlaces.map((place) => (
+              <div className="mt-6 grid gap-4 md:grid-cols-2">
+                {savedPlaces.slice(0, 4).map((place) => (
                   <Link
                     key={place.slug}
                     href={`/place/${place.slug}`}
-                    className="block rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
+                    className="rounded-[1.5rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 transition hover:border-[#C99A57]"
                   >
-                    <p className="font-bold text-[#2A160E]">{place.name}</p>
-                    <p className="mt-1 text-sm text-[#425653]">
-                      {place.area} · {place.mood} · {place.vibe}
+                    <PlaceVisual vibe={place.vibe} className="h-36" />
+
+                    <p className="mt-4 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                      {place.area} · {place.mood}
+                    </p>
+
+                    <p className="mt-2 font-serif text-xl font-bold text-[#2A160E]">
+                      {place.name}
                     </p>
                   </Link>
                 ))}
