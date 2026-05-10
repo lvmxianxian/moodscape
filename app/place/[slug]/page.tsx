@@ -1,121 +1,204 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { places } from "@/lib/mock-data";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 
-export function generateStaticParams() {
-  return places.map((place) => ({
-    slug: place.slug,
-  }));
-}
+type DbPlace = {
+  slug: string;
+  name: string;
+  city: string;
+  area: string;
+  mood: string;
+  vibe: string;
+  description: string;
+  long_description: string;
+  price: string;
+  time: string;
+  address: string;
+  social_level: string;
+  latitude: number;
+  longitude: number;
+};
 
-export default async function PlaceDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
-  const { slug } = await params;
-  const place = places.find((item) => item.slug === slug);
+export default function PlaceDetailPage() {
+  const params = useParams<{ slug: string }>();
+  const [place, setPlace] = useState<DbPlace | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadPlace() {
+      const { data } = await supabase
+        .from("places")
+        .select(
+          "slug,name,city,area,mood,vibe,description,long_description,price,time,address,social_level,latitude,longitude",
+        )
+        .eq("slug", params.slug)
+        .maybeSingle();
+
+      setPlace(data);
+      setLoading(false);
+    }
+
+    loadPlace();
+  }, [params.slug]);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+          Caricamento luogo...
+        </div>
+      </main>
+    );
+  }
 
   if (!place) {
-    notFound();
+    return (
+      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+          <h1 className="font-serif text-4xl font-bold text-[#2A160E]">
+            Luogo non trovato.
+          </h1>
+
+          <p className="mt-4 leading-7 text-[#425653]">
+            Questo luogo non è presente nel database.
+          </p>
+
+          <Link
+            href="/feed"
+            className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+          >
+            Torna al Feed
+          </Link>
+        </div>
+      </main>
+    );
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
-      <div className="mx-auto max-w-5xl">
-        <section className="mt-10 overflow-hidden rounded-[2rem] bg-white shadow-xl shadow-black/10">
-          <div className="flex min-h-[280px] items-end bg-[#EDE9FF] p-6">
+    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+      <div className="mx-auto max-w-6xl">
+        <section className="overflow-hidden rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] shadow-2xl shadow-[#0E3532]/10">
+          <div className="flex min-h-[340px] items-end bg-[#0E3532] p-8 text-[#F4EFE5]">
             <div>
-              <span className="rounded-full bg-[#1A1A2E] px-4 py-2 text-xs font-semibold text-white">
+              <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D8B77A]">
                 {place.vibe}
               </span>
 
-              <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight md:text-6xl">
+              <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
                 {place.name}
               </h1>
 
-              <p className="mt-3 text-lg font-medium text-[#5B4FCF]">
-                {place.city} · {place.mood}
+              <div className="mt-6 flex max-w-3xl items-center gap-3">
+                <div className="h-px flex-1 bg-[#C99A57]" />
+                <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+              </div>
+
+              <p className="mt-5 text-lg font-semibold text-[#D8B77A]">
+                {place.city} · {place.area} · {place.mood}
               </p>
             </div>
           </div>
 
           <div className="grid gap-8 p-6 md:grid-cols-[1.4fr_0.6fr] md:p-8">
             <div>
-              <h2 className="text-2xl font-bold">Perché andarci</h2>
-
-              <p className="mt-4 text-lg leading-8 text-[#4B4B5F]">
-                {place.longDescription}
+              <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0E3532]">
+                MoodScape insight
               </p>
 
-              <div className="mt-8 rounded-3xl bg-[#F7F4EF] p-5">
-                <h3 className="font-bold">Descrizione breve</h3>
+              <h2 className="mt-6 font-serif text-4xl font-bold text-[#2A160E]">
+                Perché andarci
+              </h2>
 
-                <p className="mt-3 leading-7 text-[#5A5A6E]">
+              <p className="mt-5 text-lg leading-8 text-[#425653]">
+                {place.long_description}
+              </p>
+
+              <div className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-6">
+                <h3 className="font-serif text-2xl font-bold text-[#2A160E]">
+                  Descrizione breve
+                </h3>
+
+                <p className="mt-4 leading-7 text-[#425653]">
                   {place.description}
                 </p>
               </div>
 
-              <div className="mt-8 rounded-3xl bg-[#EDE9FF] p-5">
-                <h3 className="font-bold text-[#5B4FCF]">
-                  MoodScape insight
+              <div className="mt-8 rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5]">
+                <h3 className="font-serif text-2xl font-bold text-[#D8B77A]">
+                  Abbinamento mood + vibe
                 </h3>
 
-                <p className="mt-3 leading-7 text-[#4B4B5F]">
+                <p className="mt-4 leading-7 text-[#F4EFE5]/80">
                   Questo luogo è consigliato per chi si sente{" "}
-                  <strong>{place.mood.toLowerCase()}</strong> e vuole vivere
-                  una vibe <strong>{place.vibe}</strong>.
+                  <strong className="text-[#D8B77A]">
+                    {place.mood.toLowerCase()}
+                  </strong>{" "}
+                  e vuole vivere una vibe{" "}
+                  <strong className="text-[#D8B77A]">{place.vibe}</strong>.
                 </p>
               </div>
             </div>
 
-            <aside className="rounded-3xl border border-[#E8E1D8] p-5">
-              <h2 className="text-xl font-bold">Info pratiche</h2>
+            <aside className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-6">
+              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+                Info pratiche
+              </h2>
 
-              <div className="mt-5 space-y-4 text-sm">
+              <div className="mt-6 space-y-5 text-sm">
                 <div>
-                  <p className="font-semibold text-[#5B4FCF]">Area</p>
-                  <p>{place.area}</p>
+                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                    Area
+                  </p>
+                  <p className="mt-1 text-[#0E3532]">{place.area}</p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-[#5B4FCF]">Indirizzo</p>
-                  <p>{place.address}</p>
+                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                    Indirizzo
+                  </p>
+                  <p className="mt-1 text-[#0E3532]">{place.address}</p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-[#5B4FCF]">Prezzo</p>
-                  <p>{place.price}</p>
+                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                    Prezzo
+                  </p>
+                  <p className="mt-1 text-[#0E3532]">{place.price}</p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-[#5B4FCF]">
+                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     Durata consigliata
                   </p>
-                  <p>{place.time}</p>
+                  <p className="mt-1 text-[#0E3532]">{place.time}</p>
                 </div>
 
                 <div>
-                  <p className="font-semibold text-[#5B4FCF]">
+                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     Livello socialità
                   </p>
-                  <p>{place.socialLevel}</p>
+                  <p className="mt-1 text-[#0E3532]">
+                    {place.social_level}
+                  </p>
                 </div>
               </div>
 
               <SavePlaceButton placeSlug={place.slug} />
 
               <Link
-                href="/map"
-                className="mt-3 block rounded-full border border-[#E8E1D8] px-6 py-3 text-center font-semibold text-[#1A1A2E]"
+                href={`/map?place=${place.slug}`}
+                className="mt-3 block rounded-full border border-[#C99A57] bg-[#F8F2E8] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
               >
                 Vedi sulla mappa
               </Link>
 
               <Link
                 href="/feed"
-                className="mt-3 block text-center text-sm font-semibold text-[#5B4FCF]"
+                className="mt-5 block text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
               >
                 ← Torna al feed
               </Link>
