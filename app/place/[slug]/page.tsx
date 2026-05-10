@@ -6,7 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 import AddToVibeListButton from "@/components/AddToVibeListButton";
-import PlaceVisual from "@/components/PlaceVisual";
+import PlaceImage from "@/components/PlaceImage";
 
 type DbPlace = {
   slug: string;
@@ -23,6 +23,7 @@ type DbPlace = {
   social_level: string;
   latitude: number;
   longitude: number;
+  image_url: string | null;
 };
 
 export default function PlaceDetailPage() {
@@ -35,7 +36,7 @@ export default function PlaceDetailPage() {
       const { data } = await supabase
         .from("places")
         .select(
-          "slug,name,city,area,mood,vibe,description,long_description,price,time,address,social_level,latitude,longitude",
+          "slug,name,city,area,mood,vibe,description,long_description,price,time,address,social_level,latitude,longitude,image_url",
         )
         .eq("slug", params.slug)
         .maybeSingle();
@@ -49,8 +50,8 @@ export default function PlaceDetailPage() {
 
   if (loading) {
     return (
-      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+      <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+        <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
           Caricamento luogo...
         </div>
       </main>
@@ -59,19 +60,19 @@ export default function PlaceDetailPage() {
 
   if (!place) {
     return (
-      <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
-        <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-          <h1 className="font-serif text-4xl font-bold text-[#2A160E]">
+      <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+        <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <h1 className="text-3xl font-bold tracking-tight">
             Luogo non trovato.
           </h1>
 
-          <p className="mt-4 leading-7 text-[#425653]">
+          <p className="mt-3 leading-7 text-[#55554F]">
             Questo luogo non è presente nel database.
           </p>
 
           <Link
             href="/feed"
-            className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+            className="mt-6 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
           >
             Torna al Feed
           </Link>
@@ -81,132 +82,116 @@ export default function PlaceDetailPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-6xl">
-        <section className="overflow-hidden rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] shadow-2xl shadow-[#0E3532]/10">
-          <div className="grid gap-6 bg-[#0E3532] p-6 text-[#F4EFE5] md:grid-cols-[0.95fr_1.05fr] md:p-8">
-            <PlaceVisual vibe={place.vibe} className="min-h-[320px]" />
+        <Link
+          href="/feed"
+          className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+        >
+          ← Torna al Feed
+        </Link>
 
-            <div className="flex min-h-[320px] flex-col justify-end">
-              <span className="w-fit rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D8B77A]">
-                {place.vibe}
-              </span>
+        <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
+            <PlaceImage
+              imageUrl={place.image_url}
+              name={place.name}
+              vibe={place.vibe}
+              className="min-h-[360px]"
+            />
 
-              <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
+            <div className="p-3 pt-6">
+              <p className="text-sm font-bold text-[#7A7A73]">
+                {place.city} · {place.area} · {place.vibe}
+              </p>
+
+              <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
                 {place.name}
               </h1>
 
-              <div className="mt-6 flex max-w-3xl items-center gap-3">
-                <div className="h-px flex-1 bg-[#C99A57]" />
-                <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-              </div>
-
-              <p className="mt-5 text-lg font-semibold text-[#D8B77A]">
-                {place.city} · {place.area} · {place.mood}
+              <p className="mt-5 text-base leading-7 text-[#55554F]">
+                {place.description}
               </p>
             </div>
           </div>
 
-          <div className="grid gap-8 p-6 md:grid-cols-[1.4fr_0.6fr] md:p-8">
-            <div>
-              <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#0E3532]">
-                MoodScape insight
-              </p>
+          <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Info pratiche
+            </p>
 
-              <h2 className="mt-6 font-serif text-4xl font-bold text-[#2A160E]">
-                Perché andarci
-              </h2>
-
-              <p className="mt-5 text-lg leading-8 text-[#425653]">
-                {place.long_description}
-              </p>
-
-              <div className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-6">
-                <h3 className="font-serif text-2xl font-bold text-[#2A160E]">
-                  Descrizione breve
-                </h3>
-
-                <p className="mt-4 leading-7 text-[#425653]">
-                  {place.description}
-                </p>
+            <div className="mt-5 grid gap-3">
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">Area</p>
+                <p className="mt-1 text-lg font-bold">{place.area}</p>
               </div>
 
-              <div className="mt-8 rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5]">
-                <h3 className="font-serif text-2xl font-bold text-[#D8B77A]">
-                  Abbinamento mood + vibe
-                </h3>
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">Indirizzo</p>
+                <p className="mt-1 text-lg font-bold">{place.address}</p>
+              </div>
 
-                <p className="mt-4 leading-7 text-[#F4EFE5]/80">
-                  Questo luogo è consigliato per chi si sente{" "}
-                  <strong className="text-[#D8B77A]">
-                    {place.mood.toLowerCase()}
-                  </strong>{" "}
-                  e vuole vivere una vibe{" "}
-                  <strong className="text-[#D8B77A]">{place.vibe}</strong>.
-                </p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                  <p className="text-sm font-bold text-[#7A7A73]">Prezzo</p>
+                  <p className="mt-1 text-lg font-bold">{place.price}</p>
+                </div>
+
+                <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                  <p className="text-sm font-bold text-[#7A7A73]">Durata</p>
+                  <p className="mt-1 text-lg font-bold">{place.time}</p>
+                </div>
+              </div>
+
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">Socialità</p>
+                <p className="mt-1 text-lg font-bold">{place.social_level}</p>
               </div>
             </div>
 
-            <aside className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-6">
-              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-                Info pratiche
-              </h2>
+            <SavePlaceButton placeSlug={place.slug} />
 
-              <div className="mt-6 space-y-5 text-sm">
-                <div>
-                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    Area
-                  </p>
-                  <p className="mt-1 text-[#0E3532]">{place.area}</p>
-                </div>
+            <AddToVibeListButton placeSlug={place.slug} />
 
-                <div>
-                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    Indirizzo
-                  </p>
-                  <p className="mt-1 text-[#0E3532]">{place.address}</p>
-                </div>
+            <Link
+              href={`/map?place=${place.slug}`}
+              className="mt-3 block rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+            >
+              Vedi sulla mappa
+            </Link>
+          </aside>
+        </section>
 
-                <div>
-                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    Prezzo
-                  </p>
-                  <p className="mt-1 text-[#0E3532]">{place.price}</p>
-                </div>
+        <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Perché andarci
+            </p>
 
-                <div>
-                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    Durata consigliata
-                  </p>
-                  <p className="mt-1 text-[#0E3532]">{place.time}</p>
-                </div>
+            <h2 className="mt-3 text-3xl font-bold tracking-tight">
+              Un luogo scelto per il tuo mood.
+            </h2>
 
-                <div>
-                  <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    Livello socialità
-                  </p>
-                  <p className="mt-1 text-[#0E3532]">{place.social_level}</p>
-                </div>
-              </div>
+            <p className="mt-4 text-base leading-8 text-[#55554F]">
+              {place.long_description}
+            </p>
+          </div>
 
-              <SavePlaceButton placeSlug={place.slug} />
+          <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Mood + vibe
+            </p>
 
-              <AddToVibeListButton placeSlug={place.slug} />
+            <h2 className="mt-3 text-2xl font-bold tracking-tight">
+              {place.mood} · {place.vibe}
+            </h2>
 
-              <Link
-                href={`/map?place=${place.slug}`}
-                className="mt-3 block rounded-full border border-[#C99A57] bg-[#F8F2E8] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-              >
-                Vedi sulla mappa
-              </Link>
-
-              <Link
-                href="/feed"
-                className="mt-5 block text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-              >
-                ← Torna al feed
-              </Link>
-            </aside>
+            <p className="mt-4 text-base leading-7 text-[#55554F]">
+              MoodScape consiglia questo posto se vuoi vivere una vibe{" "}
+              <span className="font-bold text-[#111111]">{place.vibe}</span>{" "}
+              partendo da un mood{" "}
+              <span className="font-bold text-[#111111]">{place.mood}</span>.
+            </p>
           </div>
         </section>
       </div>
