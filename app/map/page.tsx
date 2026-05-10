@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import Link from "next/link";
+import { Suspense } from "react";
 
 const MapClient = dynamic(() => import("./MapClient"), {
   ssr: false,
@@ -31,12 +32,20 @@ export default function MapPage() {
           </div>
 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-            Questa mappa usa Leaflet e OpenStreetMap. I luoghi sono ancora dati
-            demo, ma sono posizionati su coordinate reali e filtrabili per vibe.
+            La mappa legge i luoghi dal database Supabase e li mostra su
+            coordinate reali con filtri per vibe.
           </p>
         </section>
 
-        <MapClient />
+        <Suspense
+          fallback={
+            <div className="mt-10 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 text-[#425653] shadow-xl shadow-[#0E3532]/5">
+              Caricamento mappa...
+            </div>
+          }
+        >
+          <MapClient />
+        </Suspense>
 
         <div className="mt-10">
           <Link
