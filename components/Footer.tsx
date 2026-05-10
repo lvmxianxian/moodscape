@@ -2,6 +2,7 @@ import Link from "next/link";
 
 const links = [
   { href: "/community", label: "Community" },
+  { href: "/events", label: "Events" },
   { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Vibe Feed" },
   { href: "/map", label: "Vibe Map" },
@@ -19,13 +20,13 @@ export default function Footer() {
           </p>
 
           <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-            Scopri luoghi, percorsi e liste in base a come ti senti e
+            Scopri luoghi, eventi, percorsi e liste in base a come ti senti e
             all’atmosfera che vuoi vivere. La community costruisce raccolte,
-            percorsi e nuove prospettive sulla città.
+            esperienze e nuove prospettive sulla città.
           </p>
 
           <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-            Mood-based community discovery
+            Pinterest meets Instagram meets Eventbrite
           </p>
         </div>
 
