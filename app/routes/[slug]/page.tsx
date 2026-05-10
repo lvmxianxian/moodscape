@@ -98,17 +98,20 @@ type SavedRoute = {
 
 export default function RouteDetailPage() {
   const params = useParams<{ slug: string }>();
-  const route = routes.find((item) => item.slug === params.slug);
+
+  const routeMatch = routes.find((item) => item.slug === params.slug);
+
+  if (!routeMatch) {
+    notFound();
+  }
+
+  const route = routeMatch;
 
   const [userId, setUserId] = useState<string | null>(null);
   const [purchases, setPurchases] = useState<RoutePurchase[]>([]);
   const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionMessage, setActionMessage] = useState("");
-
-  if (!route) {
-    notFound();
-  }
 
   useEffect(() => {
     async function loadRouteState() {
@@ -170,7 +173,9 @@ export default function RouteDetailPage() {
 
   function requireLogin() {
     if (!userId) {
-      setActionMessage("Per acquistare o salvare un percorso devi prima accedere.");
+      setActionMessage(
+        "Per acquistare o salvare un percorso devi prima accedere.",
+      );
       return false;
     }
 
@@ -377,8 +382,8 @@ export default function RouteDetailPage() {
 
             <p className="mt-4 text-sm leading-6 text-[#55554F]">
               Demo MVP: l’acquisto viene salvato su Supabase. In una versione
-              reale il pulsante sarebbe collegato a Stripe o a un altro sistema
-              di pagamento.
+              reale il pulsante sarebbe collegato a Stripe o a un sistema di
+              pagamento.
             </p>
           </aside>
         </section>
