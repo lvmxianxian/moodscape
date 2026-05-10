@@ -7,6 +7,7 @@ import AuthButton from "./AuthButton";
 const primaryLinks = [
   { href: "/", label: "Home" },
   { href: "/demo", label: "Demo" },
+  { href: "/community", label: "Community" },
   { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
@@ -29,7 +30,7 @@ export default function Navbar() {
           MoodScape
         </Link>
 
-        <div className="hidden items-center gap-5 text-sm font-semibold lg:flex">
+        <div className="hidden items-center gap-5 text-sm font-semibold xl:flex">
           {primaryLinks.map((link) => (
             <Link
               key={link.href}
@@ -41,7 +42,7 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="hidden items-center gap-3 lg:flex">
+        <div className="hidden items-center gap-3 xl:flex">
           {secondaryLinks.map((link) => (
             <Link
               key={link.href}
@@ -57,14 +58,14 @@ export default function Navbar() {
 
         <button
           onClick={() => setOpen(!open)}
-          className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-semibold text-[#0E3532] lg:hidden"
+          className="rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-sm font-semibold text-[#0E3532] xl:hidden"
         >
           {open ? "Chiudi" : "Menu"}
         </button>
       </nav>
 
       {open && (
-        <div className="border-t border-[#D8B77A]/30 bg-[#F4EFE5] px-6 py-4 lg:hidden">
+        <div className="border-t border-[#D8B77A]/30 bg-[#F4EFE5] px-6 py-4 xl:hidden">
           <div className="mx-auto grid max-w-6xl gap-3">
             {[...primaryLinks, ...secondaryLinks].map((link) => (
               <Link

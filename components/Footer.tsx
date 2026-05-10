@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const links = [
+  { href: "/community", label: "Community" },
   { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Vibe Feed" },
   { href: "/map", label: "Vibe Map" },
@@ -19,11 +20,12 @@ export default function Footer() {
 
           <p className="mt-4 max-w-xl leading-7 text-[#425653]">
             Scopri luoghi, percorsi e liste in base a come ti senti e
-            all’atmosfera che vuoi vivere.
+            all’atmosfera che vuoi vivere. La community costruisce raccolte,
+            percorsi e nuove prospettive sulla città.
           </p>
 
           <p className="mt-5 text-xs font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-            Mood-based city discovery
+            Mood-based community discovery
           </p>
         </div>
 
@@ -49,9 +51,7 @@ export default function Footer() {
       <div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-[#D8B77A]/30 pt-6 text-xs text-[#425653] md:flex-row md:items-center md:justify-between">
         <p>© 2026 MoodScape. Demo MVP.</p>
 
-        <p>
-          Built with Next.js, Supabase, Vercel and OpenStreetMap.
-        </p>
+        <p>Built with Next.js, Supabase, Vercel and OpenStreetMap.</p>
       </div>
     </footer>
   );

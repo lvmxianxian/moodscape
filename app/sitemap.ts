@@ -5,6 +5,8 @@ const baseUrl = "https://moodscape-tau-ten.vercel.app";
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
+    "/demo",
+    "/community",
     "/explore",
     "/feed",
     "/map",
