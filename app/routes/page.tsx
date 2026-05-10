@@ -76,7 +76,7 @@ export default function RoutesPage() {
               </p>
 
               <h1 className="mt-2 max-w-4xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-                Acquista percorsi già pronti per la tua vibe.
+                Compra percorsi già pronti per la tua vibe.
               </h1>
 
               <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
@@ -170,7 +170,7 @@ export default function RoutesPage() {
                     href={`/routes/${route.slug}`}
                     className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
                   >
-                    Acquista
+                    Compra percorso
                   </Link>
                 </div>
               </div>
