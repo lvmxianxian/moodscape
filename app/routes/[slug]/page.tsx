@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { useEffect, useMemo, useState } from "react";
 import PlaceImage from "@/components/PlaceImage";
+import { supabase } from "@/lib/supabase";
 
 const routes = [
   {
@@ -16,7 +16,13 @@ const routes = [
       "Un percorso morbido tra viste panoramiche, scorci iconici e tappe perfette per una serata romantica.",
     price: "€9",
     duration: "2h 30min",
-    stops: ["Giardino degli Aranci", "Aventino", "Trastevere", "Belvedere serale", "Drink finale"],
+    stops: [
+      "Giardino degli Aranci",
+      "Aventino",
+      "Trastevere",
+      "Belvedere serale",
+      "Drink finale",
+    ],
     image: "/places/giardino-aranci.webp",
   },
   {
@@ -28,7 +34,12 @@ const routes = [
       "Biblioteche, cortili silenziosi e luoghi con atmosfera letteraria per una giornata lenta e curiosa.",
     price: "€7",
     duration: "2h",
-    stops: ["Biblioteca Angelica", "Centro storico", "Caffè letterario", "Cortile nascosto"],
+    stops: [
+      "Biblioteca Angelica",
+      "Centro storico",
+      "Caffè letterario",
+      "Cortile nascosto",
+    ],
     image: "/places/biblioteca-angelica.jpg",
   },
   {
@@ -40,7 +51,13 @@ const routes = [
       "Una selezione di spazi verdi, cortili e pause tranquille per staccare dal ritmo della città.",
     price: "€8",
     duration: "2h 15min",
-    stops: ["Villa Borghese", "Giardino segreto", "Passeggiata lenta", "Pausa verde", "Vista finale"],
+    stops: [
+      "Villa Borghese",
+      "Giardino segreto",
+      "Passeggiata lenta",
+      "Pausa verde",
+      "Vista finale",
+    ],
     image: "/places/villa-borghese.jpg",
   },
   {
@@ -52,7 +69,14 @@ const routes = [
       "Un itinerario visivo pensato per foto, architetture, dettagli estetici e luce calda di fine giornata.",
     price: "€10",
     duration: "3h",
-    stops: ["Chiostro del Bramante", "Scorcio architettonico", "Piazza nascosta", "Golden hour spot", "Galleria", "Vista finale"],
+    stops: [
+      "Chiostro del Bramante",
+      "Scorcio architettonico",
+      "Piazza nascosta",
+      "Golden hour spot",
+      "Galleria",
+      "Vista finale",
+    ],
     image: "/places/chiostro-bramante.png",
   },
   {
@@ -64,7 +88,13 @@ const routes = [
       "Una serata tra posti vivi, atmosfere notturne e tappe sociali da fare con amici o nuove conoscenze.",
     price: "€12",
     duration: "3h 30min",
-    stops: ["Galleria Sciarra", "Aperitivo", "Locale notturno", "Passeggiata neon", "Chiusura serata"],
+    stops: [
+      "Galleria Sciarra",
+      "Aperitivo",
+      "Locale notturno",
+      "Passeggiata neon",
+      "Chiusura serata",
+    ],
     image: "/places/galleria-sciarra.jpg",
   },
 ];
@@ -201,7 +231,8 @@ export default function RouteDetailPage() {
           <div className="h-64 bg-[#F1F1EE]">
             <PlaceImage
               imageUrl={route.image}
-              title={route.title}
+              name={route.title}
+              vibe={route.vibe}
               className="h-full w-full object-cover"
             />
           </div>
@@ -307,8 +338,8 @@ export default function RouteDetailPage() {
 
           <p className="mt-4 text-sm leading-6 text-white/65">
             Il checkout è in modalità demo per l’MVP: nessun pagamento reale
-            viene effettuato. Dopo la conferma, il percorso viene aggiunto a
-            “I miei percorsi”.
+            viene effettuato. Dopo la conferma, il percorso viene aggiunto a “I
+            miei percorsi”.
           </p>
 
           <Link
