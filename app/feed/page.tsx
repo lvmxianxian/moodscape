@@ -25,7 +25,7 @@ function FeedContent() {
   const selectedVibe = searchParams.get("vibe");
 
   const [places, setPlaces] = useState<DbPlace[]>([]);
-  const [suggestedPlaces, setSuggestedPlaces] = useState<DbPlace[]>([]);
+  const [fallbackPlaces, setFallbackPlaces] = useState<DbPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -45,7 +45,7 @@ function FeedContent() {
       setLoading(true);
       setMessage("");
       setPlaces([]);
-      setSuggestedPlaces([]);
+      setFallbackPlaces([]);
 
       try {
         let query = supabase
@@ -70,32 +70,23 @@ function FeedContent() {
         const exactPlaces = data ?? [];
         setPlaces(exactPlaces);
 
-        if (exactPlaces.length === 0 && (selectedMood || selectedVibe)) {
-          let suggestionQuery = supabase
+        if (exactPlaces.length === 0) {
+          const { data: fallbackData, error: fallbackError } = await supabase
             .from("places")
             .select(
               "slug,name,city,area,mood,vibe,description,price,time,image_url",
             )
             .order("created_at", { ascending: true })
-            .limit(8);
-
-          if (selectedVibe) {
-            suggestionQuery = suggestionQuery.eq("vibe", selectedVibe);
-          } else if (selectedMood) {
-            suggestionQuery = suggestionQuery.eq("mood", selectedMood);
-          }
-
-          const { data: suggestions, error: suggestionError } =
-            await suggestionQuery;
+            .limit(12);
 
           if (cancelled) return;
 
-          if (suggestionError) {
-            setMessage(suggestionError.message);
+          if (fallbackError) {
+            setMessage(fallbackError.message);
             return;
           }
 
-          setSuggestedPlaces(suggestions ?? []);
+          setFallbackPlaces(fallbackData ?? []);
         }
       } catch (error) {
         if (!cancelled) {
@@ -128,8 +119,7 @@ function FeedContent() {
     return "Tutti i mood e tutte le vibe";
   }, [selectedMood, selectedVibe]);
 
-  const visiblePlaces = places.length > 0 ? places : suggestedPlaces;
-  const showingSuggestions = places.length === 0 && suggestedPlaces.length > 0;
+  const visiblePlaces = places.length > 0 ? places : fallbackPlaces;
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
@@ -210,38 +200,15 @@ function FeedContent() {
           </section>
         )}
 
-        {!loading &&
-          !message &&
-          places.length === 0 &&
-          suggestedPlaces.length === 0 && (
-            <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
-              <h2 className="text-2xl font-bold tracking-tight">
-                Nessun luogo trovato.
-              </h2>
-
-              <p className="mt-3 leading-7 text-[#55554F]">
-                Prova a rimuovere i filtri oppure aggiungi altri luoghi in
-                Supabase.
-              </p>
-
-              <Link
-                href="/feed"
-                className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
-              >
-                Mostra tutti i luoghi
-              </Link>
-            </section>
-          )}
-
-        {!loading && !message && showingSuggestions && (
+        {!loading && !message && visiblePlaces.length === 0 && (
           <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
             <h2 className="text-2xl font-bold tracking-tight">
-              Nessun match perfetto, ma questi sono vicini.
+              Aggiungi luoghi al database.
             </h2>
 
             <p className="mt-3 leading-7 text-[#55554F]">
-              MoodScape ti mostra luoghi con mood o vibe simili alla scelta
-              iniziale.
+              Il Feed è pronto, ma in Supabase non ci sono ancora luoghi da
+              mostrare.
             </p>
           </section>
         )}
