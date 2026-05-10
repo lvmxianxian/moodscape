@@ -60,6 +60,9 @@ const previews = [
 export default function HomePage() {
   const [selectedMood, setSelectedMood] = useState("Romantico");
   const [selectedVibe, setSelectedVibe] = useState("Dolce vita");
+  const [showAllVibes, setShowAllVibes] = useState(false);
+
+  const visibleVibes = showAllVibes ? vibes : vibes.slice(0, 9);
 
   const feedHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -156,12 +159,12 @@ export default function HomePage() {
             </h3>
 
             <p className="text-sm font-semibold text-[#7A7A73]">
-              {vibes.length} opzioni
+              {showAllVibes ? `${vibes.length} opzioni` : "9 in evidenza"}
             </p>
           </div>
 
           <div className="mt-4 flex flex-wrap gap-2">
-            {vibes.map((vibe) => {
+            {visibleVibes.map((vibe) => {
               const active = selectedVibe === vibe;
 
               return (
@@ -179,6 +182,13 @@ export default function HomePage() {
               );
             })}
           </div>
+
+          <button
+            onClick={() => setShowAllVibes(!showAllVibes)}
+            className="mt-4 w-full rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+          >
+            {showAllVibes ? "Mostra meno vibe" : "Vedi altre vibe"}
+          </button>
         </section>
 
         <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
