@@ -49,32 +49,32 @@ const features = [
   {
     title: "Mood Check",
     href: "/explore",
-    description: "Scegli come ti senti e che atmosfera vuoi seguire.",
+    description: "Scegli come ti senti e l’atmosfera che vuoi seguire.",
   },
   {
     title: "Vibe Feed",
     href: "/feed",
-    description: "Scopri luoghi consigliati in base a mood e vibe.",
+    description: "Scopri luoghi filtrati in base a mood e vibe.",
   },
   {
     title: "Vibe Map",
     href: "/map",
-    description: "Esplora i posti su una mappa reale con filtri estetici.",
+    description: "Visualizza i luoghi su una mappa interattiva.",
   },
   {
     title: "Vibe Lists",
     href: "/vibe-lists",
-    description: "Sfoglia raccolte di luoghi costruite intorno a una vibe.",
+    description: "Crea raccolte personali di posti per atmosfera.",
   },
   {
-    title: "Vibe Route",
-    href: "/route",
-    description: "Guarda un itinerario demo con tappe e tempi stimati.",
+    title: "Moodboard",
+    href: "/moodboard",
+    description: "Salva i luoghi che vuoi ricordare o provare.",
   },
   {
-    title: "Premium",
-    href: "/premium",
-    description: "Visualizza la pagina demo del modello freemium.",
+    title: "Demo",
+    href: "/demo",
+    description: "Guarda il percorso consigliato per presentare il progetto.",
   },
 ];
 
@@ -92,17 +92,17 @@ export default function HomePage() {
     return query ? `/feed?${query}` : "/feed";
   }, [selectedMood, selectedVibe]);
 
-  const canExplore = selectedMood && selectedVibe;
+  const canExplore = Boolean(selectedMood && selectedVibe);
 
   return (
     <main className="min-h-screen bg-[#F4EFE5] text-[#0E3532]">
-      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
+      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[0.95fr_1.05fr] md:py-24">
         <div>
           <p className="mb-4 inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
             Mood-based city discovery
           </p>
 
-          <h1 className="max-w-xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
+          <h1 className="max-w-2xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
             Trova posti in base a come ti senti.
           </h1>
 
@@ -111,10 +111,41 @@ export default function HomePage() {
             <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
           </div>
 
-          <p className="mt-6 max-w-lg text-lg leading-8 text-[#425653]">
-            MoodScape ti aiuta a scoprire luoghi, percorsi e vibe nella tua
-            città partendo dal tuo mood e dall’atmosfera che vuoi vivere.
+          <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
+            MoodScape è una piattaforma B2C che aiuta le persone a scoprire
+            luoghi, percorsi urbani, locali, eventi e attività brevi partendo da
+            due elementi personali: come si sentono e che atmosfera vogliono
+            vivere.
           </p>
+
+          <div className="mt-8 grid gap-3 sm:grid-cols-3">
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
+              <p className="font-serif text-3xl font-bold text-[#2A160E]">
+                Mood
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#425653]">
+                Parti dallo stato emotivo.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
+              <p className="font-serif text-3xl font-bold text-[#2A160E]">
+                Vibe
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#425653]">
+                Scegli l’atmosfera.
+              </p>
+            </div>
+
+            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
+              <p className="font-serif text-3xl font-bold text-[#2A160E]">
+                Place
+              </p>
+              <p className="mt-2 text-sm leading-6 text-[#425653]">
+                Scopri luoghi coerenti.
+              </p>
+            </div>
+          </div>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
             <Link
@@ -161,10 +192,10 @@ export default function HomePage() {
                     <button
                       key={mood}
                       onClick={() => setSelectedMood(mood)}
-                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold ${
+                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
                         active
                           ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
-                          : "border-[#D8B77A]/30 bg-[#F4EFE5] text-[#0E3532]"
+                          : "border-[#D8B77A]/30 bg-[#F4EFE5] text-[#0E3532] hover:border-[#D8B77A]"
                       }`}
                     >
                       {mood}
@@ -187,10 +218,10 @@ export default function HomePage() {
                     <button
                       key={vibe}
                       onClick={() => setSelectedVibe(vibe)}
-                      className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] ${
+                      className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${
                         active
                           ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
-                          : "border-[#D8B77A] text-[#F4EFE5]"
+                          : "border-[#D8B77A] text-[#F4EFE5] hover:bg-[#F4EFE5] hover:text-[#0E3532]"
                       }`}
                     >
                       {vibe}
@@ -217,16 +248,16 @@ export default function HomePage() {
       <section className="mx-auto max-w-7xl px-6 pb-20">
         <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
           <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-            Demo app
+            Demo MVP
           </p>
 
           <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#2A160E] md:text-5xl">
-            Tutte le sezioni della demo.
+            Un flusso completo: scelta, scoperta, salvataggio e liste.
           </h2>
 
           <p className="mt-4 max-w-2xl leading-7 text-[#425653]">
-            Questa versione mostra il flusso principale dell’app: mood, feed,
-            mappa, liste, route, moodboard, profilo e premium.
+            La demo include autenticazione, database Supabase, feed filtrato,
+            mappa, moodboard personale e Vibe Lists modificabili.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
