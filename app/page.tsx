@@ -4,83 +4,44 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const moods = [
-  "Stressato",
-  "Annoiato",
-  "Curioso",
-  "Romantico",
-  "Energico",
-  "Introspettivo",
-  "Sociale",
-  "Creativo",
-  "Nostalgico",
-  "Avventuroso",
-  "Rilassato",
-  "In cerca di ispirazione",
-  "In cerca di comfort",
-  "In cerca di novità",
-  "Un po’ malinconico",
-  "Da solo ma non troppo",
-  "Con voglia di bellezza",
-  "Con voglia di muovermi",
+  { label: "Calm", value: "Rilassato", emoji: "🌿" },
+  { label: "Romantic", value: "Romantico", emoji: "🌙" },
+  { label: "Curious", value: "Curioso", emoji: "👀" },
+  { label: "Social", value: "Sociale", emoji: "🪩" },
+  { label: "Creative", value: "Creativo", emoji: "🎨" },
+  { label: "Nostalgic", value: "Nostalgico", emoji: "🎞️" },
 ];
 
 const vibes = [
-  "Dark academia",
   "Dolce vita",
-  "Quiet luxury",
-  "Vintage film",
-  "Neon nightlife",
-  "Romantic ruins",
-  "Cozy café",
-  "Art gallery mood",
-  "Old money",
+  "Dark academia",
   "Hidden garden",
-  "Bookshop afternoon",
-  "Rooftop sunset",
-  "Indie sleaze",
-  "Minimal chic",
-  "Spiritual retreat",
-  "Local authentic",
-  "Rainy day",
   "Golden hour walk",
+  "Art gallery mood",
+  "Neon nightlife",
 ];
 
-const features = [
+const previews = [
   {
-    title: "Mood Check",
-    href: "/explore",
-    description: "Scegli come ti senti e l’atmosfera che vuoi seguire.",
+    title: "Giardino degli Aranci",
+    meta: "Romantic · Dolce vita",
+    emoji: "🌇",
   },
   {
-    title: "Vibe Feed",
-    href: "/feed",
-    description: "Scopri luoghi filtrati in base a mood e vibe.",
+    title: "Biblioteca Angelica",
+    meta: "Curious · Dark academia",
+    emoji: "📚",
   },
   {
-    title: "Vibe Map",
-    href: "/map",
-    description: "Visualizza i luoghi su una mappa interattiva.",
-  },
-  {
-    title: "Vibe Lists",
-    href: "/vibe-lists",
-    description: "Crea raccolte personali di posti per atmosfera.",
-  },
-  {
-    title: "Moodboard",
-    href: "/moodboard",
-    description: "Salva i luoghi che vuoi ricordare o provare.",
-  },
-  {
-    title: "Demo",
-    href: "/demo",
-    description: "Guarda il percorso consigliato per presentare il progetto.",
+    title: "Villa Borghese",
+    meta: "Calm · Golden hour walk",
+    emoji: "🌿",
   },
 ];
 
 export default function HomePage() {
-  const [selectedMood, setSelectedMood] = useState("");
-  const [selectedVibe, setSelectedVibe] = useState("");
+  const [selectedMood, setSelectedMood] = useState("Romantico");
+  const [selectedVibe, setSelectedVibe] = useState("Dolce vita");
 
   const feedHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -88,197 +49,194 @@ export default function HomePage() {
     if (selectedMood) params.set("mood", selectedMood);
     if (selectedVibe) params.set("vibe", selectedVibe);
 
-    const query = params.toString();
-    return query ? `/feed?${query}` : "/feed";
+    return `/feed?${params.toString()}`;
   }, [selectedMood, selectedVibe]);
 
-  const canExplore = Boolean(selectedMood && selectedVibe);
-
   return (
-    <main className="min-h-screen bg-[#F4EFE5] text-[#0E3532]">
-      <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-[0.95fr_1.05fr] md:py-24">
-        <div>
-          <p className="mb-4 inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
-            Mood-based city discovery
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+      <div className="mx-auto max-w-md">
+        <section className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-[#7A7A73]">
+              Good afternoon
+            </p>
+            <h1 className="mt-1 text-2xl font-bold tracking-tight">
+              MoodScape
+            </h1>
+          </div>
+
+          <Link
+            href="/profile"
+            className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg shadow-sm ring-1 ring-black/5"
+          >
+            🌙
+          </Link>
+        </section>
+
+        <section className="mt-6 overflow-hidden rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
+          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
+            Mood based discovery
           </p>
 
-          <h1 className="max-w-2xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
-            Trova posti in base a come ti senti.
-          </h1>
-
-          <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-          </div>
-
-          <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
-                     </p>
-
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
-              <p className="font-serif text-3xl font-bold text-[#2A160E]">
-                Mood
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[#425653]">
-                Parti dallo stato emotivo.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
-              <p className="font-serif text-3xl font-bold text-[#2A160E]">
-                Vibe
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[#425653]">
-                Scegli l’atmosfera.
-              </p>
-            </div>
-
-            <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
-              <p className="font-serif text-3xl font-bold text-[#2A160E]">
-                Place
-              </p>
-              <p className="mt-2 text-sm leading-6 text-[#425653]">
-                Scopri luoghi coerenti.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link
-              href="/explore"
-              className="rounded-full bg-[#0E3532] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-            >
-              Apri Mood Check
-            </Link>
-
-            <Link
-              href={feedHref}
-              className={`rounded-full border px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] ${
-                canExplore
-                  ? "border-[#C99A57] bg-[#F8F2E8] text-[#0E3532]"
-                  : "pointer-events-none border-[#D8B77A]/60 bg-[#E8DDC8] text-[#0E3532]/40"
-              }`}
-            >
-              Mostrami i posti
-            </Link>
-          </div>
-
-          {canExplore && (
-            <p className="mt-5 text-sm font-semibold text-[#425653]">
-              Scelta attiva:{" "}
-              <span className="font-bold text-[#0E3532]">{selectedMood}</span>{" "}
-              +{" "}
-              <span className="font-bold text-[#0E3532]">{selectedVibe}</span>
-            </p>
-          )}
-        </div>
-
-        <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-2xl shadow-[#0E3532]/10">
-          <div className="rounded-[1.5rem] bg-[#0E3532] p-6 text-[#F4EFE5]">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-              Come ti senti oggi?
-            </p>
-
-            <div className="mt-5 max-h-72 overflow-y-auto pr-2">
-              <div className="grid grid-cols-2 gap-3">
-                {moods.map((mood) => {
-                  const active = selectedMood === mood;
-
-                  return (
-                    <button
-                      key={mood}
-                      onClick={() => setSelectedMood(mood)}
-                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold transition ${
-                        active
-                          ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
-                          : "border-[#D8B77A]/30 bg-[#F4EFE5] text-[#0E3532] hover:border-[#D8B77A]"
-                      }`}
-                    >
-                      {mood}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <p className="mt-8 text-sm font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-              Che vibe vuoi seguire?
-            </p>
-
-            <div className="mt-5 max-h-72 overflow-y-auto pr-2">
-              <div className="flex flex-wrap gap-2">
-                {vibes.map((vibe) => {
-                  const active = selectedVibe === vibe;
-
-                  return (
-                    <button
-                      key={vibe}
-                      onClick={() => setSelectedVibe(vibe)}
-                      className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition ${
-                        active
-                          ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
-                          : "border-[#D8B77A] text-[#F4EFE5] hover:bg-[#F4EFE5] hover:text-[#0E3532]"
-                      }`}
-                    >
-                      {vibe}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            <Link
-              href={feedHref}
-              className={`mt-8 block rounded-full px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] ${
-                canExplore
-                  ? "bg-[#D8B77A] text-[#0E3532]"
-                  : "pointer-events-none bg-[#F4EFE5]/20 text-[#F4EFE5]/40"
-              }`}
-            >
-              Continua con questa vibe
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-7xl px-6 pb-20">
-        <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
-          <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-            Demo MVP
-          </p>
-
-          <h2 className="mt-3 font-serif text-3xl font-bold tracking-tight text-[#2A160E] md:text-5xl">
-            Un flusso completo: scelta, scoperta, salvataggio e liste.
+          <h2 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight">
+            Find places by how you feel.
           </h2>
 
-          <p className="mt-4 max-w-2xl leading-7 text-[#425653]">
-            La demo include autenticazione, database Supabase, feed filtrato,
-            mappa, moodboard personale e Vibe Lists modificabili.
+          <p className="mt-4 text-base leading-7 text-white/70">
+            Choose a mood and a vibe. MoodScape turns them into places, events,
+            lists and community recommendations.
           </p>
 
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
-            {features.map((feature) => (
+          <Link
+            href={feedHref}
+            className="mt-7 flex items-center justify-center rounded-full bg-white px-6 py-4 text-sm font-bold text-[#111111]"
+          >
+            Show me places
+          </Link>
+        </section>
+
+        <section className="mt-7">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold tracking-tight">
+              How do you feel?
+            </h3>
+
+            <Link
+              href="/explore"
+              className="text-sm font-semibold text-[#7A7A73]"
+            >
+              See all
+            </Link>
+          </div>
+
+          <div className="mt-4 grid grid-cols-3 gap-3">
+            {moods.map((mood) => {
+              const active = selectedMood === mood.value;
+
+              return (
+                <button
+                  key={mood.value}
+                  onClick={() => setSelectedMood(mood.value)}
+                  className={`rounded-[1.5rem] p-4 text-left shadow-sm ring-1 transition ${
+                    active
+                      ? "bg-[#111111] text-white ring-[#111111]"
+                      : "bg-white text-[#111111] ring-black/5"
+                  }`}
+                >
+                  <div className="text-2xl">{mood.emoji}</div>
+                  <div className="mt-3 text-sm font-bold">{mood.label}</div>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-7">
+          <h3 className="text-lg font-bold tracking-tight">
+            Choose your vibe
+          </h3>
+
+          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+            {vibes.map((vibe) => {
+              const active = selectedVibe === vibe;
+
+              return (
+                <button
+                  key={vibe}
+                  onClick={() => setSelectedVibe(vibe)}
+                  className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold transition ${
+                    active
+                      ? "bg-[#111111] text-white"
+                      : "bg-white text-[#111111] shadow-sm ring-1 ring-black/5"
+                  }`}
+                >
+                  {vibe}
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold tracking-tight">
+                Your current match
+              </h3>
+              <p className="mt-1 text-sm font-medium text-[#7A7A73]">
+                {selectedMood} · {selectedVibe}
+              </p>
+            </div>
+
+            <Link
+              href={feedHref}
+              className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+            >
+              Open
+            </Link>
+          </div>
+        </section>
+
+        <section className="mt-7">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold tracking-tight">
+              Suggested places
+            </h3>
+
+            <Link href="/feed" className="text-sm font-semibold text-[#7A7A73]">
+              Feed
+            </Link>
+          </div>
+
+          <div className="mt-4 grid gap-3">
+            {previews.map((place) => (
               <Link
-                key={feature.href}
-                href={feature.href}
-                className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5 transition hover:-translate-y-1 hover:border-[#C99A57] hover:bg-[#0E3532] hover:text-[#F4EFE5]"
+                key={place.title}
+                href="/feed"
+                className="flex items-center gap-4 rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5"
               >
-                <h3 className="font-serif text-xl font-bold">
-                  {feature.title}
-                </h3>
+                <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.25rem] bg-[#F1F1EE] text-3xl">
+                  {place.emoji}
+                </div>
 
-                <p className="mt-3 text-sm leading-6 opacity-80">
-                  {feature.description}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <h4 className="truncate text-base font-bold">
+                    {place.title}
+                  </h4>
+                  <p className="mt-1 text-sm font-medium text-[#7A7A73]">
+                    {place.meta}
+                  </p>
+                </div>
 
-                <p className="mt-5 text-sm font-bold uppercase tracking-[0.14em]">
-                  Apri sezione →
-                </p>
+                <span className="text-xl text-[#7A7A73]">›</span>
               </Link>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
+
+        <section className="mt-7 grid grid-cols-3 gap-3 pb-10">
+          <Link
+            href="/community"
+            className="rounded-[1.5rem] bg-white p-4 text-center text-sm font-bold shadow-sm ring-1 ring-black/5"
+          >
+            Community
+          </Link>
+
+          <Link
+            href="/events"
+            className="rounded-[1.5rem] bg-white p-4 text-center text-sm font-bold shadow-sm ring-1 ring-black/5"
+          >
+            Events
+          </Link>
+
+          <Link
+            href="/map"
+            className="rounded-[1.5rem] bg-white p-4 text-center text-sm font-bold shadow-sm ring-1 ring-black/5"
+          >
+            Map
+          </Link>
+        </section>
+      </div>
     </main>
   );
 }
