@@ -23,6 +23,7 @@ function FeedContent() {
   const selectedVibe = searchParams.get("vibe");
 
   const [places, setPlaces] = useState<DbPlace[]>([]);
+  const [suggestedPlaces, setSuggestedPlaces] = useState<DbPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -30,6 +31,7 @@ function FeedContent() {
     async function loadPlaces() {
       setLoading(true);
       setMessage("");
+      setSuggestedPlaces([]);
 
       let query = supabase
         .from("places")
@@ -48,8 +50,28 @@ function FeedContent() {
 
       if (error) {
         setMessage(error.message);
-      } else {
-        setPlaces(data ?? []);
+        setLoading(false);
+        return;
+      }
+
+      const exactPlaces = data ?? [];
+      setPlaces(exactPlaces);
+
+      if (exactPlaces.length === 0 && (selectedMood || selectedVibe)) {
+        let suggestionQuery = supabase
+          .from("places")
+          .select("slug,name,city,area,mood,vibe,description,price,time")
+          .order("created_at", { ascending: true })
+          .limit(8);
+
+        if (selectedVibe) {
+          suggestionQuery = suggestionQuery.eq("vibe", selectedVibe);
+        } else if (selectedMood) {
+          suggestionQuery = suggestionQuery.eq("mood", selectedMood);
+        }
+
+        const { data: suggestions } = await suggestionQuery;
+        setSuggestedPlaces(suggestions ?? []);
       }
 
       setLoading(false);
@@ -61,20 +83,14 @@ function FeedContent() {
   const hasFilters = Boolean(selectedMood || selectedVibe);
 
   const filterText = useMemo(() => {
-    if (selectedMood && selectedVibe) {
-      return `${selectedMood} · ${selectedVibe}`;
-    }
-
-    if (selectedMood) {
-      return selectedMood;
-    }
-
-    if (selectedVibe) {
-      return selectedVibe;
-    }
-
+    if (selectedMood && selectedVibe) return `${selectedMood} · ${selectedVibe}`;
+    if (selectedMood) return selectedMood;
+    if (selectedVibe) return selectedVibe;
     return "Tutti i mood e tutte le vibe";
   }, [selectedMood, selectedVibe]);
+
+  const visiblePlaces = places.length > 0 ? places : suggestedPlaces;
+  const showingSuggestions = places.length === 0 && suggestedPlaces.length > 0;
 
   return (
     <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
@@ -95,8 +111,7 @@ function FeedContent() {
           </div>
 
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#425653]">
-            Il Feed legge i luoghi da Supabase e filtra in base alla scelta fatta
-            nella home.
+            Il Feed legge i luoghi da Supabase e filtra in base alla scelta fatta nella home.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -105,18 +120,12 @@ function FeedContent() {
             </div>
 
             {hasFilters && (
-              <Link
-                href="/feed"
-                className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
-              >
+              <Link href="/feed" className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]">
                 Rimuovi filtri
               </Link>
             )}
 
-            <Link
-              href="/"
-              className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
-            >
+            <Link href="/" className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]">
               Cambia mood
             </Link>
           </div>
@@ -134,28 +143,36 @@ function FeedContent() {
           </section>
         )}
 
-        {!loading && !message && places.length === 0 && (
+        {!loading && !message && places.length === 0 && suggestedPlaces.length === 0 && (
           <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
             <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
               Nessun luogo trovato per questa combinazione.
             </h2>
 
             <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-              Per ora il database ha pochi luoghi. Prova a rimuovere i filtri,
-              oppure scegli una vibe più vicina ai luoghi già inseriti.
+              Per ora il database ha pochi luoghi. Prova a rimuovere i filtri o scegli un’altra vibe.
             </p>
 
-            <Link
-              href="/feed"
-              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-            >
+            <Link href="/feed" className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]">
               Mostra tutti i luoghi
             </Link>
           </section>
         )}
 
+        {showingSuggestions && (
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Nessun match perfetto, ma questi sono vicini.
+            </h2>
+
+            <p className="mt-3 max-w-2xl leading-7 text-[#425653]">
+              MoodScape non ha ancora un posto con esattamente questa combinazione, quindi ti mostra luoghi con mood o vibe simili.
+            </p>
+          </section>
+        )}
+
         <section className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {places.map((place) => (
+          {visiblePlaces.map((place) => (
             <Link
               key={place.slug}
               href={`/place/${place.slug}`}
