@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { vibeLists } from "@/lib/mock-data";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type DbVibeList = {
   id: string;
@@ -19,15 +20,21 @@ export default function VibeListsPage() {
   const [dbLists, setDbLists] = useState<DbVibeList[]>([]);
   const [savedDemoTitles, setSavedDemoTitles] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function loadLists() {
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from("vibe_lists")
         .select("id,title,city,vibe,description,visibility,created_at")
         .order("created_at", { ascending: false });
 
-      setDbLists(data ?? []);
+      if (error) {
+        setMessage(error.message);
+      } else {
+        setDbLists(data ?? []);
+      }
+
       setLoading(false);
     }
 
@@ -81,11 +88,22 @@ export default function VibeListsPage() {
 
           {loading ? (
             <p className="mt-4 text-[#425653]">Caricamento liste reali...</p>
+          ) : message ? (
+            <div className="mt-5 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 font-bold text-[#2A160E]">
+              {message}
+            </div>
           ) : dbLists.length === 0 ? (
             <div className="mt-5 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
               <p className="text-[#425653]">
                 Non ci sono ancora Vibe Lists reali. Crea la prima lista.
               </p>
+
+              <Link
+                href="/vibe-lists/create"
+                className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              >
+                Crea lista
+              </Link>
             </div>
           ) : (
             <div className="mt-6 grid gap-6 md:grid-cols-3">
@@ -93,13 +111,9 @@ export default function VibeListsPage() {
                 <Link
                   key={list.id}
                   href={`/vibe-lists/${list.id}`}
-                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1"
+                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
                 >
-                  <div className="flex h-44 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                    <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                      {list.vibe}
-                    </span>
-                  </div>
+                  <PlaceVisual vibe={list.vibe} className="h-44" />
 
                   <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     {list.city} · {list.visibility}
@@ -136,11 +150,7 @@ export default function VibeListsPage() {
                   key={list.title}
                   className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
                 >
-                  <div className="flex h-44 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                    <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                      {list.vibe}
-                    </span>
-                  </div>
+                  <PlaceVisual vibe={list.vibe} className="h-44" />
 
                   <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     {list.city} · {list.places} posti
