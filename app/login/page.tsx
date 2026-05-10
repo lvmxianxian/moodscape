@@ -19,20 +19,27 @@ export default function LoginPage() {
     setLoading(true);
     setMessage("");
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
+      if (error) {
+        setMessage(error.message);
+        return;
+      }
 
-    if (error) {
-      setMessage(error.message);
-      return;
+      router.push("/profile");
+      router.refresh();
+    } catch (error) {
+      console.error("Errore login Supabase:", error);
+      setMessage(
+        "Impossibile contattare Supabase. Controlla URL, chiave API e connessione.",
+      );
+    } finally {
+      setLoading(false);
     }
-
-    router.push("/profile");
-    router.refresh();
   }
 
   return (
