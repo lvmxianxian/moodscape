@@ -4,7 +4,13 @@ import Link from "next/link";
 import { useState } from "react";
 import AuthButton from "./AuthButton";
 
-const mainLinks = [
+type NavLink = {
+  href: string;
+  label: string;
+  description?: string;
+};
+
+const mainLinks: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
@@ -12,11 +18,15 @@ const mainLinks = [
   { href: "/map", label: "Mappa" },
 ];
 
-const menuLinks = [
+const menuLinks: NavLink[] = [
   { href: "/explore", label: "Mood Check", description: "Scegli mood e vibe" },
   { href: "/vibe-lists", label: "Vibe Lists", description: "Raccolte e board" },
   { href: "/moodboard", label: "Moodboard", description: "Luoghi salvati" },
-  { href: "/profile", label: "Profilo", description: "Il tuo spazio personale" },
+  {
+    href: "/profile",
+    label: "Profilo",
+    description: "Il tuo spazio personale",
+  },
   { href: "/premium", label: "Premium", description: "Funzioni avanzate" },
   { href: "/demo", label: "Demo", description: "Presentazione MVP" },
 ];
@@ -89,7 +99,7 @@ export default function Navbar() {
                   {link.label}
                 </p>
 
-                {"description" in link && (
+                {link.description && (
                   <p className="mt-2 text-sm font-medium text-[#7A7A73]">
                     {link.description}
                   </p>
