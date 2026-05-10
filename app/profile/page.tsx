@@ -3,10 +3,19 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import { places } from "@/lib/mock-data";
 
 type SavedPlaceRow = {
   place_slug: string;
+};
+
+type DbPlace = {
+  slug: string;
+  name: string;
+  city: string;
+  area: string;
+  mood: string;
+  vibe: string;
+  description: string;
 };
 
 type DbVibeList = {
@@ -21,9 +30,10 @@ type DbVibeList = {
 
 export default function ProfilePage() {
   const [email, setEmail] = useState<string | null>(null);
-  const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
+  const [savedPlaces, setSavedPlaces] = useState<DbPlace[]>([]);
   const [createdLists, setCreatedLists] = useState<DbVibeList[]>([]);
   const [loading, setLoading] = useState(true);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     async function loadProfileData() {
@@ -39,30 +49,56 @@ export default function ProfilePage() {
 
       setEmail(session.user.email ?? null);
 
-      const { data: savedData } = await supabase
+      const { data: savedData, error: savedError } = await supabase
         .from("saved_places")
         .select("place_slug")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
-      const { data: listData } = await supabase
+      if (savedError) {
+        setMessage(savedError.message);
+        setLoading(false);
+        return;
+      }
+
+      const slugs = savedData
+        ? savedData.map((row: SavedPlaceRow) => row.place_slug)
+        : [];
+
+      if (slugs.length > 0) {
+        const { data: placesData, error: placesError } = await supabase
+          .from("places")
+          .select("slug,name,city,area,mood,vibe,description")
+          .in("slug", slugs);
+
+        if (placesError) {
+          setMessage(placesError.message);
+        } else {
+          const orderedPlaces = slugs
+            .map((slug) => placesData?.find((place) => place.slug === slug))
+            .filter(Boolean) as DbPlace[];
+
+          setSavedPlaces(orderedPlaces);
+        }
+      }
+
+      const { data: listData, error: listError } = await supabase
         .from("vibe_lists")
         .select("id,title,city,vibe,description,visibility,created_at")
         .eq("user_id", session.user.id)
         .order("created_at", { ascending: false });
 
-      setSavedSlugs(
-        savedData ? savedData.map((row: SavedPlaceRow) => row.place_slug) : [],
-      );
+      if (listError) {
+        setMessage(listError.message);
+      } else {
+        setCreatedLists(listData ?? []);
+      }
 
-      setCreatedLists(listData ?? []);
       setLoading(false);
     }
 
     loadProfileData();
   }, []);
-
-  const savedPlaces = places.filter((place) => savedSlugs.includes(place.slug));
 
   const favoriteVibes = Array.from(
     new Set(savedPlaces.map((place) => place.vibe)),
@@ -93,11 +129,6 @@ export default function ProfilePage() {
           <h1 className="mt-5 font-serif text-4xl font-bold tracking-tight text-[#2A160E] md:text-6xl">
             Accedi per vedere il tuo profilo.
           </h1>
-
-          <div className="mt-6 flex items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-          </div>
 
           <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
             Il profilo è collegato a Supabase. Quando accedi, MoodScape mostra i
@@ -140,7 +171,7 @@ export default function ProfilePage() {
                 </p>
 
                 <h1 className="mt-3 font-serif text-4xl font-bold tracking-tight text-[#2A160E]">
-                  Valeria
+                  Il tuo profilo
                 </h1>
 
                 <p className="mt-2 text-sm font-bold text-[#0E3532]">
@@ -148,8 +179,8 @@ export default function ProfilePage() {
                 </p>
 
                 <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-                  Questo profilo ora legge dati reali da Supabase: luoghi salvati
-                  e Vibe Lists create dall’utente loggato.
+                  Questo profilo legge dati reali da Supabase: luoghi salvati e
+                  Vibe Lists create dall’utente loggato.
                 </p>
               </div>
             </div>
@@ -161,6 +192,12 @@ export default function ProfilePage() {
               Apri moodboard
             </Link>
           </div>
+
+          {message && (
+            <div className="mt-6 rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 text-sm font-bold text-[#2A160E]">
+              {message}
+            </div>
+          )}
 
           <div className="mt-8 grid gap-4 sm:grid-cols-4">
             <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
