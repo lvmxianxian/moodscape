@@ -29,56 +29,97 @@ function FeedContent() {
   const [message, setMessage] = useState("");
 
   useEffect(() => {
+    let cancelled = false;
+
+    const timeout = window.setTimeout(() => {
+      if (!cancelled) {
+        setLoading(false);
+        setMessage(
+          "Il caricamento sta impiegando troppo tempo. Controlla che la tabella places esista su Supabase e che le variabili Vercel siano corrette.",
+        );
+      }
+    }, 7000);
+
     async function loadPlaces() {
       setLoading(true);
       setMessage("");
+      setPlaces([]);
       setSuggestedPlaces([]);
 
-      let query = supabase
-        .from("places")
-        .select("slug,name,city,area,mood,vibe,description,price,time")
-        .order("created_at", { ascending: true });
-
-      if (selectedMood) {
-        query = query.eq("mood", selectedMood);
-      }
-
-      if (selectedVibe) {
-        query = query.eq("vibe", selectedVibe);
-      }
-
-      const { data, error } = await query;
-
-      if (error) {
-        setMessage(error.message);
-        setLoading(false);
-        return;
-      }
-
-      const exactPlaces = data ?? [];
-      setPlaces(exactPlaces);
-
-      if (exactPlaces.length === 0 && (selectedMood || selectedVibe)) {
-        let suggestionQuery = supabase
+      try {
+        let query = supabase
           .from("places")
           .select("slug,name,city,area,mood,vibe,description,price,time")
-          .order("created_at", { ascending: true })
-          .limit(8);
+          .order("created_at", { ascending: true });
 
-        if (selectedVibe) {
-          suggestionQuery = suggestionQuery.eq("vibe", selectedVibe);
-        } else if (selectedMood) {
-          suggestionQuery = suggestionQuery.eq("mood", selectedMood);
+        if (selectedMood) {
+          query = query.eq("mood", selectedMood);
         }
 
-        const { data: suggestions } = await suggestionQuery;
-        setSuggestedPlaces(suggestions ?? []);
-      }
+        if (selectedVibe) {
+          query = query.eq("vibe", selectedVibe);
+        }
 
-      setLoading(false);
+        const { data, error } = await query;
+
+        if (cancelled) return;
+
+        if (error) {
+          setMessage(error.message);
+          return;
+        }
+
+        const exactPlaces = data ?? [];
+        setPlaces(exactPlaces);
+
+        if (exactPlaces.length === 0 && (selectedMood || selectedVibe)) {
+          let suggestionQuery = supabase
+            .from("places")
+            .select("slug,name,city,area,mood,vibe,description,price,time")
+            .order("created_at", { ascending: true })
+            .limit(8);
+
+          if (selectedVibe) {
+            suggestionQuery = suggestionQuery.eq("vibe", selectedVibe);
+          } else if (selectedMood) {
+            suggestionQuery = suggestionQuery.eq("mood", selectedMood);
+          }
+
+          const { data: suggestions, error: suggestionError } =
+            await suggestionQuery;
+
+          if (cancelled) return;
+
+          if (suggestionError) {
+            setMessage(suggestionError.message);
+            return;
+          }
+
+          setSuggestedPlaces(suggestions ?? []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setMessage(
+            error instanceof Error
+              ? error.message
+              : "Errore durante il caricamento dei luoghi.",
+          );
+        }
+      } finally {
+        window.clearTimeout(timeout);
+
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
     }
 
     loadPlaces();
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeout);
+    };
   }, [selectedMood, selectedVibe]);
 
   const hasFilters = Boolean(selectedMood || selectedVibe);
@@ -145,9 +186,22 @@ function FeedContent() {
           </section>
         )}
 
-        {message && (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 font-bold text-[#2A160E]">
-            {message}
+        {!loading && message && (
+          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+              Errore nel caricamento dei luoghi.
+            </h2>
+
+            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
+              {message}
+            </p>
+
+            <Link
+              href="/feed"
+              className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+            >
+              Riprova
+            </Link>
           </section>
         )}
 
@@ -157,12 +211,12 @@ function FeedContent() {
           suggestedPlaces.length === 0 && (
             <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
               <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-                Nessun luogo trovato per questa combinazione.
+                Nessun luogo trovato.
               </h2>
 
               <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-                Per ora il database ha pochi luoghi. Prova a rimuovere i filtri
-                o scegli un’altra vibe.
+                Non ci sono luoghi disponibili per questa selezione. Prova senza
+                filtri oppure aggiungi più luoghi nella tabella places.
               </p>
 
               <Link
@@ -174,7 +228,7 @@ function FeedContent() {
             </section>
           )}
 
-        {showingSuggestions && (
+        {!loading && !message && showingSuggestions && (
           <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
             <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
               Nessun match perfetto, ma questi sono vicini.
@@ -187,41 +241,43 @@ function FeedContent() {
           </section>
         )}
 
-        <section className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {visiblePlaces.map((place) => (
-            <Link
-              key={place.slug}
-              href={`/place/${place.slug}`}
-              className="group overflow-hidden rounded-[2rem] border border-[#D8B77A]/40 bg-[#F8F2E8] p-4 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
-            >
-              <PlaceVisual vibe={place.vibe} />
+        {!loading && !message && visiblePlaces.length > 0 && (
+          <section className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {visiblePlaces.map((place) => (
+              <Link
+                key={place.slug}
+                href={`/place/${place.slug}`}
+                className="group overflow-hidden rounded-[2rem] border border-[#D8B77A]/40 bg-[#F8F2E8] p-4 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
+              >
+                <PlaceVisual vibe={place.vibe} />
 
-              <div className="mt-5">
-                <div className="flex items-start justify-between gap-3">
-                  <h2 className="font-serif text-2xl font-bold text-[#2A160E]">
-                    {place.name}
-                  </h2>
+                <div className="mt-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <h2 className="font-serif text-2xl font-bold text-[#2A160E]">
+                      {place.name}
+                    </h2>
 
-                  <span className="rounded-full border border-[#D8B77A] px-3 py-1 text-xs font-bold text-[#0E3532]">
-                    {place.price}
-                  </span>
+                    <span className="rounded-full border border-[#D8B77A] px-3 py-1 text-xs font-bold text-[#0E3532]">
+                      {place.price}
+                    </span>
+                  </div>
+
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                    {place.city} · {place.mood} · {place.time}
+                  </p>
+
+                  <p className="mt-4 text-sm leading-6 text-[#425653]">
+                    {place.description}
+                  </p>
+
+                  <p className="mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] transition group-hover:text-[#C99A57]">
+                    Apri dettaglio →
+                  </p>
                 </div>
-
-                <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                  {place.city} · {place.mood} · {place.time}
-                </p>
-
-                <p className="mt-4 text-sm leading-6 text-[#425653]">
-                  {place.description}
-                </p>
-
-                <p className="mt-5 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] transition group-hover:text-[#C99A57]">
-                  Apri dettaglio →
-                </p>
-              </div>
-            </Link>
-          ))}
-        </section>
+              </Link>
+            ))}
+          </section>
+        )}
       </div>
     </main>
   );
