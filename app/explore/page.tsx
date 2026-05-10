@@ -4,50 +4,56 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 
 const moods = [
-  { id: "Stressato", label: "Stressato", emoji: "🌫️" },
-  { id: "Annoiato", label: "Annoiato", emoji: "🫠" },
-  { id: "Curioso", label: "Curioso", emoji: "👀" },
-  { id: "Romantico", label: "Romantico", emoji: "🌹" },
-  { id: "Energico", label: "Energico", emoji: "⚡" },
-  { id: "Introspettivo", label: "Introspettivo", emoji: "🌙" },
+  { id: "Stressato", label: "Stressata", emoji: "🌫️" },
+  { id: "Annoiato", label: "Annoiata", emoji: "🫠" },
+  { id: "Curioso", label: "Curiosa", emoji: "👀" },
+  { id: "Romantico", label: "Romantica", emoji: "🌙" },
+  { id: "Energico", label: "Energica", emoji: "⚡" },
+  { id: "Introspettivo", label: "Introspettiva", emoji: "🌌" },
   { id: "Sociale", label: "Sociale", emoji: "🪩" },
-  { id: "Creativo", label: "Creativo", emoji: "🎨" },
-  { id: "Nostalgico", label: "Nostalgico", emoji: "🎞️" },
-  { id: "Avventuroso", label: "Avventuroso", emoji: "🧭" },
-  { id: "Rilassato", label: "Rilassato", emoji: "🍃" },
+  { id: "Creativo", label: "Creativa", emoji: "🎨" },
+  { id: "Nostalgico", label: "Nostalgica", emoji: "🎞️" },
+  { id: "Avventuroso", label: "Avventurosa", emoji: "🧭" },
+  { id: "Rilassato", label: "Rilassata", emoji: "🌿" },
   { id: "In cerca di ispirazione", label: "In cerca di ispirazione", emoji: "✨" },
   { id: "In cerca di comfort", label: "In cerca di comfort", emoji: "☕" },
   { id: "In cerca di novità", label: "In cerca di novità", emoji: "🗝️" },
-  { id: "Un po’ malinconico", label: "Un po’ malinconico", emoji: "🌧️" },
-  { id: "Da solo ma non troppo", label: "Da solo ma non troppo", emoji: "🕯️" },
+  { id: "Un po’ malinconico", label: "Un po’ malinconica", emoji: "🌧️" },
+  { id: "Da solo ma non troppo", label: "Da sola ma non troppo", emoji: "🕯️" },
   { id: "Con voglia di bellezza", label: "Con voglia di bellezza", emoji: "🏛️" },
   { id: "Con voglia di muovermi", label: "Con voglia di muovermi", emoji: "🚶" },
 ];
 
 const vibes = [
-  "Dark academia",
   "Dolce vita",
-  "Quiet luxury",
-  "Vintage film",
-  "Neon nightlife",
-  "Romantic ruins",
-  "Cozy café",
-  "Art gallery mood",
-  "Old money",
+  "Dark academia",
   "Hidden garden",
+  "Golden hour walk",
+  "Art gallery mood",
+  "Neon nightlife",
+  "Cozy café",
+  "Old money",
+  "Romantic ruins",
   "Bookshop afternoon",
   "Rooftop sunset",
+  "Quiet luxury",
+  "Vintage film",
   "Indie sleaze",
   "Minimal chic",
-  "Spiritual retreat",
-  "Local authentic",
   "Rainy day",
-  "Golden hour walk",
+  "Local authentic",
+  "Spiritual retreat",
+  "Secret garden",
+  "Soft nightlife",
+  "Museum date",
+  "City break",
+  "Slow morning",
+  "Sunset walk",
 ];
 
 export default function ExplorePage() {
-  const [selectedMood, setSelectedMood] = useState("");
-  const [selectedVibe, setSelectedVibe] = useState("");
+  const [selectedMood, setSelectedMood] = useState("Romantico");
+  const [selectedVibe, setSelectedVibe] = useState("Dolce vita");
 
   const feedHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -55,42 +61,49 @@ export default function ExplorePage() {
     if (selectedMood) params.set("mood", selectedMood);
     if (selectedVibe) params.set("vibe", selectedVibe);
 
-    const query = params.toString();
-    return query ? `/feed?${query}` : "/feed";
+    return `/feed?${params.toString()}`;
   }, [selectedMood, selectedVibe]);
 
-  const canContinue = selectedMood && selectedVibe;
-
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
-      <div className="mx-auto max-w-7xl">
-        <section className="mt-8">
-          <p className="inline-flex rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
-            Mood Check
-          </p>
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+      <div className="mx-auto max-w-5xl">
+        <section className="flex items-start justify-between gap-4">
+          <div>
+            <p className="text-sm font-semibold text-[#7A7A73]">
+              Mood Check
+            </p>
 
-          <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
-            Scegli mood e atmosfera.
-          </h1>
+            <h1 className="mt-2 max-w-3xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+              Scegli come ti senti e che vibe vuoi seguire.
+            </h1>
 
-          <div className="mt-6 flex max-w-3xl items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+            <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
+              MoodScape usa questa combinazione per filtrare luoghi, eventi e
+              contenuti della community.
+            </p>
           </div>
 
-          <p className="mt-6 max-w-2xl text-lg leading-8 text-[#425653]">
-            Seleziona come ti senti e la vibe che vuoi seguire. MoodScape userà
-            questa combinazione per filtrare il Feed e mostrarti posti più
-            coerenti.
-          </p>
+          <Link
+            href="/"
+            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-xl shadow-sm ring-1 ring-black/5"
+          >
+            ←
+          </Link>
         </section>
 
-        <section className="mt-12">
-          <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-            1. Come ti senti oggi?
-          </h2>
+        <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">
+                Come ti senti?
+              </h2>
+              <p className="mt-1 text-sm font-medium text-[#7A7A73]">
+                {moods.length} opzioni disponibili
+              </p>
+            </div>
+          </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
             {moods.map((mood) => {
               const active = selectedMood === mood.id;
 
@@ -98,35 +111,33 @@ export default function ExplorePage() {
                 <button
                   key={mood.id}
                   onClick={() => setSelectedMood(mood.id)}
-                  className={`rounded-[2rem] border p-5 text-left transition ${
+                  className={`rounded-[1.5rem] p-4 text-left shadow-sm ring-1 transition ${
                     active
-                      ? "border-[#C99A57] bg-[#0E3532] text-[#F4EFE5] shadow-xl shadow-[#0E3532]/20"
-                      : "border-[#D8B77A]/50 bg-[#F8F2E8] text-[#0E3532] hover:border-[#C99A57]"
+                      ? "bg-[#111111] text-white ring-[#111111]"
+                      : "bg-[#F7F7F5] text-[#111111] ring-black/5 hover:bg-white"
                   }`}
                 >
-                  <div className="text-4xl">{mood.emoji}</div>
-
-                  <div className="mt-5 text-lg font-bold">{mood.label}</div>
-
-                  <p
-                    className={`mt-2 text-sm leading-6 ${
-                      active ? "text-[#F4EFE5]/75" : "text-[#425653]"
-                    }`}
-                  >
-                    Usa questo mood per personalizzare la selezione di luoghi.
-                  </p>
+                  <div className="text-2xl">{mood.emoji}</div>
+                  <div className="mt-3 text-sm font-bold">{mood.label}</div>
                 </button>
               );
             })}
           </div>
         </section>
 
-        <section className="mt-14">
-          <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-            2. Che vibe vuoi seguire?
-          </h2>
+        <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl font-bold tracking-tight">
+                Che aesthetic vuoi?
+              </h2>
+              <p className="mt-1 text-sm font-medium text-[#7A7A73]">
+                {vibes.length} vibe visibili, su più righe
+              </p>
+            </div>
+          </div>
 
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 flex flex-wrap gap-2">
             {vibes.map((vibe) => {
               const active = selectedVibe === vibe;
 
@@ -134,46 +145,33 @@ export default function ExplorePage() {
                 <button
                   key={vibe}
                   onClick={() => setSelectedVibe(vibe)}
-                  className={`rounded-[2rem] border p-5 text-left transition ${
+                  className={`rounded-full px-4 py-3 text-sm font-bold transition ${
                     active
-                      ? "border-[#C99A57] bg-[#2A160E] text-[#F4EFE5] shadow-xl shadow-[#2A160E]/20"
-                      : "border-[#D8B77A]/50 bg-[#F8F2E8] text-[#0E3532] hover:border-[#C99A57]"
+                      ? "bg-[#111111] text-white"
+                      : "bg-[#F7F7F5] text-[#111111] shadow-sm ring-1 ring-black/5 hover:bg-white"
                   }`}
                 >
-                  <div className="text-lg font-bold">{vibe}</div>
-
-                  <p
-                    className={`mt-3 text-sm leading-6 ${
-                      active ? "text-[#F4EFE5]/75" : "text-[#425653]"
-                    }`}
-                  >
-                    Scopri posti coerenti con questa atmosfera.
-                  </p>
+                  {vibe}
                 </button>
               );
             })}
           </div>
         </section>
 
-        <section className="sticky bottom-6 mt-14 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-4 shadow-2xl shadow-[#0E3532]/10">
+        <section className="sticky bottom-5 mt-7 rounded-[2rem] bg-white p-4 shadow-xl shadow-black/10 ring-1 ring-black/5">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#C99A57]">
+              <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
                 Scelta attiva
               </p>
-
-              <p className="mt-1 text-sm font-bold text-[#0E3532]">
-                {selectedMood || "Nessun mood"} · {selectedVibe || "Nessuna vibe"}
+              <p className="mt-1 text-base font-bold text-[#111111]">
+                {selectedMood} · {selectedVibe}
               </p>
             </div>
 
             <Link
-              href={canContinue ? feedHref : "#"}
-              className={`rounded-full px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.16em] ${
-                canContinue
-                  ? "bg-[#0E3532] text-[#F4EFE5]"
-                  : "pointer-events-none bg-[#E5D8C3] text-[#0E3532]/40"
-              }`}
+              href={feedHref}
+              className="rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
             >
               Mostrami i posti
             </Link>
