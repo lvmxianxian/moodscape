@@ -23,6 +23,7 @@ const routes = [
     area: "Aventino · Trastevere",
     description:
       "Un percorso lento tra viste panoramiche, strade morbide e tappe perfette per una serata romantica.",
+    image: "/places/giardino-aranci.webp",
   },
   {
     slug: "dark-academia-walk",
@@ -41,6 +42,7 @@ const routes = [
     area: "Centro storico",
     description:
       "Biblioteche, cortili silenziosi, librerie e caffè raccolti per una giornata più intima e letteraria.",
+    image: "/places/biblioteca-angelica.jpg",
   },
   {
     slug: "hidden-garden-route",
@@ -53,6 +55,7 @@ const routes = [
     area: "Pinciano · Villa Borghese",
     description:
       "Giardini, cortili verdi e luoghi tranquilli dove respirare lontano dal caos della città.",
+    image: "/places/villa-borghese.jpg",
   },
   {
     slug: "golden-hour-photo-walk",
@@ -65,6 +68,7 @@ const routes = [
     area: "Villa Borghese · Pincio",
     description:
       "Un percorso fotografico pensato per la luce più bella della giornata, con tappe panoramiche e visuali.",
+    image: "/places/chiostro-bramante.png",
   },
   {
     slug: "neon-nightlife-route",
@@ -83,6 +87,7 @@ const routes = [
     area: "Monti · Centro",
     description:
       "Una serata guidata tra luci, drink, locali e tappe sociali senza finire nel caos totale.",
+    image: "/places/galleria-sciarra.jpg",
   },
 ];
 
@@ -273,7 +278,7 @@ export default function RouteDetailPage() {
         <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
             <PlaceImage
-              imageUrl={null}
+              imageUrl={route.image}
               name={route.title}
               vibe={route.vibe}
               className="min-h-[360px]"

@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PlaceImage from "@/components/PlaceImage";
+import ReportButton from "@/components/ReportButton";
 
 type DbEvent = {
   id: string;
@@ -378,6 +379,15 @@ export default function EventDetailPage() {
             >
               Apri community
             </Link>
+
+            <div className="mt-5 flex justify-end">
+              <ReportButton
+                targetType="event"
+                targetId={event.slug}
+                variant="link"
+                label="Segnala evento"
+              />
+            </div>
           </aside>
         </section>
 

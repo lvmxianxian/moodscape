@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import PlaceImage from "@/components/PlaceImage";
+import ReportButton from "@/components/ReportButton";
 
 type CommunityList = {
   id: string;
@@ -644,13 +645,6 @@ export default function CommunityPage() {
                 const saved = isSaved(post.id);
                 const followed = isFollowing(post.handle);
                 const realComments = getPostComments(post.id);
-                const allPreviewComments = [
-                  ...post.commentsPreview,
-                  ...realComments.map((comment) => ({
-                    author: comment.author_name,
-                    text: comment.body,
-                  })),
-                ];
 
                 return (
                   <article
@@ -738,6 +732,15 @@ export default function CommunityPage() {
                         </Link>
                       </div>
 
+                      <div className="mt-3 flex justify-end">
+                        <ReportButton
+                          targetType="post"
+                          targetId={post.id}
+                          variant="link"
+                          label="Segnala post"
+                        />
+                      </div>
+
                       <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
                         <p className="text-sm font-bold text-[#7A7A73]">
                           Commenti ·{" "}
@@ -745,14 +748,33 @@ export default function CommunityPage() {
                         </p>
 
                         <div className="mt-4 grid gap-3">
-                          {allPreviewComments.map((comment, index) => (
-                            <div key={`${post.id}-${comment.author}-${index}`}>
+                          {post.commentsPreview.map((comment, index) => (
+                            <div key={`${post.id}-preview-${index}`}>
                               <p className="text-sm font-bold">
                                 {comment.author}
                               </p>
                               <p className="mt-1 text-sm leading-6 text-[#55554F]">
                                 {comment.text}
                               </p>
+                            </div>
+                          ))}
+
+                          {realComments.map((comment) => (
+                            <div key={comment.id}>
+                              <p className="text-sm font-bold">
+                                {comment.author_name}
+                              </p>
+                              <p className="mt-1 text-sm leading-6 text-[#55554F]">
+                                {comment.body}
+                              </p>
+                              <div className="mt-1 flex justify-end">
+                                <ReportButton
+                                  targetType="comment"
+                                  targetId={comment.id}
+                                  variant="link"
+                                  label="Segnala commento"
+                                />
+                              </div>
                             </div>
                           ))}
                         </div>

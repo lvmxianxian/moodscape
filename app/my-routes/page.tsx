@@ -18,10 +18,20 @@ type SavedRoute = {
   created_at: string;
 };
 
+type CreatedRoute = {
+  id: string;
+  title: string;
+  description: string | null;
+  vibe: string | null;
+  mood: string | null;
+  created_at: string;
+};
+
 export default function MyRoutesPage() {
   const [email, setEmail] = useState<string | null>(null);
   const [purchases, setPurchases] = useState<RoutePurchase[]>([]);
   const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [createdRoutes, setCreatedRoutes] = useState<CreatedRoute[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
@@ -66,8 +76,21 @@ export default function MyRoutesPage() {
         return;
       }
 
+      const { data: createdData, error: createdError } = await supabase
+        .from("user_routes")
+        .select("id,title,description,vibe,mood,created_at")
+        .eq("user_id", session.user.id)
+        .order("created_at", { ascending: false });
+
+      if (createdError) {
+        setMessage(createdError.message);
+        setLoading(false);
+        return;
+      }
+
       setPurchases(purchaseData ?? []);
       setSavedRoutes(savedData ?? []);
+      setCreatedRoutes(createdData ?? []);
       setLoading(false);
     }
 
@@ -97,7 +120,8 @@ export default function MyRoutesPage() {
           </h1>
 
           <p className="mt-4 leading-7 text-[#55554F]">
-            Qui troverai i percorsi acquistati e quelli salvati.
+            Qui troverai i percorsi acquistati, quelli salvati e quelli creati
+            da te.
           </p>
 
           <div className="mt-6 grid gap-3">
@@ -120,6 +144,8 @@ export default function MyRoutesPage() {
     );
   }
 
+  const total = purchases.length + savedRoutes.length + createdRoutes.length;
+
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
@@ -135,8 +161,8 @@ export default function MyRoutesPage() {
               </h1>
 
               <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
-                Ritrova i percorsi che hai acquistato o salvato. Da qui puoi
-                riaprirli e usarli quando vuoi.
+                Ritrova i percorsi che hai acquistato, salvato o creato a
+                partire dalle tue Vibe List.
               </p>
             </div>
 
@@ -148,7 +174,7 @@ export default function MyRoutesPage() {
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
+          <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
             <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
               <p className="text-2xl font-bold">{purchases.length}</p>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
@@ -164,9 +190,14 @@ export default function MyRoutesPage() {
             </div>
 
             <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
-              <p className="text-2xl font-bold">
-                {purchases.length + savedRoutes.length}
+              <p className="text-2xl font-bold">{createdRoutes.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Creati
               </p>
+            </div>
+
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{total}</p>
               <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
                 Totale
               </p>
@@ -176,6 +207,76 @@ export default function MyRoutesPage() {
           {message && (
             <div className="mt-5 rounded-[1.5rem] bg-white p-4 text-sm font-semibold text-[#55554F] shadow-sm ring-1 ring-black/5">
               {message}
+            </div>
+          )}
+        </section>
+
+        <section className="mx-auto mt-8 max-w-md lg:max-w-7xl">
+          <div className="flex items-center justify-between">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Percorsi creati
+            </h2>
+
+            <Link href="/vibe-lists" className="text-sm font-bold text-[#7A7A73]">
+              Vibe Lists
+            </Link>
+          </div>
+
+          {createdRoutes.length === 0 ? (
+            <div className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <h3 className="text-2xl font-bold tracking-tight">
+                Non hai ancora creato percorsi.
+              </h3>
+
+              <p className="mt-3 leading-7 text-[#55554F]">
+                Apri una delle tue Vibe Lists e clicca “Crea percorso” per
+                trasformarla in un itinerario.
+              </p>
+
+              <Link
+                href="/vibe-lists"
+                className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
+              >
+                Apri Vibe Lists
+              </Link>
+            </div>
+          ) : (
+            <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              {createdRoutes.map((route) => (
+                <Link
+                  key={route.id}
+                  href={`/my-routes/${route.id}`}
+                  className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10"
+                >
+                  <PlaceImage
+                    imageUrl={null}
+                    name={route.title}
+                    vibe={route.vibe ?? "Percorso creato"}
+                    className="h-52"
+                  />
+
+                  <div className="p-2 pt-5">
+                    <p className="text-sm font-semibold text-[#7A7A73]">
+                      Percorso creato
+                      {route.vibe ? ` · ${route.vibe}` : ""}
+                    </p>
+
+                    <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                      {route.title}
+                    </h3>
+
+                    {route.description && (
+                      <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#55554F]">
+                        {route.description}
+                      </p>
+                    )}
+
+                    <p className="mt-5 text-sm font-bold text-[#111111]">
+                      Apri percorso →
+                    </p>
+                  </div>
+                </Link>
+              ))}
             </div>
           )}
         </section>

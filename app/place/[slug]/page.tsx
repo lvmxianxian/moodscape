@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 import AddToVibeListButton from "@/components/AddToVibeListButton";
 import PlaceImage from "@/components/PlaceImage";
+import ReportButton from "@/components/ReportButton";
 
 type DbPlace = {
   slug: string;
@@ -159,6 +160,15 @@ export default function PlaceDetailPage() {
             >
               Vedi sulla mappa
             </Link>
+
+            <div className="mt-5 flex justify-end">
+              <ReportButton
+                targetType="place"
+                targetId={place.slug}
+                variant="link"
+                label="Segnala luogo"
+              />
+            </div>
           </aside>
         </section>
 
