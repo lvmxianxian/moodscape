@@ -2,12 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import dynamic from "next/dynamic";
 import { supabase } from "@/lib/supabase";
-
-const MapView = dynamic(() => import("@/components/MapView"), {
-  ssr: false,
-});
 
 type DbPlace = {
   slug: string;
@@ -150,8 +145,55 @@ export default function MapPage() {
         {!loading && !message && (
           <section className="mx-auto mt-6 grid max-w-md gap-5 lg:max-w-7xl lg:grid-cols-[1fr_380px]">
             <div className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
-              <div className="h-[560px] overflow-hidden rounded-[1.5rem] bg-[#EDEDE8]">
-                <MapView places={filteredPlaces} />
+              <div className="relative min-h-[560px] overflow-hidden rounded-[1.5rem] bg-[#EDEDE8]">
+                <div className="absolute inset-0 opacity-60">
+                  <div className="absolute left-8 top-20 h-[620px] w-4 rotate-45 rounded-full bg-white" />
+                  <div className="absolute left-40 top-[-40px] h-[760px] w-4 -rotate-12 rounded-full bg-white" />
+                  <div className="absolute right-20 top-10 h-[760px] w-4 rotate-[28deg] rounded-full bg-white" />
+                  <div className="absolute left-0 top-72 h-4 w-full rounded-full bg-white" />
+                  <div className="absolute left-0 top-40 h-3 w-full -rotate-6 rounded-full bg-white" />
+                  <div className="absolute left-0 bottom-32 h-3 w-full rotate-3 rounded-full bg-white" />
+                </div>
+
+                <div className="absolute inset-0 p-6">
+                  <div className="rounded-[1.5rem] bg-white/80 p-4 backdrop-blur">
+                    <p className="text-sm font-bold text-[#7A7A73]">
+                      Vista mappa
+                    </p>
+                    <p className="mt-1 text-xl font-bold">
+                      {filteredPlaces.length} luoghi visibili
+                    </p>
+                  </div>
+
+                  {filteredPlaces.slice(0, 10).map((place, index) => {
+                    const positions = [
+                      ["18%", "28%"],
+                      ["52%", "22%"],
+                      ["72%", "40%"],
+                      ["30%", "55%"],
+                      ["58%", "62%"],
+                      ["80%", "72%"],
+                      ["20%", "78%"],
+                      ["44%", "42%"],
+                      ["66%", "84%"],
+                      ["36%", "18%"],
+                    ];
+
+                    const [left, top] = positions[index % positions.length];
+
+                    return (
+                      <Link
+                        key={place.slug}
+                        href={`/place/${place.slug}`}
+                        style={{ left, top }}
+                        className="absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#111111] text-sm font-bold text-white shadow-xl ring-4 ring-white"
+                        title={place.name}
+                      >
+                        {index + 1}
+                      </Link>
+                    );
+                  })}
+                </div>
               </div>
             </div>
 
@@ -175,23 +217,31 @@ export default function MapPage() {
                 </div>
               ) : (
                 <div className="mt-5 grid max-h-[520px] gap-3 overflow-y-auto pr-1">
-                  {filteredPlaces.map((place) => (
+                  {filteredPlaces.map((place, index) => (
                     <Link
                       key={place.slug}
                       href={`/place/${place.slug}`}
                       className="rounded-[1.5rem] bg-[#F7F7F5] p-4 transition hover:bg-white hover:ring-1 hover:ring-black/5"
                     >
-                      <p className="text-sm font-semibold text-[#7A7A73]">
-                        {place.area} · {place.vibe}
-                      </p>
+                      <div className="flex items-start gap-3">
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xs font-bold text-white">
+                          {index + 1}
+                        </span>
 
-                      <h3 className="mt-2 text-lg font-bold tracking-tight">
-                        {place.name}
-                      </h3>
+                        <div>
+                          <p className="text-sm font-semibold text-[#7A7A73]">
+                            {place.area} · {place.vibe}
+                          </p>
 
-                      <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#55554F]">
-                        {place.description}
-                      </p>
+                          <h3 className="mt-1 text-lg font-bold tracking-tight">
+                            {place.name}
+                          </h3>
+
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#55554F]">
+                            {place.description}
+                          </p>
+                        </div>
+                      </div>
 
                       <div className="mt-3 flex flex-wrap gap-2">
                         <span className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#55554F]">
