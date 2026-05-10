@@ -19,6 +19,24 @@ const vibes = [
   "Golden hour walk",
   "Art gallery mood",
   "Neon nightlife",
+  "Cozy café",
+  "Old money",
+  "Romantic ruins",
+  "Bookshop afternoon",
+  "Rooftop sunset",
+  "Quiet luxury",
+  "Vintage film",
+  "Indie sleaze",
+  "Minimal chic",
+  "Rainy day",
+  "Local authentic",
+  "Spiritual retreat",
+  "Secret garden",
+  "Soft nightlife",
+  "Museum date",
+  "City break",
+  "Slow morning",
+  "Sunset walk",
 ];
 
 const previews = [
@@ -132,11 +150,17 @@ export default function HomePage() {
         </section>
 
         <section className="mt-7">
-          <h3 className="text-lg font-bold tracking-tight">
-            Scegli la vibe
-          </h3>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold tracking-tight">
+              Scegli la vibe
+            </h3>
 
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+            <p className="text-sm font-semibold text-[#7A7A73]">
+              {vibes.length} opzioni
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-wrap gap-2">
             {vibes.map((vibe) => {
               const active = selectedVibe === vibe;
 
@@ -144,7 +168,7 @@ export default function HomePage() {
                 <button
                   key={vibe}
                   onClick={() => setSelectedVibe(vibe)}
-                  className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold transition ${
+                  className={`rounded-full px-4 py-3 text-sm font-bold transition ${
                     active
                       ? "bg-[#111111] text-white"
                       : "bg-white text-[#111111] shadow-sm ring-1 ring-black/5"
