@@ -4,7 +4,6 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import { places } from "@/lib/mock-data";
 
 type DbVibeList = {
   id: string;
@@ -17,11 +16,26 @@ type DbVibeList = {
   created_at: string;
 };
 
+type DbPlace = {
+  slug: string;
+  name: string;
+  city: string;
+  area: string;
+  mood: string;
+  vibe: string;
+  description: string;
+};
+
+type VibeListPlaceRow = {
+  place_slug: string;
+};
+
 export default function VibeListDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
 
   const [list, setList] = useState<DbVibeList | null>(null);
+  const [places, setPlaces] = useState<DbPlace[]>([]);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [deleting, setDeleting] = useState(false);
@@ -35,13 +49,53 @@ export default function VibeListDetailPage() {
 
       setCurrentUserId(session?.user.id ?? null);
 
-      const { data } = await supabase
+      const { data: listData, error: listError } = await supabase
         .from("vibe_lists")
         .select("id,user_id,title,city,vibe,description,visibility,created_at")
         .eq("id", params.id)
         .maybeSingle();
 
-      setList(data);
+      if (listError) {
+        setMessage(listError.message);
+        setLoading(false);
+        return;
+      }
+
+      setList(listData);
+
+      const { data: rows, error: rowsError } = await supabase
+        .from("vibe_list_places")
+        .select("place_slug")
+        .eq("vibe_list_id", params.id)
+        .order("created_at", { ascending: true });
+
+      if (rowsError) {
+        setMessage(rowsError.message);
+        setLoading(false);
+        return;
+      }
+
+      const slugs = rows
+        ? rows.map((row: VibeListPlaceRow) => row.place_slug)
+        : [];
+
+      if (slugs.length > 0) {
+        const { data: placesData, error: placesError } = await supabase
+          .from("places")
+          .select("slug,name,city,area,mood,vibe,description")
+          .in("slug", slugs);
+
+        if (placesError) {
+          setMessage(placesError.message);
+        } else {
+          const orderedPlaces = slugs
+            .map((slug) => placesData?.find((place) => place.slug === slug))
+            .filter(Boolean) as DbPlace[];
+
+          setPlaces(orderedPlaces);
+        }
+      }
+
       setLoading(false);
     }
 
@@ -75,9 +129,24 @@ export default function VibeListDetailPage() {
     router.push("/vibe-lists");
   }
 
-  const suggestedPlaces = list
-    ? places.filter((place) => place.vibe === list.vibe).slice(0, 3)
-    : [];
+  async function handleRemovePlace(placeSlug: string) {
+    if (!list) return;
+
+    const { error } = await supabase
+      .from("vibe_list_places")
+      .delete()
+      .eq("vibe_list_id", list.id)
+      .eq("place_slug", placeSlug);
+
+    if (error) {
+      setMessage(error.message);
+      return;
+    }
+
+    setPlaces((currentPlaces) =>
+      currentPlaces.filter((place) => place.slug !== placeSlug),
+    );
+  }
 
   const canEdit = Boolean(list && currentUserId === list.user_id);
 
@@ -137,7 +206,7 @@ export default function VibeListDetailPage() {
               </div>
 
               <p className="mt-5 text-lg font-semibold text-[#D8B77A]">
-                {list.city} · {list.visibility}
+                {list.city} · {list.visibility} · {places.length} luoghi
               </p>
 
               <p className="mt-6 max-w-2xl text-lg leading-8 text-[#F4EFE5]/75">
@@ -174,39 +243,59 @@ export default function VibeListDetailPage() {
 
         <section className="mt-12">
           <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-            Luoghi suggeriti per questa vibe
+            Luoghi dentro questa lista
           </h2>
 
-          {suggestedPlaces.length === 0 ? (
+          {places.length === 0 ? (
             <div className="mt-5 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
-              Non ci sono ancora luoghi demo per questa vibe.
+              <p className="leading-7 text-[#425653]">
+                Questa lista non contiene ancora luoghi. Vai nel Feed, apri un
+                luogo e aggiungilo a questa Vibe List.
+              </p>
+
+              <Link
+                href="/feed"
+                className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              >
+                Apri il Feed
+              </Link>
             </div>
           ) : (
             <div className="mt-6 grid gap-6 md:grid-cols-3">
-              {suggestedPlaces.map((place) => (
-                <Link
+              {places.map((place) => (
+                <article
                   key={place.slug}
-                  href={`/place/${place.slug}`}
-                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1"
+                  className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
                 >
-                  <div className="flex h-44 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                    <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                      {place.vibe}
-                    </span>
-                  </div>
+                  <Link href={`/place/${place.slug}`}>
+                    <div className="flex h-44 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
+                      <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
+                        {place.vibe}
+                      </span>
+                    </div>
 
-                  <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                    {place.city} · {place.area}
-                  </p>
+                    <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                      {place.city} · {place.area}
+                    </p>
 
-                  <h3 className="mt-3 font-serif text-2xl font-bold text-[#2A160E]">
-                    {place.name}
-                  </h3>
+                    <h3 className="mt-3 font-serif text-2xl font-bold text-[#2A160E]">
+                      {place.name}
+                    </h3>
 
-                  <p className="mt-4 text-sm leading-6 text-[#425653]">
-                    {place.description}
-                  </p>
-                </Link>
+                    <p className="mt-4 text-sm leading-6 text-[#425653]">
+                      {place.description}
+                    </p>
+                  </Link>
+
+                  {canEdit && (
+                    <button
+                      onClick={() => handleRemovePlace(place.slug)}
+                      className="mt-5 w-full rounded-full border border-[#C99A57] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+                    >
+                      Rimuovi dalla lista
+                    </button>
+                  )}
+                </article>
               ))}
             </div>
           )}
