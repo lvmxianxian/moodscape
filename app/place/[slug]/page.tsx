@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
+import AddToVibeListButton from "@/components/AddToVibeListButton";
 
 type DbPlace = {
   slug: string;
@@ -188,6 +189,8 @@ export default function PlaceDetailPage() {
               </div>
 
               <SavePlaceButton placeSlug={place.slug} />
+
+              <AddToVibeListButton placeSlug={place.slug} />
 
               <Link
                 href={`/map?place=${place.slug}`}
