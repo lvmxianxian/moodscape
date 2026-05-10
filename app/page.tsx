@@ -57,6 +57,69 @@ const previews = [
   },
 ];
 
+const routes = [
+  {
+    slug: "roma-romantica-tramonto",
+    title: "Roma romantica al tramonto",
+    mood: "Romantico",
+    vibes: ["Dolce vita", "Romantic ruins", "Rooftop sunset", "Sunset walk"],
+    description:
+      "Un percorso morbido tra viste panoramiche, scorci iconici e tappe perfette per una serata romantica.",
+    price: "€9",
+    duration: "2h 30min",
+    stops: "5 tappe",
+    emoji: "🌇",
+  },
+  {
+    slug: "dark-academia-walk",
+    title: "Dark academia walk",
+    mood: "Curioso",
+    vibes: ["Dark academia", "Bookshop afternoon", "Rainy day", "Vintage film"],
+    description:
+      "Biblioteche, cortili silenziosi e luoghi con atmosfera letteraria per una giornata lenta e curiosa.",
+    price: "€7",
+    duration: "2h",
+    stops: "4 tappe",
+    emoji: "📚",
+  },
+  {
+    slug: "hidden-garden-route",
+    title: "Giardini nascosti",
+    mood: "Rilassato",
+    vibes: ["Hidden garden", "Secret garden", "Spiritual retreat", "Slow morning"],
+    description:
+      "Una selezione di spazi verdi, cortili e pause tranquille per staccare dal ritmo della città.",
+    price: "€8",
+    duration: "2h 15min",
+    stops: "5 tappe",
+    emoji: "🌿",
+  },
+  {
+    slug: "golden-hour-photo-walk",
+    title: "Golden hour photo walk",
+    mood: "Creativo",
+    vibes: ["Golden hour walk", "Art gallery mood", "Minimal chic", "City break"],
+    description:
+      "Un itinerario visivo pensato per foto, architetture, dettagli estetici e luce calda di fine giornata.",
+    price: "€10",
+    duration: "3h",
+    stops: "6 tappe",
+    emoji: "📸",
+  },
+  {
+    slug: "neon-nightlife-route",
+    title: "Neon nightlife route",
+    mood: "Sociale",
+    vibes: ["Neon nightlife", "Soft nightlife", "Indie sleaze", "Local authentic"],
+    description:
+      "Una serata tra posti vivi, atmosfere notturne e tappe sociali da fare con amici o nuove conoscenze.",
+    price: "€12",
+    duration: "3h 30min",
+    stops: "5 tappe",
+    emoji: "🪩",
+  },
+];
+
 export default function HomePage() {
   const [selectedMood, setSelectedMood] = useState("Romantico");
   const [selectedVibe, setSelectedVibe] = useState("Dolce vita");
@@ -71,6 +134,25 @@ export default function HomePage() {
     if (selectedVibe) params.set("vibe", selectedVibe);
 
     return `/feed?${params.toString()}`;
+  }, [selectedMood, selectedVibe]);
+
+  const recommendedRoute = useMemo(() => {
+    const exactMatch = routes.find(
+      (route) =>
+        route.mood === selectedMood && route.vibes.includes(selectedVibe),
+    );
+
+    if (exactMatch) return exactMatch;
+
+    const moodMatch = routes.find((route) => route.mood === selectedMood);
+
+    if (moodMatch) return moodMatch;
+
+    const vibeMatch = routes.find((route) =>
+      route.vibes.includes(selectedVibe),
+    );
+
+    return vibeMatch ?? routes[0];
   }, [selectedMood, selectedVibe]);
 
   return (
@@ -192,7 +274,7 @@ export default function HomePage() {
         </section>
 
         <section className="mt-7 rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
-          <div className="flex items-center justify-between">
+          <div className="flex items-start justify-between gap-4">
             <div>
               <h3 className="text-lg font-bold tracking-tight">
                 Match attuale
@@ -204,10 +286,67 @@ export default function HomePage() {
 
             <Link
               href={feedHref}
-              className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+              className="shrink-0 rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
             >
               Apri
             </Link>
+          </div>
+
+          <div className="mt-5 rounded-[1.6rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5">
+            <div className="flex items-start gap-4">
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-[1.25rem] bg-white text-3xl shadow-sm ring-1 ring-black/5">
+                {recommendedRoute.emoji}
+              </div>
+
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#7A7A73]">
+                  Percorso consigliato
+                </p>
+
+                <h4 className="mt-1 text-lg font-bold leading-tight">
+                  {recommendedRoute.title}
+                </h4>
+
+                <p className="mt-2 text-sm leading-6 text-[#7A7A73]">
+                  {recommendedRoute.description}
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-3 gap-2 text-center">
+              <div className="rounded-[1rem] bg-white px-3 py-3 ring-1 ring-black/5">
+                <p className="text-xs font-semibold text-[#7A7A73]">Prezzo</p>
+                <p className="mt-1 text-sm font-bold">{recommendedRoute.price}</p>
+              </div>
+
+              <div className="rounded-[1rem] bg-white px-3 py-3 ring-1 ring-black/5">
+                <p className="text-xs font-semibold text-[#7A7A73]">Durata</p>
+                <p className="mt-1 text-sm font-bold">
+                  {recommendedRoute.duration}
+                </p>
+              </div>
+
+              <div className="rounded-[1rem] bg-white px-3 py-3 ring-1 ring-black/5">
+                <p className="text-xs font-semibold text-[#7A7A73]">Tappe</p>
+                <p className="mt-1 text-sm font-bold">{recommendedRoute.stops}</p>
+              </div>
+            </div>
+
+            <div className="mt-4 grid grid-cols-1 gap-3">
+              <Link
+                href={`/routes/${recommendedRoute.slug}`}
+                className="flex items-center justify-center rounded-full bg-[#111111] px-5 py-4 text-sm font-bold text-white"
+              >
+                Acquista percorso
+              </Link>
+
+              <Link
+                href={feedHref}
+                className="flex items-center justify-center rounded-full bg-white px-5 py-4 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+              >
+                Vedi luoghi del match
+              </Link>
+            </div>
           </div>
         </section>
 
