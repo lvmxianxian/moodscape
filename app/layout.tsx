@@ -1,21 +1,36 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
 export const metadata: Metadata = {
-  title: "MoodScape",
-  description: "Scopri posti in base al mood e alla vibe.",
+  title: "MoodScape — Discover places by mood and vibe",
+  description:
+    "MoodScape ti aiuta a scoprire luoghi, percorsi, mappe e Vibe Lists in base a come ti senti e all’atmosfera che vuoi vivere.",
+  keywords: [
+    "MoodScape",
+    "mood based travel",
+    "city discovery",
+    "vibe map",
+    "vibe lists",
+    "Roma",
+    "places by mood",
+  ],
+  authors: [{ name: "MoodScape" }],
+  creator: "MoodScape",
+  openGraph: {
+    title: "MoodScape",
+    description:
+      "Trova posti in base a come ti senti e alla vibe che vuoi seguire.",
+    type: "website",
+    locale: "it_IT",
+    siteName: "MoodScape",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "MoodScape",
+    description:
+      "Scopri luoghi, percorsi e vibe nella tua città partendo dal tuo mood.",
+  },
 };
 
 export default function RootLayout({
@@ -25,9 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="it">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} min-h-screen antialiased`}
-      >
+      <body>
         <Navbar />
         {children}
       </body>
