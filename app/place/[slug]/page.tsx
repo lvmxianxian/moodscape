@@ -6,6 +6,7 @@ import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 import AddToVibeListButton from "@/components/AddToVibeListButton";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type DbPlace = {
   slug: string;
@@ -83,9 +84,11 @@ export default function PlaceDetailPage() {
     <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
       <div className="mx-auto max-w-6xl">
         <section className="overflow-hidden rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] shadow-2xl shadow-[#0E3532]/10">
-          <div className="flex min-h-[340px] items-end bg-[#0E3532] p-8 text-[#F4EFE5]">
-            <div>
-              <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D8B77A]">
+          <div className="grid gap-6 bg-[#0E3532] p-6 text-[#F4EFE5] md:grid-cols-[0.95fr_1.05fr] md:p-8">
+            <PlaceVisual vibe={place.vibe} className="min-h-[320px]" />
+
+            <div className="flex min-h-[320px] flex-col justify-end">
+              <span className="w-fit rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.16em] text-[#D8B77A]">
                 {place.vibe}
               </span>
 
@@ -182,9 +185,7 @@ export default function PlaceDetailPage() {
                   <p className="font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                     Livello socialità
                   </p>
-                  <p className="mt-1 text-[#0E3532]">
-                    {place.social_level}
-                  </p>
+                  <p className="mt-1 text-[#0E3532]">{place.social_level}</p>
                 </div>
               </div>
 
