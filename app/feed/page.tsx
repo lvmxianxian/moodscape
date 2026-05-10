@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
@@ -17,7 +17,7 @@ type DbPlace = {
   time: string;
 };
 
-export default function FeedPage() {
+function FeedContent() {
   const searchParams = useSearchParams();
   const selectedMood = searchParams.get("mood");
   const selectedVibe = searchParams.get("vibe");
@@ -195,5 +195,21 @@ export default function FeedPage() {
         </section>
       </div>
     </main>
+  );
+}
+
+export default function FeedPage() {
+  return (
+    <Suspense
+      fallback={
+        <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
+          <div className="mx-auto max-w-3xl rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+            Caricamento feed...
+          </div>
+        </main>
+      }
+    >
+      <FeedContent />
+    </Suspense>
   );
 }
