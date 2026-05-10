@@ -16,6 +16,7 @@ const mainLinks: NavLink[] = [
   { href: "/community", label: "Community" },
   { href: "/creators", label: "Creator" },
   { href: "/events", label: "Eventi" },
+  { href: "/routes", label: "Percorsi" },
   { href: "/map", label: "Mappa" },
 ];
 
