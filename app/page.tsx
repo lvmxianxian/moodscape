@@ -112,11 +112,7 @@ export default function HomePage() {
           </div>
 
           <p className="mt-6 max-w-xl text-lg leading-8 text-[#425653]">
-            MoodScape è una piattaforma B2C che aiuta le persone a scoprire
-            luoghi, percorsi urbani, locali, eventi e attività brevi partendo da
-            due elementi personali: come si sentono e che atmosfera vogliono
-            vivere.
-          </p>
+                     </p>
 
           <div className="mt-8 grid gap-3 sm:grid-cols-3">
             <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F8F2E8] p-4">
