@@ -8,15 +8,15 @@ const mainLinks = [
   { href: "/", label: "Home" },
   { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
-  { href: "/events", label: "Events" },
-  { href: "/map", label: "Map" },
+  { href: "/events", label: "Eventi" },
+  { href: "/map", label: "Mappa" },
 ];
 
 const menuLinks = [
   { href: "/explore", label: "Mood Check", description: "Scegli mood e vibe" },
   { href: "/vibe-lists", label: "Vibe Lists", description: "Raccolte e board" },
   { href: "/moodboard", label: "Moodboard", description: "Luoghi salvati" },
-  { href: "/profile", label: "Profile", description: "Profilo personale" },
+  { href: "/profile", label: "Profilo", description: "Il tuo spazio personale" },
   { href: "/premium", label: "Premium", description: "Funzioni avanzate" },
   { href: "/demo", label: "Demo", description: "Presentazione MVP" },
 ];
@@ -37,7 +37,7 @@ export default function Navbar() {
               MoodScape
             </p>
             <p className="mt-1 hidden text-xs font-medium text-[#7A7A73] sm:block">
-              Mood-based discovery
+              Scoperta basata sul mood
             </p>
           </div>
         </Link>
@@ -60,6 +60,7 @@ export default function Navbar() {
           <button
             onClick={() => setOpen(!open)}
             className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg shadow-sm ring-1 ring-black/5"
+            aria-label="Apri menu"
           >
             {open ? "×" : "☰"}
           </button>
@@ -68,6 +69,7 @@ export default function Navbar() {
         <button
           onClick={() => setOpen(!open)}
           className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-lg shadow-sm ring-1 ring-black/5 lg:hidden"
+          aria-label="Apri menu"
         >
           {open ? "×" : "☰"}
         </button>
@@ -100,7 +102,7 @@ export default function Navbar() {
               onClick={() => setOpen(false)}
               className="rounded-[1.5rem] bg-[#111111] p-5 text-white shadow-sm"
             >
-              <p className="text-base font-bold">Create Vibe List</p>
+              <p className="text-base font-bold">Crea Vibe List</p>
               <p className="mt-2 text-sm font-medium text-white/60">
                 Pubblica una nuova raccolta
               </p>

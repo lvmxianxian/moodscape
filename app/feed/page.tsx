@@ -125,7 +125,7 @@ function FeedContent() {
     if (selectedMood && selectedVibe) return `${selectedMood} · ${selectedVibe}`;
     if (selectedMood) return selectedMood;
     if (selectedVibe) return selectedVibe;
-    return "All moods and vibes";
+    return "Tutti i mood e tutte le vibe";
   }, [selectedMood, selectedVibe]);
 
   const visiblePlaces = places.length > 0 ? places : suggestedPlaces;
@@ -138,11 +138,11 @@ function FeedContent() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-[#7A7A73]">
-                MoodScape Feed
+                Feed MoodScape
               </p>
 
               <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-                Places for your current vibe.
+                Luoghi per la tua vibe del momento.
               </h1>
             </div>
 
@@ -158,7 +158,7 @@ function FeedContent() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
-                  Active filter
+                  Filtro attivo
                 </p>
 
                 <p className="mt-1 text-base font-bold text-[#111111]">
@@ -172,7 +172,7 @@ function FeedContent() {
                     href="/feed"
                     className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
                   >
-                    Clear
+                    Rimuovi
                   </Link>
                 )}
 
@@ -180,7 +180,7 @@ function FeedContent() {
                   href="/"
                   className="rounded-full bg-[#F1F1EE] px-5 py-3 text-sm font-bold text-[#111111]"
                 >
-                  Change mood
+                  Cambia mood
                 </Link>
               </div>
             </div>
@@ -189,14 +189,14 @@ function FeedContent() {
 
         {loading && (
           <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
-            Loading places...
+            Caricamento luoghi...
           </section>
         )}
 
         {!loading && message && (
           <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
             <h2 className="text-2xl font-bold tracking-tight">
-              Could not load places.
+              Non riesco a caricare i luoghi.
             </h2>
 
             <p className="mt-3 leading-7 text-[#55554F]">{message}</p>
@@ -205,7 +205,7 @@ function FeedContent() {
               href="/feed"
               className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
             >
-              Try again
+              Riprova
             </Link>
           </section>
         )}
@@ -216,18 +216,19 @@ function FeedContent() {
           suggestedPlaces.length === 0 && (
             <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
               <h2 className="text-2xl font-bold tracking-tight">
-                No places found.
+                Nessun luogo trovato.
               </h2>
 
               <p className="mt-3 leading-7 text-[#55554F]">
-                Try removing filters or adding more places in Supabase.
+                Prova a rimuovere i filtri oppure aggiungi altri luoghi in
+                Supabase.
               </p>
 
               <Link
                 href="/feed"
                 className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
               >
-                Show all places
+                Mostra tutti i luoghi
               </Link>
             </section>
           )}
@@ -235,11 +236,12 @@ function FeedContent() {
         {!loading && !message && showingSuggestions && (
           <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
             <h2 className="text-2xl font-bold tracking-tight">
-              No perfect match, but these are close.
+              Nessun match perfetto, ma questi sono vicini.
             </h2>
 
             <p className="mt-3 leading-7 text-[#55554F]">
-              MoodScape is showing places with a similar mood or vibe.
+              MoodScape ti mostra luoghi con mood o vibe simili alla scelta
+              iniziale.
             </p>
           </section>
         )}
@@ -305,7 +307,7 @@ export default function FeedPage() {
       fallback={
         <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
           <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-            Loading feed...
+            Caricamento feed...
           </div>
         </main>
       }

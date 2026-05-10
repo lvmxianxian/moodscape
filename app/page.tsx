@@ -4,12 +4,12 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 
 const moods = [
-  { label: "Calm", value: "Rilassato", emoji: "🌿" },
-  { label: "Romantic", value: "Romantico", emoji: "🌙" },
-  { label: "Curious", value: "Curioso", emoji: "👀" },
-  { label: "Social", value: "Sociale", emoji: "🪩" },
-  { label: "Creative", value: "Creativo", emoji: "🎨" },
-  { label: "Nostalgic", value: "Nostalgico", emoji: "🎞️" },
+  { label: "Calma", value: "Rilassato", emoji: "🌿" },
+  { label: "Romantica", value: "Romantico", emoji: "🌙" },
+  { label: "Curiosa", value: "Curioso", emoji: "👀" },
+  { label: "Sociale", value: "Sociale", emoji: "🪩" },
+  { label: "Creativa", value: "Creativo", emoji: "🎨" },
+  { label: "Nostalgica", value: "Nostalgico", emoji: "🎞️" },
 ];
 
 const vibes = [
@@ -24,17 +24,17 @@ const vibes = [
 const previews = [
   {
     title: "Giardino degli Aranci",
-    meta: "Romantic · Dolce vita",
+    meta: "Romantico · Dolce vita",
     emoji: "🌇",
   },
   {
     title: "Biblioteca Angelica",
-    meta: "Curious · Dark academia",
+    meta: "Curioso · Dark academia",
     emoji: "📚",
   },
   {
     title: "Villa Borghese",
-    meta: "Calm · Golden hour walk",
+    meta: "Rilassato · Golden hour walk",
     emoji: "🌿",
   },
 ];
@@ -58,7 +58,7 @@ export default function HomePage() {
         <section className="flex items-center justify-between">
           <div>
             <p className="text-sm font-semibold text-[#7A7A73]">
-              Good afternoon
+              Bentornata
             </p>
             <h1 className="mt-1 text-2xl font-bold tracking-tight">
               MoodScape
@@ -75,37 +75,37 @@ export default function HomePage() {
 
         <section className="mt-6 overflow-hidden rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-white/50">
-            Mood based discovery
+            Scoperta basata sul mood
           </p>
 
           <h2 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight">
-            Find places by how you feel.
+            Trova posti in base a come ti senti.
           </h2>
 
           <p className="mt-4 text-base leading-7 text-white/70">
-            Choose a mood and a vibe. MoodScape turns them into places, events,
-            lists and community recommendations.
+            Scegli un mood e una vibe. MoodScape li trasforma in luoghi,
+            eventi, liste e consigli dalla community.
           </p>
 
           <Link
             href={feedHref}
             className="mt-7 flex items-center justify-center rounded-full bg-white px-6 py-4 text-sm font-bold text-[#111111]"
           >
-            Show me places
+            Mostrami i posti
           </Link>
         </section>
 
         <section className="mt-7">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold tracking-tight">
-              How do you feel?
+              Come ti senti?
             </h3>
 
             <Link
               href="/explore"
               className="text-sm font-semibold text-[#7A7A73]"
             >
-              See all
+              Vedi tutto
             </Link>
           </div>
 
@@ -133,7 +133,7 @@ export default function HomePage() {
 
         <section className="mt-7">
           <h3 className="text-lg font-bold tracking-tight">
-            Choose your vibe
+            Scegli la vibe
           </h3>
 
           <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
@@ -161,7 +161,7 @@ export default function HomePage() {
           <div className="flex items-center justify-between">
             <div>
               <h3 className="text-lg font-bold tracking-tight">
-                Your current match
+                Match attuale
               </h3>
               <p className="mt-1 text-sm font-medium text-[#7A7A73]">
                 {selectedMood} · {selectedVibe}
@@ -172,7 +172,7 @@ export default function HomePage() {
               href={feedHref}
               className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
             >
-              Open
+              Apri
             </Link>
           </div>
         </section>
@@ -180,7 +180,7 @@ export default function HomePage() {
         <section className="mt-7">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold tracking-tight">
-              Suggested places
+              Luoghi suggeriti
             </h3>
 
             <Link href="/feed" className="text-sm font-semibold text-[#7A7A73]">
@@ -226,14 +226,14 @@ export default function HomePage() {
             href="/events"
             className="rounded-[1.5rem] bg-white p-4 text-center text-sm font-bold shadow-sm ring-1 ring-black/5"
           >
-            Events
+            Eventi
           </Link>
 
           <Link
             href="/map"
             className="rounded-[1.5rem] bg-white p-4 text-center text-sm font-bold shadow-sm ring-1 ring-black/5"
           >
-            Map
+            Mappa
           </Link>
         </section>
       </div>

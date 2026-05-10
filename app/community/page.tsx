@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/lib/supabase";
-import PlaceVisual from "@/components/PlaceVisual";
+import PlaceImage from "@/components/PlaceImage";
 
 type CommunityList = {
   id: string;
@@ -36,6 +36,7 @@ type FeedPost = {
   saves: number;
   time: string;
   href: string;
+  imageUrl?: string | null;
   commentsPreview: {
     author: string;
     text: string;
@@ -51,12 +52,12 @@ const demoPosts: FeedPost[] = [
     city: "Roma",
     vibe: "Dolce vita",
     title: "Roma romantica ma senza cliché",
-    text: "Ho raccolto posti dove Roma sembra più morbida: terrazze tranquille, luce calda, camminate lente e zero fretta. Perfetta per un pomeriggio in cui vuoi sentirti dentro un film.",
+    text: "Terrazze tranquille, luce calda, camminate lente e posti dove Roma sembra più morbida.",
     placeCount: 5,
     likes: 128,
     comments: 18,
     saves: 46,
-    time: "2h fa",
+    time: "2h",
     href: "/feed?vibe=Dolce%20vita",
     commentsPreview: [
       {
@@ -77,12 +78,12 @@ const demoPosts: FeedPost[] = [
     city: "Roma",
     vibe: "Dark academia",
     title: "Posti per sentirsi in una biblioteca segreta",
-    text: "Non solo biblioteche: anche cortili, chiese silenziose, caffè con luce bassa e strade dove camminare con una playlist malinconica.",
+    text: "Cortili, chiese silenziose, caffè con luce bassa e strade dove camminare con una playlist malinconica.",
     placeCount: 7,
     likes: 203,
     comments: 31,
     saves: 82,
-    time: "5h fa",
+    time: "5h",
     href: "/feed?vibe=Dark%20academia",
     commentsPreview: [
       {
@@ -103,7 +104,7 @@ const demoPosts: FeedPost[] = [
     city: "Roma",
     vibe: "Hidden garden",
     title: "Giardini nascosti per decomprimere",
-    text: "Piccoli spazi verdi dove puoi respirare, stare in silenzio e sentirti lontana dalla città anche se sei ancora al centro.",
+    text: "Piccoli spazi verdi dove respirare, stare in silenzio e sentirti lontana dalla città anche se sei ancora al centro.",
     placeCount: 4,
     likes: 96,
     comments: 12,
@@ -129,12 +130,12 @@ const demoPosts: FeedPost[] = [
     city: "Roma",
     vibe: "Neon nightlife",
     title: "Quando vuoi uscire ma non sai che energia vuoi",
-    text: "Ho messo insieme posti per serate più sociali: luci, drink, musica, ma senza dover per forza finire in un locale caotico.",
+    text: "Posti per serate sociali: luci, drink, musica, ma senza finire per forza in un locale caotico.",
     placeCount: 6,
     likes: 151,
     comments: 24,
     saves: 57,
-    time: "1 giorno fa",
+    time: "1g",
     href: "/feed?vibe=Neon%20nightlife",
     commentsPreview: [
       {
@@ -156,7 +157,6 @@ const activeCreators = [
     avatar: "🌙",
     bio: "Liste lente, romantiche e cinematografiche.",
     followers: "1.2k",
-    vibe: "Dolce vita",
   },
   {
     name: "Lorenzo B.",
@@ -164,7 +164,6 @@ const activeCreators = [
     avatar: "📚",
     bio: "Dark academia, librerie e camminate introspettive.",
     followers: "842",
-    vibe: "Dark academia",
   },
   {
     name: "Sara Conti",
@@ -172,15 +171,6 @@ const activeCreators = [
     avatar: "🌿",
     bio: "Giardini, cortili e micro-fughe urbane.",
     followers: "679",
-    vibe: "Hidden garden",
-  },
-  {
-    name: "Andrea M.",
-    handle: "@afterdarkroma",
-    avatar: "🪩",
-    bio: "Serate, luci, energia e posti sociali.",
-    followers: "954",
-    vibe: "Neon nightlife",
   },
 ];
 
@@ -189,17 +179,6 @@ const recentActivity = [
   "Lorenzo ha commentato una lista Dark academia.",
   "Sara ha salvato una lista Hidden garden.",
   "Andrea ha creato una nuova lista nightlife.",
-  "Marta ha suggerito un nuovo posto per Golden hour walk.",
-  "Valeria ha salvato un luogo nella moodboard.",
-];
-
-const futureActions = [
-  "Follow reale tra utenti",
-  "Like persistenti su liste e post",
-  "Commenti salvati nel database",
-  "Liste collaborative",
-  "Richieste alla community tipo “dove vado oggi?”",
-  "Moderazione e segnalazioni",
 ];
 
 export default function CommunityPage() {
@@ -245,6 +224,14 @@ export default function CommunityPage() {
     loadCommunity();
   }, []);
 
+  function getPlaceCount(listId: string) {
+    return listPlaceRows.filter((row) => row.vibe_list_id === listId).length;
+  }
+
+  function getCreatorLabel(userId: string) {
+    return `Creator ${userId.slice(0, 4).toUpperCase()}`;
+  }
+
   const realPosts: FeedPost[] = lists.map((list) => ({
     id: list.id,
     creator: getCreatorLabel(list.user_id),
@@ -276,15 +263,6 @@ export default function CommunityPage() {
 
   const feedPosts = [...realPosts, ...demoPosts];
 
-  const creatorCount = useMemo(() => {
-    const realCreators = new Set(lists.map((list) => list.user_id)).size;
-    return realCreators + activeCreators.length;
-  }, [lists]);
-
-  const vibeCount = useMemo(() => {
-    return new Set(feedPosts.map((post) => post.vibe)).size;
-  }, [feedPosts]);
-
   const trendingVibes = useMemo(() => {
     const counts = new Map<string, number>();
 
@@ -294,16 +272,8 @@ export default function CommunityPage() {
 
     return Array.from(counts.entries())
       .sort((a, b) => b[1] - a[1])
-      .slice(0, 7);
+      .slice(0, 6);
   }, [feedPosts]);
-
-  function getPlaceCount(listId: string) {
-    return listPlaceRows.filter((row) => row.vibe_list_id === listId).length;
-  }
-
-  function getCreatorLabel(userId: string) {
-    return `Creator ${userId.slice(0, 4).toUpperCase()}`;
-  }
 
   function toggleLike(postId: string) {
     setLikedPosts((current) =>
@@ -352,291 +322,198 @@ export default function CommunityPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1.08fr_0.92fr]">
-          <div className="rounded-[2rem] bg-[#0E3532] p-8 text-[#F4EFE5] shadow-2xl shadow-[#0E3532]/10">
-            <p className="inline-flex rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-              Community social
-            </p>
+        <section className="mx-auto max-w-md lg:max-w-7xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#7A7A73]">
+                Social MoodScape
+              </p>
 
-            <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-              Il feed dove le persone raccontano la città per mood.
-            </h1>
-
-            <div className="mt-6 flex max-w-3xl items-center gap-3">
-              <div className="h-px flex-1 bg-[#C99A57]" />
-              <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
-            </div>
-
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#F4EFE5]/75">
-              MoodScape non è solo una directory di posti: è una community dove
-              utenti e creator pubblicano Vibe Lists, commentano esperienze,
-              salvano idee e seguono atmosfere.
-            </p>
-
-            <div className="mt-8 grid gap-3 sm:grid-cols-3">
-              <div className="rounded-3xl border border-[#D8B77A]/30 bg-[#F4EFE5]/10 p-4">
-                <p className="font-serif text-4xl font-bold text-[#D8B77A]">
-                  {feedPosts.length}
-                </p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[#F4EFE5]/75">
-                  Post nel feed
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[#D8B77A]/30 bg-[#F4EFE5]/10 p-4">
-                <p className="font-serif text-4xl font-bold text-[#D8B77A]">
-                  {creatorCount}
-                </p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[#F4EFE5]/75">
-                  Creator
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[#D8B77A]/30 bg-[#F4EFE5]/10 p-4">
-                <p className="font-serif text-4xl font-bold text-[#D8B77A]">
-                  {vibeCount}
-                </p>
-                <p className="mt-1 text-xs font-bold uppercase tracking-[0.14em] text-[#F4EFE5]/75">
-                  Vibe attive
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link
-                href="/vibe-lists/create"
-                className="rounded-full bg-[#D8B77A] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-              >
-                Crea un post-lista
-              </Link>
-
-              <Link
-                href="/feed"
-                className="rounded-full border border-[#D8B77A] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-              >
-                Scopri luoghi
-              </Link>
-            </div>
-          </div>
-
-          <aside className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-              Cosa sta succedendo
-            </p>
-
-            <div className="mt-5 grid gap-3">
-              {recentActivity.map((activity) => (
-                <div
-                  key={activity}
-                  className="rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4 text-sm font-semibold leading-6 text-[#425653]"
-                >
-                  {activity}
-                </div>
-              ))}
-            </div>
-          </aside>
-        </section>
-
-        <section className="mt-10 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5">
-          <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#0E3532] text-2xl text-[#F4EFE5]">
-                +
-              </div>
-
-              <div>
-                <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-                  Crea nella community
-                </p>
-
-                <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-                  Condividi una lista come se fosse un post.
-                </h2>
-
-                <p className="mt-2 leading-7 text-[#425653]">
-                  Racconta una giornata, una zona, una vibe o un percorso. Gli
-                  altri utenti potranno salvarlo, commentarlo e seguirti.
-                </p>
-              </div>
+              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Feed della community.
+              </h1>
             </div>
 
             <Link
               href="/vibe-lists/create"
-              className="rounded-full bg-[#0E3532] px-6 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xl text-white shadow-sm"
             >
-              Crea Vibe List
+              +
             </Link>
           </div>
-        </section>
 
-        <section className="mt-12 grid gap-8 lg:grid-cols-[1fr_350px]">
-          <div>
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-                Feed
-              </p>
-
-              <h2 className="mt-3 font-serif text-4xl font-bold text-[#2A160E]">
-                Post, liste e commenti dalla community.
-              </h2>
-
-              <p className="mt-3 max-w-2xl leading-7 text-[#425653]">
-                Alcuni contenuti sono demo per mostrare il social già vissuto;
-                le Vibe Lists pubbliche reali compaiono automaticamente in alto
-                quando vengono create.
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{feedPosts.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Post
               </p>
             </div>
 
-            {loading ? (
-              <div className="mt-6 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 text-[#425653]">
-                Caricamento feed community...
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{activeCreators.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Creator
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{trendingVibes.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Vibe
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
+            {trendingVibes.map(([vibe, count]) => (
+              <Link
+                key={vibe}
+                href={`/feed?vibe=${encodeURIComponent(vibe)}`}
+                className="shrink-0 rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
+              >
+                {vibe} · {count}
+              </Link>
+            ))}
+          </div>
+        </section>
+
+        <section className="mx-auto mt-6 grid max-w-md gap-6 lg:max-w-7xl lg:grid-cols-[1fr_360px]">
+          <div className="grid gap-5">
+            {loading && (
+              <div className="rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5">
+                Caricamento community...
               </div>
-            ) : message ? (
-              <div className="mt-6 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 font-bold text-[#2A160E]">
-                {message}
+            )}
+
+            {!loading && message && (
+              <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+                <h2 className="text-2xl font-bold">
+                  Non riesco a caricare il feed.
+                </h2>
+                <p className="mt-3 text-[#55554F]">{message}</p>
               </div>
-            ) : (
-              <div className="mt-6 grid gap-6">
-                {feedPosts.map((post) => {
-                  const liked = likedPosts.includes(post.id);
-                  const saved = savedPosts.includes(post.id);
-                  const followed = followedCreators.includes(post.handle);
-                  const extraComments = localComments[post.id] ?? [];
-                  const allPreviewComments = [
-                    ...post.commentsPreview,
-                    ...extraComments,
-                  ];
+            )}
 
-                  return (
-                    <article
-                      key={post.id}
-                      className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#0E3532] text-xl text-[#F4EFE5]">
-                            {post.avatar}
-                          </div>
+            {!loading &&
+              !message &&
+              feedPosts.map((post) => {
+                const liked = likedPosts.includes(post.id);
+                const saved = savedPosts.includes(post.id);
+                const followed = followedCreators.includes(post.handle);
+                const extraComments = localComments[post.id] ?? [];
+                const allPreviewComments = [
+                  ...post.commentsPreview,
+                  ...extraComments,
+                ];
 
-                          <div>
-                            <p className="font-bold text-[#2A160E]">
-                              {post.creator}
-                            </p>
-
-                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                              {post.handle} · {post.city} · {post.time}
-                            </p>
-                          </div>
+                return (
+                  <article
+                    key={post.id}
+                    className="overflow-hidden rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-black/5"
+                  >
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xl text-white">
+                          {post.avatar}
                         </div>
 
+                        <div className="min-w-0">
+                          <p className="truncate font-bold">{post.creator}</p>
+                          <p className="truncate text-sm font-medium text-[#7A7A73]">
+                            {post.handle} · {post.city} · {post.time}
+                          </p>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => toggleFollow(post.handle)}
+                        className={`rounded-full px-4 py-2 text-sm font-bold ${
+                          followed
+                            ? "bg-[#F1F1EE] text-[#111111]"
+                            : "bg-[#111111] text-white"
+                        }`}
+                      >
+                        {followed ? "Segui già" : "Segui"}
+                      </button>
+                    </div>
+
+                    <Link href={post.href} className="mt-4 block">
+                      <PlaceImage
+                        imageUrl={post.imageUrl}
+                        name={post.title}
+                        vibe={post.vibe}
+                        className="h-72"
+                      />
+                    </Link>
+
+                    <div className="pt-5">
+                      <Link href={post.href}>
+                        <p className="text-sm font-bold text-[#7A7A73]">
+                          {post.vibe} · {post.placeCount} luoghi
+                        </p>
+
+                        <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                          {post.title}
+                        </h2>
+
+                        <p className="mt-3 text-base leading-7 text-[#55554F]">
+                          {post.text}
+                        </p>
+                      </Link>
+
+                      <div className="mt-5 flex flex-wrap gap-2">
                         <button
-                          onClick={() => toggleFollow(post.handle)}
-                          className={`rounded-full px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] ${
-                            followed
-                              ? "bg-[#D8B77A] text-[#0E3532]"
-                              : "bg-[#0E3532] text-[#F4EFE5]"
+                          onClick={() => toggleLike(post.id)}
+                          className={`rounded-full px-4 py-3 text-sm font-bold ${
+                            liked
+                              ? "bg-[#111111] text-white"
+                              : "bg-[#F7F7F5] text-[#111111]"
                           }`}
                         >
-                          {followed ? "Segui già" : "Segui"}
+                          {post.likes + (liked ? 1 : 0)} like
                         </button>
-                      </div>
 
-                      <div className="mt-5 grid gap-5 md:grid-cols-[280px_1fr]">
-                        <Link href={post.href}>
-                          <PlaceVisual vibe={post.vibe} className="h-60" />
+                        <button
+                          onClick={() => toggleSave(post.id)}
+                          className={`rounded-full px-4 py-3 text-sm font-bold ${
+                            saved
+                              ? "bg-[#111111] text-white"
+                              : "bg-[#F7F7F5] text-[#111111]"
+                          }`}
+                        >
+                          {post.saves + (saved ? 1 : 0)} salvataggi
+                        </button>
+
+                        <Link
+                          href={post.href}
+                          className="rounded-full bg-[#F7F7F5] px-4 py-3 text-sm font-bold text-[#111111]"
+                        >
+                          Apri
                         </Link>
-
-                        <div>
-                          <Link href={post.href}>
-                            <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                              {post.vibe} · {post.placeCount} luoghi
-                            </p>
-
-                            <h3 className="mt-3 font-serif text-3xl font-bold text-[#2A160E]">
-                              {post.title}
-                            </h3>
-
-                            <p className="mt-4 leading-7 text-[#425653]">
-                              {post.text}
-                            </p>
-                          </Link>
-
-                          <div className="mt-5 flex flex-wrap gap-2">
-                            <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                              {post.likes + (liked ? 1 : 0)} likes
-                            </span>
-
-                            <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                              {post.comments + extraComments.length} commenti
-                            </span>
-
-                            <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                              {post.saves + (saved ? 1 : 0)} salvataggi
-                            </span>
-                          </div>
-
-                          <div className="mt-5 flex flex-wrap gap-3">
-                            <button
-                              onClick={() => toggleLike(post.id)}
-                              className={`rounded-full px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] ${
-                                liked
-                                  ? "bg-[#2A160E] text-[#F4EFE5]"
-                                  : "border border-[#C99A57] bg-[#F4EFE5] text-[#0E3532]"
-                              }`}
-                            >
-                              {liked ? "Liked ✓" : "Like"}
-                            </button>
-
-                            <button
-                              onClick={() => toggleSave(post.id)}
-                              className={`rounded-full px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] ${
-                                saved
-                                  ? "bg-[#D8B77A] text-[#0E3532]"
-                                  : "border border-[#C99A57] bg-[#F4EFE5] text-[#0E3532]"
-                              }`}
-                            >
-                              {saved ? "Salvato ✓" : "Salva"}
-                            </button>
-
-                            <Link
-                              href={post.href}
-                              className="rounded-full bg-[#0E3532] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-                            >
-                              Apri
-                            </Link>
-
-                            <button className="rounded-full border border-[#C99A57] bg-[#F4EFE5] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]">
-                              Condividi
-                            </button>
-                          </div>
-                        </div>
                       </div>
 
-                      <div className="mt-6 rounded-[1.5rem] border border-[#D8B77A]/50 bg-[#F4EFE5] p-4">
-                        <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                          Commenti
+                      <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                        <p className="text-sm font-bold text-[#7A7A73]">
+                          Commenti · {post.comments + extraComments.length}
                         </p>
 
                         <div className="mt-4 grid gap-3">
                           {allPreviewComments.map((comment, index) => (
-                            <div
-                              key={`${post.id}-${comment.author}-${index}`}
-                              className="rounded-2xl bg-[#F8F2E8] p-3"
-                            >
-                              <p className="text-sm font-bold text-[#2A160E]">
+                            <div key={`${post.id}-${comment.author}-${index}`}>
+                              <p className="text-sm font-bold">
                                 {comment.author}
                               </p>
-
-                              <p className="mt-1 text-sm leading-6 text-[#425653]">
+                              <p className="mt-1 text-sm leading-6 text-[#55554F]">
                                 {comment.text}
                               </p>
                             </div>
                           ))}
                         </div>
 
-                        <div className="mt-4 flex flex-col gap-3 sm:flex-row">
+                        <div className="mt-4 flex gap-2">
                           <input
                             value={commentDrafts[post.id] ?? ""}
                             onChange={(event) =>
@@ -646,69 +523,66 @@ export default function CommunityPage() {
                               }))
                             }
                             placeholder="Scrivi un commento..."
-                            className="min-w-0 flex-1 rounded-full border border-[#D8B77A]/60 bg-[#F4EFE5] px-5 py-3 text-sm text-[#0E3532] outline-none"
+                            className="min-w-0 flex-1 rounded-full bg-white px-4 py-3 text-sm outline-none ring-1 ring-black/5"
                           />
 
                           <button
                             onClick={() => submitComment(post.id)}
-                            className="rounded-full bg-[#0E3532] px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+                            className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
                           >
                             Pubblica
                           </button>
                         </div>
                       </div>
-                    </article>
-                  );
-                })}
-              </div>
-            )}
+                    </div>
+                  </article>
+                );
+              })}
           </div>
 
-          <aside className="space-y-6">
-            <section className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
+          <aside className="space-y-5">
+            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <h2 className="text-xl font-bold tracking-tight">
                 Creator da seguire
-              </p>
+              </h2>
 
-              <div className="mt-5 grid gap-4">
+              <div className="mt-4 grid gap-3">
                 {activeCreators.map((creator) => {
                   const followed = followedCreators.includes(creator.handle);
 
                   return (
                     <article
                       key={creator.handle}
-                      className="rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-4"
+                      className="rounded-[1.5rem] bg-[#F7F7F5] p-4"
                     >
                       <div className="flex items-center gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#0E3532] text-lg text-[#F4EFE5]">
+                        <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#111111] text-lg text-white">
                           {creator.avatar}
                         </div>
 
-                        <div>
-                          <p className="font-bold text-[#2A160E]">
-                            {creator.name}
-                          </p>
-                          <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate font-bold">{creator.name}</p>
+                          <p className="truncate text-sm font-medium text-[#7A7A73]">
                             {creator.handle}
                           </p>
                         </div>
                       </div>
 
-                      <p className="mt-3 text-sm leading-6 text-[#425653]">
+                      <p className="mt-3 text-sm leading-6 text-[#55554F]">
                         {creator.bio}
                       </p>
 
                       <div className="mt-3 flex items-center justify-between">
-                        <span className="text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
+                        <span className="text-sm font-bold text-[#7A7A73]">
                           {creator.followers} follower
                         </span>
 
                         <button
                           onClick={() => toggleFollow(creator.handle)}
-                          className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] ${
+                          className={`rounded-full px-4 py-2 text-sm font-bold ${
                             followed
-                              ? "bg-[#D8B77A] text-[#0E3532]"
-                              : "bg-[#0E3532] text-[#F4EFE5]"
+                              ? "bg-white text-[#111111]"
+                              : "bg-[#111111] text-white"
                           }`}
                         >
                           {followed ? "Segui già" : "Segui"}
@@ -720,43 +594,18 @@ export default function CommunityPage() {
               </div>
             </section>
 
-            <section className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-                Trending vibes
-              </p>
-
-              <div className="mt-5 grid gap-3">
-                {trendingVibes.map(([vibe, count]) => (
-                  <Link
-                    key={vibe}
-                    href={`/feed?vibe=${encodeURIComponent(vibe)}`}
-                    className="flex items-center justify-between rounded-2xl border border-[#D8B77A]/50 bg-[#F4EFE5] px-4 py-3"
-                  >
-                    <span className="font-bold text-[#0E3532]">{vibe}</span>
-                    <span className="text-sm font-bold text-[#C99A57]">
-                      {count} post
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            </section>
-
-            <section className="rounded-[2rem] bg-[#0E3532] p-6 text-[#F4EFE5] shadow-xl shadow-[#0E3532]/10">
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-                Roadmap social
-              </p>
-
-              <h2 className="mt-3 font-serif text-3xl font-bold">
-                Funzioni social vere.
+            <section className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+              <h2 className="text-xl font-bold tracking-tight">
+                Attività recenti
               </h2>
 
-              <div className="mt-5 grid gap-3">
-                {futureActions.map((feature) => (
+              <div className="mt-4 grid gap-3">
+                {recentActivity.map((activity) => (
                   <div
-                    key={feature}
-                    className="rounded-2xl border border-[#D8B77A]/30 bg-[#F4EFE5]/10 p-3 text-sm font-semibold text-[#F4EFE5]/85"
+                    key={activity}
+                    className="rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-medium leading-6 text-[#55554F]"
                   >
-                    ✓ {feature}
+                    {activity}
                   </div>
                 ))}
               </div>

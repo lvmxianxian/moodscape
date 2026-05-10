@@ -3,10 +3,10 @@ import Link from "next/link";
 const links = [
   { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
-  { href: "/events", label: "Events" },
-  { href: "/map", label: "Map" },
+  { href: "/events", label: "Eventi" },
+  { href: "/map", label: "Mappa" },
   { href: "/vibe-lists", label: "Vibe Lists" },
-  { href: "/profile", label: "Profile" },
+  { href: "/profile", label: "Profilo" },
 ];
 
 export default function Footer() {
@@ -24,7 +24,7 @@ export default function Footer() {
                 <div>
                   <p className="text-xl font-bold tracking-tight">MoodScape</p>
                   <p className="mt-1 text-sm font-medium text-[#7A7A73]">
-                    Pinterest meets Instagram meets Eventbrite
+                    Pinterest incontra Instagram ed Eventbrite
                   </p>
                 </div>
               </div>
@@ -37,7 +37,7 @@ export default function Footer() {
 
             <div>
               <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#7A7A73]">
-                Navigation
+                Navigazione
               </p>
 
               <div className="mt-4 grid grid-cols-2 gap-3">
@@ -56,7 +56,7 @@ export default function Footer() {
 
           <div className="mt-8 flex flex-col gap-3 border-t border-black/5 pt-5 text-sm font-medium text-[#7A7A73] md:flex-row md:items-center md:justify-between">
             <p>© 2026 MoodScape. Demo MVP.</p>
-            <p>Built with Next.js, Supabase, Vercel and OpenStreetMap.</p>
+            <p>Creato con Next.js, Supabase, Vercel e OpenStreetMap.</p>
           </div>
         </div>
       </div>
