@@ -6,6 +6,7 @@ import AuthButton from "./AuthButton";
 
 const primaryLinks = [
   { href: "/", label: "Home" },
+  { href: "/demo", label: "Demo" },
   { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
