@@ -14,6 +14,7 @@ const mainLinks: NavLink[] = [
   { href: "/", label: "Home" },
   { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
+  { href: "/creators", label: "Creator" },
   { href: "/events", label: "Eventi" },
   { href: "/map", label: "Mappa" },
 ];
