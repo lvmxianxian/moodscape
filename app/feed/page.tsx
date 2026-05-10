@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type DbPlace = {
   slug: string;
@@ -111,7 +112,8 @@ function FeedContent() {
           </div>
 
           <p className="mt-7 max-w-2xl text-lg leading-8 text-[#425653]">
-            Il Feed legge i luoghi da Supabase e filtra in base alla scelta fatta nella home.
+            Il Feed legge i luoghi da Supabase e filtra in base alla scelta
+            fatta nella home.
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -120,12 +122,18 @@ function FeedContent() {
             </div>
 
             {hasFilters && (
-              <Link href="/feed" className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]">
+              <Link
+                href="/feed"
+                className="rounded-full bg-[#0E3532] px-4 py-2 text-sm font-bold text-[#F4EFE5]"
+              >
                 Rimuovi filtri
               </Link>
             )}
 
-            <Link href="/" className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]">
+            <Link
+              href="/"
+              className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-sm font-bold text-[#0E3532]"
+            >
               Cambia mood
             </Link>
           </div>
@@ -143,21 +151,28 @@ function FeedContent() {
           </section>
         )}
 
-        {!loading && !message && places.length === 0 && suggestedPlaces.length === 0 && (
-          <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-            <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
-              Nessun luogo trovato per questa combinazione.
-            </h2>
+        {!loading &&
+          !message &&
+          places.length === 0 &&
+          suggestedPlaces.length === 0 && (
+            <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
+              <h2 className="font-serif text-3xl font-bold text-[#2A160E]">
+                Nessun luogo trovato per questa combinazione.
+              </h2>
 
-            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-              Per ora il database ha pochi luoghi. Prova a rimuovere i filtri o scegli un’altra vibe.
-            </p>
+              <p className="mt-4 max-w-xl leading-7 text-[#425653]">
+                Per ora il database ha pochi luoghi. Prova a rimuovere i filtri
+                o scegli un’altra vibe.
+              </p>
 
-            <Link href="/feed" className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]">
-              Mostra tutti i luoghi
-            </Link>
-          </section>
-        )}
+              <Link
+                href="/feed"
+                className="mt-6 inline-flex rounded-full bg-[#0E3532] px-6 py-3 text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
+              >
+                Mostra tutti i luoghi
+              </Link>
+            </section>
+          )}
 
         {showingSuggestions && (
           <section className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6">
@@ -166,7 +181,8 @@ function FeedContent() {
             </h2>
 
             <p className="mt-3 max-w-2xl leading-7 text-[#425653]">
-              MoodScape non ha ancora un posto con esattamente questa combinazione, quindi ti mostra luoghi con mood o vibe simili.
+              MoodScape non ha ancora un posto con esattamente questa
+              combinazione, quindi ti mostra luoghi con mood o vibe simili.
             </p>
           </section>
         )}
@@ -178,11 +194,7 @@ function FeedContent() {
               href={`/place/${place.slug}`}
               className="group overflow-hidden rounded-[2rem] border border-[#D8B77A]/40 bg-[#F8F2E8] p-4 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
             >
-              <div className="flex h-56 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                <span className="rounded-full bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                  {place.vibe}
-                </span>
-              </div>
+              <PlaceVisual vibe={place.vibe} />
 
               <div className="mt-5">
                 <div className="flex items-start justify-between gap-3">
