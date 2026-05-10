@@ -31,9 +31,9 @@ type FeedPost = {
   title: string;
   text: string;
   placeCount: number;
-  likes: number;
-  comments: number;
-  saves: number;
+  baseLikes: number;
+  baseComments: number;
+  baseSaves: number;
   time: string;
   href: string;
   imageUrl?: string | null;
@@ -41,6 +41,29 @@ type FeedPost = {
     author: string;
     text: string;
   }[];
+};
+
+type CommunityComment = {
+  id: string;
+  post_id: string;
+  author_name: string;
+  body: string;
+  created_at: string;
+};
+
+type CommunityLike = {
+  post_id: string;
+  user_id: string;
+};
+
+type CommunitySave = {
+  post_id: string;
+  user_id: string;
+};
+
+type CommunityFollow = {
+  creator_handle: string;
+  follower_id: string;
 };
 
 const demoPosts: FeedPost[] = [
@@ -54,9 +77,9 @@ const demoPosts: FeedPost[] = [
     title: "Roma romantica ma senza cliché",
     text: "Terrazze tranquille, luce calda, camminate lente e posti dove Roma sembra più morbida.",
     placeCount: 5,
-    likes: 128,
-    comments: 18,
-    saves: 46,
+    baseLikes: 128,
+    baseComments: 18,
+    baseSaves: 46,
     time: "2h",
     href: "/feed?vibe=Dolce%20vita",
     commentsPreview: [
@@ -80,9 +103,9 @@ const demoPosts: FeedPost[] = [
     title: "Posti per sentirsi in una biblioteca segreta",
     text: "Cortili, chiese silenziose, caffè con luce bassa e strade dove camminare con una playlist malinconica.",
     placeCount: 7,
-    likes: 203,
-    comments: 31,
-    saves: 82,
+    baseLikes: 203,
+    baseComments: 31,
+    baseSaves: 82,
     time: "5h",
     href: "/feed?vibe=Dark%20academia",
     commentsPreview: [
@@ -106,9 +129,9 @@ const demoPosts: FeedPost[] = [
     title: "Giardini nascosti per decomprimere",
     text: "Piccoli spazi verdi dove respirare, stare in silenzio e sentirti lontana dalla città anche se sei ancora al centro.",
     placeCount: 4,
-    likes: 96,
-    comments: 12,
-    saves: 39,
+    baseLikes: 96,
+    baseComments: 12,
+    baseSaves: 39,
     time: "ieri",
     href: "/feed?vibe=Hidden%20garden",
     commentsPreview: [
@@ -132,9 +155,9 @@ const demoPosts: FeedPost[] = [
     title: "Quando vuoi uscire ma non sai che energia vuoi",
     text: "Posti per serate sociali: luci, drink, musica, ma senza finire per forza in un locale caotico.",
     placeCount: 6,
-    likes: 151,
-    comments: 24,
-    saves: 57,
+    baseLikes: 151,
+    baseComments: 24,
+    baseSaves: 57,
     time: "1g",
     href: "/feed?vibe=Neon%20nightlife",
     commentsPreview: [
@@ -182,22 +205,34 @@ const recentActivity = [
 ];
 
 export default function CommunityPage() {
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
   const [lists, setLists] = useState<CommunityList[]>([]);
   const [listPlaceRows, setListPlaceRows] = useState<ListPlaceRow[]>([]);
-  const [likedPosts, setLikedPosts] = useState<string[]>([]);
-  const [savedPosts, setSavedPosts] = useState<string[]>([]);
-  const [followedCreators, setFollowedCreators] = useState<string[]>([]);
+
+  const [likes, setLikes] = useState<CommunityLike[]>([]);
+  const [saves, setSaves] = useState<CommunitySave[]>([]);
+  const [comments, setComments] = useState<CommunityComment[]>([]);
+  const [follows, setFollows] = useState<CommunityFollow[]>([]);
+
   const [commentDrafts, setCommentDrafts] = useState<Record<string, string>>({});
-  const [localComments, setLocalComments] = useState<
-    Record<string, { author: string; text: string }[]>
-  >({});
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     async function loadCommunity() {
       setLoading(true);
       setMessage("");
+      setActionMessage("");
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserId(session?.user.id ?? null);
+      setUserEmail(session?.user.email ?? null);
 
       const { data: listData, error: listError } = await supabase
         .from("vibe_lists")
@@ -218,6 +253,29 @@ export default function CommunityPage() {
         .select("vibe_list_id,place_slug");
 
       setListPlaceRows(placeRows ?? []);
+
+      const { data: likeData } = await supabase
+        .from("community_likes")
+        .select("post_id,user_id");
+
+      const { data: saveData } = await supabase
+        .from("community_saves")
+        .select("post_id,user_id");
+
+      const { data: commentData } = await supabase
+        .from("community_comments")
+        .select("id,post_id,author_name,body,created_at")
+        .order("created_at", { ascending: true });
+
+      const { data: followData } = await supabase
+        .from("community_follows")
+        .select("creator_handle,follower_id");
+
+      setLikes(likeData ?? []);
+      setSaves(saveData ?? []);
+      setComments(commentData ?? []);
+      setFollows(followData ?? []);
+
       setLoading(false);
     }
 
@@ -244,9 +302,9 @@ export default function CommunityPage() {
       list.description ||
       "Una Vibe List pubblica creata dalla community di MoodScape.",
     placeCount: getPlaceCount(list.id),
-    likes: 24 + getPlaceCount(list.id) * 7,
-    comments: 3 + getPlaceCount(list.id),
-    saves: 8 + getPlaceCount(list.id) * 2,
+    baseLikes: 24 + getPlaceCount(list.id) * 7,
+    baseComments: 3 + getPlaceCount(list.id),
+    baseSaves: 8 + getPlaceCount(list.id) * 2,
     time: "oggi",
     href: `/vibe-lists/${list.id}`,
     commentsPreview: [
@@ -275,50 +333,201 @@ export default function CommunityPage() {
       .slice(0, 6);
   }, [feedPosts]);
 
-  function toggleLike(postId: string) {
-    setLikedPosts((current) =>
-      current.includes(postId)
-        ? current.filter((id) => id !== postId)
-        : [...current, postId],
+  function requireLogin() {
+    if (!userId) {
+      setActionMessage("Per interagire con la community devi prima accedere.");
+      return false;
+    }
+
+    setActionMessage("");
+    return true;
+  }
+
+  function isLiked(postId: string) {
+    return Boolean(userId && likes.some((like) => like.post_id === postId && like.user_id === userId));
+  }
+
+  function isSaved(postId: string) {
+    return Boolean(userId && saves.some((save) => save.post_id === postId && save.user_id === userId));
+  }
+
+  function isFollowing(handle: string) {
+    return Boolean(
+      userId &&
+        follows.some(
+          (follow) =>
+            follow.creator_handle === handle && follow.follower_id === userId,
+        ),
     );
   }
 
-  function toggleSave(postId: string) {
-    setSavedPosts((current) =>
-      current.includes(postId)
-        ? current.filter((id) => id !== postId)
-        : [...current, postId],
-    );
+  function getLikeCount(post: FeedPost) {
+    return post.baseLikes + likes.filter((like) => like.post_id === post.id).length;
   }
 
-  function toggleFollow(handle: string) {
-    setFollowedCreators((current) =>
-      current.includes(handle)
-        ? current.filter((id) => id !== handle)
-        : [...current, handle],
-    );
+  function getSaveCount(post: FeedPost) {
+    return post.baseSaves + saves.filter((save) => save.post_id === post.id).length;
   }
 
-  function submitComment(postId: string) {
+  function getPostComments(postId: string) {
+    return comments.filter((comment) => comment.post_id === postId);
+  }
+
+  async function toggleLike(postId: string) {
+    if (!requireLogin() || !userId) return;
+
+    const liked = isLiked(postId);
+
+    if (liked) {
+      const { error } = await supabase
+        .from("community_likes")
+        .delete()
+        .eq("user_id", userId)
+        .eq("post_id", postId);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setLikes((current) =>
+        current.filter(
+          (like) => !(like.user_id === userId && like.post_id === postId),
+        ),
+      );
+    } else {
+      const newLike = {
+        user_id: userId,
+        post_id: postId,
+      };
+
+      const { error } = await supabase.from("community_likes").insert(newLike);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setLikes((current) => [...current, newLike]);
+    }
+  }
+
+  async function toggleSave(postId: string) {
+    if (!requireLogin() || !userId) return;
+
+    const saved = isSaved(postId);
+
+    if (saved) {
+      const { error } = await supabase
+        .from("community_saves")
+        .delete()
+        .eq("user_id", userId)
+        .eq("post_id", postId);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setSaves((current) =>
+        current.filter(
+          (save) => !(save.user_id === userId && save.post_id === postId),
+        ),
+      );
+    } else {
+      const newSave = {
+        user_id: userId,
+        post_id: postId,
+      };
+
+      const { error } = await supabase.from("community_saves").insert(newSave);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setSaves((current) => [...current, newSave]);
+    }
+  }
+
+  async function toggleFollow(handle: string) {
+    if (!requireLogin() || !userId) return;
+
+    const followed = isFollowing(handle);
+
+    if (followed) {
+      const { error } = await supabase
+        .from("community_follows")
+        .delete()
+        .eq("follower_id", userId)
+        .eq("creator_handle", handle);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setFollows((current) =>
+        current.filter(
+          (follow) =>
+            !(follow.follower_id === userId && follow.creator_handle === handle),
+        ),
+      );
+    } else {
+      const newFollow = {
+        follower_id: userId,
+        creator_handle: handle,
+      };
+
+      const { error } = await supabase
+        .from("community_follows")
+        .insert(newFollow);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setFollows((current) => [...current, newFollow]);
+    }
+  }
+
+  async function submitComment(postId: string) {
+    if (!requireLogin() || !userId) return;
+
     const text = commentDrafts[postId]?.trim();
 
     if (!text) return;
 
-    setLocalComments((current) => ({
-      ...current,
-      [postId]: [
-        ...(current[postId] ?? []),
-        {
-          author: "Tu",
-          text,
-        },
-      ],
-    }));
+    const authorName = userEmail?.split("@")[0] || "Utente MoodScape";
+
+    const { data, error } = await supabase
+      .from("community_comments")
+      .insert({
+        user_id: userId,
+        post_id: postId,
+        author_name: authorName,
+        body: text,
+      })
+      .select("id,post_id,author_name,body,created_at")
+      .single();
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    if (data) {
+      setComments((current) => [...current, data]);
+    }
 
     setCommentDrafts((current) => ({
       ...current,
       [postId]: "",
     }));
+
+    setActionMessage("");
   }
 
   return (
@@ -367,6 +576,37 @@ export default function CommunityPage() {
             </div>
           </div>
 
+          {!userId && (
+            <div className="mt-5 rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                Puoi leggere il feed senza account. Per mettere like, salvare,
+                commentare o seguire creator devi accedere.
+              </p>
+
+              <div className="mt-4 flex gap-2">
+                <Link
+                  href="/login"
+                  className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                >
+                  Accedi
+                </Link>
+
+                <Link
+                  href="/signup"
+                  className="rounded-full bg-[#F1F1EE] px-5 py-3 text-sm font-bold text-[#111111]"
+                >
+                  Registrati
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {actionMessage && (
+            <div className="mt-5 rounded-[1.5rem] bg-white p-4 text-sm font-semibold leading-6 text-[#55554F] shadow-sm ring-1 ring-black/5">
+              {actionMessage}
+            </div>
+          )}
+
           <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
             {trendingVibes.map(([vibe, count]) => (
               <Link
@@ -400,13 +640,16 @@ export default function CommunityPage() {
             {!loading &&
               !message &&
               feedPosts.map((post) => {
-                const liked = likedPosts.includes(post.id);
-                const saved = savedPosts.includes(post.id);
-                const followed = followedCreators.includes(post.handle);
-                const extraComments = localComments[post.id] ?? [];
+                const liked = isLiked(post.id);
+                const saved = isSaved(post.id);
+                const followed = isFollowing(post.handle);
+                const realComments = getPostComments(post.id);
                 const allPreviewComments = [
                   ...post.commentsPreview,
-                  ...extraComments,
+                  ...realComments.map((comment) => ({
+                    author: comment.author_name,
+                    text: comment.body,
+                  })),
                 ];
 
                 return (
@@ -473,7 +716,7 @@ export default function CommunityPage() {
                               : "bg-[#F7F7F5] text-[#111111]"
                           }`}
                         >
-                          {post.likes + (liked ? 1 : 0)} like
+                          {getLikeCount(post)} like
                         </button>
 
                         <button
@@ -484,7 +727,7 @@ export default function CommunityPage() {
                               : "bg-[#F7F7F5] text-[#111111]"
                           }`}
                         >
-                          {post.saves + (saved ? 1 : 0)} salvataggi
+                          {getSaveCount(post)} salvataggi
                         </button>
 
                         <Link
@@ -497,7 +740,8 @@ export default function CommunityPage() {
 
                       <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
                         <p className="text-sm font-bold text-[#7A7A73]">
-                          Commenti · {post.comments + extraComments.length}
+                          Commenti ·{" "}
+                          {post.baseComments + realComments.length}
                         </p>
 
                         <div className="mt-4 grid gap-3">
@@ -522,7 +766,11 @@ export default function CommunityPage() {
                                 [post.id]: event.target.value,
                               }))
                             }
-                            placeholder="Scrivi un commento..."
+                            placeholder={
+                              userId
+                                ? "Scrivi un commento..."
+                                : "Accedi per commentare"
+                            }
                             className="min-w-0 flex-1 rounded-full bg-white px-4 py-3 text-sm outline-none ring-1 ring-black/5"
                           />
 
@@ -548,7 +796,7 @@ export default function CommunityPage() {
 
               <div className="mt-4 grid gap-3">
                 {activeCreators.map((creator) => {
-                  const followed = followedCreators.includes(creator.handle);
+                  const followed = isFollowing(creator.handle);
 
                   return (
                     <article
