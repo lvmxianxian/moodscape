@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 
 export default function SignupPage() {
@@ -10,8 +10,9 @@ export default function SignupPage() {
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleSignup(event: FormEvent<HTMLFormElement>) {
+  async function handleSignup(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setLoading(true);
     setMessage("");
 
@@ -20,78 +21,96 @@ export default function SignupPage() {
       password,
     });
 
+    setLoading(false);
+
     if (error) {
       setMessage(error.message);
-    } else {
-      setMessage(
-        "Account creato. Controlla la tua email per confermare l’iscrizione.",
-      );
+      return;
     }
 
-    setLoading(false);
+    setMessage(
+      "Account creato. Se la conferma email è attiva, controlla la posta prima di accedere.",
+    );
   }
 
   return (
-    <main className="min-h-screen bg-[#F7F4EF] px-6 py-8 text-[#1A1A2E]">
-      <div className="mx-auto max-w-md">
-        <section className="mt-12 rounded-[2rem] bg-white p-6 shadow-xl shadow-black/5">
-          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#5B4FCF]">
-            Crea account
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+      <div className="mx-auto flex min-h-[80vh] max-w-md items-center">
+        <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <Link
+            href="/"
+            className="inline-flex rounded-full bg-[#F7F7F5] px-5 py-3 text-sm font-bold text-[#111111]"
+          >
+            ← Home
+          </Link>
+
+          <div className="mt-8 flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.5rem] bg-[#0E3532]">
+            <img
+              src="/logo-mark.png"
+              alt="MoodScape"
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <p className="mt-6 text-sm font-semibold text-[#7A7A73]">
+            Crea il tuo spazio
           </p>
 
-          <h1 className="mt-4 text-4xl font-bold tracking-tight">
-            Entra in MoodScape.
+          <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight">
+            Registrati su MoodScape.
           </h1>
 
-          <p className="mt-4 leading-7 text-[#5A5A6E]">
-            Crea un account demo per iniziare a collegare profilo, moodboard e
-            Vibe Lists a un utente reale.
+          <p className="mt-4 leading-7 text-[#55554F]">
+            Salva luoghi, costruisci moodboard, crea Vibe Lists e partecipa alla
+            community.
           </p>
 
-          <form onSubmit={handleSignup} className="mt-8">
-            <div>
-              <label className="text-sm font-bold text-[#5B4FCF]">Email</label>
+          <form onSubmit={handleSignup} className="mt-7 grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-[#111111]">Email</span>
               <input
                 type="email"
+                required
                 value={email}
                 onChange={(event) => setEmail(event.target.value)}
-                required
-                className="mt-2 w-full rounded-2xl border border-[#E8E1D8] bg-[#F7F4EF] px-4 py-3 outline-none focus:border-[#5B4FCF]"
+                placeholder="nome@email.com"
+                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
               />
-            </div>
+            </label>
 
-            <div className="mt-5">
-              <label className="text-sm font-bold text-[#5B4FCF]">
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-[#111111]">
                 Password
-              </label>
+              </span>
               <input
                 type="password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
                 required
                 minLength={6}
-                className="mt-2 w-full rounded-2xl border border-[#E8E1D8] bg-[#F7F4EF] px-4 py-3 outline-none focus:border-[#5B4FCF]"
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="Minimo 6 caratteri"
+                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
               />
-            </div>
+            </label>
+
+            {message && (
+              <div className="rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                {message}
+              </div>
+            )}
 
             <button
               type="submit"
               disabled={loading}
-              className="mt-6 w-full rounded-full bg-[#5B4FCF] px-6 py-4 font-semibold text-white disabled:opacity-60"
+              className="rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white disabled:opacity-50"
             >
-              {loading ? "Creazione..." : "Crea account"}
+              {loading ? "Creazione account..." : "Crea account"}
             </button>
           </form>
 
-          {message && (
-            <div className="mt-5 rounded-2xl bg-[#EDE9FF] p-4 text-sm font-semibold text-[#5B4FCF]">
-              {message}
-            </div>
-          )}
-
-          <p className="mt-6 text-sm text-[#5A5A6E]">
+          <p className="mt-6 text-center text-sm font-medium text-[#7A7A73]">
             Hai già un account?{" "}
-            <Link href="/login" className="font-semibold text-[#5B4FCF]">
+            <Link href="/login" className="font-bold text-[#111111]">
               Accedi
             </Link>
           </p>

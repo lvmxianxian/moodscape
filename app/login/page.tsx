@@ -1,19 +1,21 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
+
     setLoading(true);
     setMessage("");
 
@@ -22,97 +24,97 @@ export default function LoginPage() {
       password,
     });
 
+    setLoading(false);
+
     if (error) {
       setMessage(error.message);
-      setLoading(false);
       return;
     }
 
     router.push("/profile");
+    router.refresh();
   }
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-16 text-[#0E3532]">
-      <div className="mx-auto grid max-w-6xl gap-10 lg:grid-cols-[0.9fr_1.1fr]">
-        <section className="flex flex-col justify-center">
-          <p className="inline-flex w-fit rounded-full border border-[#D8B77A] bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#0E3532]">
-            Login
-          </p>
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
+      <div className="mx-auto flex min-h-[80vh] max-w-md items-center">
+        <section className="w-full rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <Link
+            href="/"
+            className="inline-flex rounded-full bg-[#F7F7F5] px-5 py-3 text-sm font-bold text-[#111111]"
+          >
+            ← Home
+          </Link>
 
-          <h1 className="mt-8 max-w-xl font-serif text-5xl font-bold leading-tight tracking-tight text-[#2A160E] md:text-7xl">
-            Bentornata su MoodScape.
-          </h1>
-
-          <div className="mt-6 flex max-w-lg items-center gap-3">
-            <div className="h-px flex-1 bg-[#C99A57]" />
-            <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+          <div className="mt-8 flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.5rem] bg-[#0E3532]">
+            <img
+              src="/logo-mark.png"
+              alt="MoodScape"
+              className="h-full w-full object-cover"
+            />
           </div>
 
-          <p className="mt-6 max-w-lg text-lg leading-8 text-[#425653]">
-            Accedi per collegare salvataggi, moodboard, liste e profilo al tuo
-            account reale.
+          <p className="mt-6 text-sm font-semibold text-[#7A7A73]">
+            Bentornata
           </p>
-        </section>
 
-        <section className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-2xl shadow-[#0E3532]/10">
-          <div className="rounded-[1.5rem] bg-[#0E3532] p-6 text-[#F4EFE5]">
-            <h2 className="font-serif text-3xl font-bold">Accedi</h2>
+          <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight">
+            Accedi a MoodScape.
+          </h1>
 
-            <p className="mt-3 leading-7 text-[#F4EFE5]/75">
-              Inserisci email e password per entrare nel tuo spazio personale.
-            </p>
+          <p className="mt-4 leading-7 text-[#55554F]">
+            Entra per salvare luoghi, creare Vibe Lists e personalizzare la tua
+            moodboard.
+          </p>
 
-            <form onSubmit={handleLogin} className="mt-8">
-              <div>
-                <label className="text-sm font-bold uppercase tracking-[0.14em] text-[#D8B77A]">
-                  Email
-                </label>
+          <form onSubmit={handleLogin} className="mt-7 grid gap-4">
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-[#111111]">Email</span>
+              <input
+                type="email"
+                required
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="nome@email.com"
+                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
+              />
+            </label>
 
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-[#D8B77A]/40 bg-[#F4EFE5] px-4 py-3 text-[#0E3532] outline-none focus:border-[#C99A57]"
-                />
-              </div>
-
-              <div className="mt-5">
-                <label className="text-sm font-bold uppercase tracking-[0.14em] text-[#D8B77A]">
-                  Password
-                </label>
-
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  required
-                  className="mt-2 w-full rounded-2xl border border-[#D8B77A]/40 bg-[#F4EFE5] px-4 py-3 text-[#0E3532] outline-none focus:border-[#C99A57]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="mt-6 w-full rounded-full bg-[#D8B77A] px-6 py-4 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] disabled:opacity-60"
-              >
-                {loading ? "Accesso..." : "Accedi"}
-              </button>
-            </form>
+            <label className="grid gap-2">
+              <span className="text-sm font-bold text-[#111111]">
+                Password
+              </span>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(event) => setPassword(event.target.value)}
+                placeholder="La tua password"
+                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
+              />
+            </label>
 
             {message && (
-              <div className="mt-5 rounded-2xl border border-[#D8B77A]/40 bg-[#F4EFE5] p-4 text-sm font-bold text-[#2A160E]">
+              <div className="rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
                 {message}
               </div>
             )}
 
-            <p className="mt-6 text-sm text-[#F4EFE5]/75">
-              Non hai ancora un account?{" "}
-              <Link href="/signup" className="font-bold text-[#D8B77A]">
-                Registrati
-              </Link>
-            </p>
-          </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white disabled:opacity-50"
+            >
+              {loading ? "Accesso in corso..." : "Accedi"}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm font-medium text-[#7A7A73]">
+            Non hai ancora un account?{" "}
+            <Link href="/signup" className="font-bold text-[#111111]">
+              Registrati
+            </Link>
+          </p>
         </section>
       </div>
     </main>
