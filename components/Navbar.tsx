@@ -31,6 +31,18 @@ const menuLinks: NavLink[] = [
   { href: "/demo", label: "Demo", description: "Presentazione MVP" },
 ];
 
+function LogoMark() {
+  return (
+    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded-2xl bg-[#0E3532]">
+      <img
+        src="/logo-mark.png"
+        alt="MoodScape"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  );
+}
+
 export default function Navbar() {
   const [open, setOpen] = useState(false);
 
@@ -38,9 +50,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 border-b border-black/5 bg-[#F7F7F5]/90 backdrop-blur-xl">
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 text-[#111111]">
         <Link href="/" className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-[#111111] text-lg text-white">
-            🌙
-          </div>
+          <LogoMark />
 
           <div>
             <p className="text-base font-bold leading-none tracking-tight">

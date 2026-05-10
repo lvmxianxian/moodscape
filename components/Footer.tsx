@@ -9,6 +9,18 @@ const links = [
   { href: "/profile", label: "Profilo" },
 ];
 
+function LogoMark() {
+  return (
+    <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-2xl bg-[#0E3532]">
+      <img
+        src="/logo-mark.png"
+        alt="MoodScape"
+        className="h-full w-full object-cover"
+      />
+    </div>
+  );
+}
+
 export default function Footer() {
   return (
     <footer className="border-t border-black/5 bg-[#F7F7F5] px-5 py-10 text-[#111111]">
@@ -17,14 +29,12 @@ export default function Footer() {
           <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
             <div>
               <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#111111] text-lg text-white">
-                  🌙
-                </div>
+                <LogoMark />
 
                 <div>
                   <p className="text-xl font-bold tracking-tight">MoodScape</p>
                   <p className="mt-1 text-sm font-medium text-[#7A7A73]">
-                    Pinterest incontra Instagram ed Eventbrite
+                    Scoperta basata sul mood
                   </p>
                 </div>
               </div>
