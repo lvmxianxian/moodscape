@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import PlaceImage from "@/components/PlaceImage";
+import { supabase } from "@/lib/supabase";
 
 const routes = [
   {
@@ -9,7 +13,12 @@ const routes = [
     vibe: "Dolce vita",
     mood: "Romantico",
     duration: "2h 30m",
-    stops: ["Giardino degli Aranci", "Aventino", "Trastevere", "Vista finale al tramonto"],
+    stops: [
+      "Giardino degli Aranci",
+      "Aventino",
+      "Trastevere",
+      "Vista finale al tramonto",
+    ],
     price: "€4,99",
     area: "Aventino · Trastevere",
     description:
@@ -21,7 +30,13 @@ const routes = [
     vibe: "Dark academia",
     mood: "Introspettivo",
     duration: "2h",
-    stops: ["Biblioteca Angelica", "Centro storico", "Caffè raccolto", "Libreria indipendente", "Cortile silenzioso"],
+    stops: [
+      "Biblioteca Angelica",
+      "Centro storico",
+      "Caffè raccolto",
+      "Libreria indipendente",
+      "Cortile silenzioso",
+    ],
     price: "€3,99",
     area: "Centro storico",
     description:
@@ -57,7 +72,13 @@ const routes = [
     vibe: "Neon nightlife",
     mood: "Sociale",
     duration: "3h",
-    stops: ["Monti", "Neon Bar", "Drink stop", "Passeggiata serale", "Tappa social finale"],
+    stops: [
+      "Monti",
+      "Neon Bar",
+      "Drink stop",
+      "Passeggiata serale",
+      "Tappa social finale",
+    ],
     price: "€5,99",
     area: "Monti · Centro",
     description:
@@ -65,17 +86,173 @@ const routes = [
   },
 ];
 
-type PageProps = {
-  params: {
-    slug: string;
-  };
+type RoutePurchase = {
+  route_slug: string;
+  user_id: string;
 };
 
-export default function RouteDetailPage({ params }: PageProps) {
+type SavedRoute = {
+  route_slug: string;
+  user_id: string;
+};
+
+export default function RouteDetailPage() {
+  const params = useParams<{ slug: string }>();
   const route = routes.find((item) => item.slug === params.slug);
+
+  const [userId, setUserId] = useState<string | null>(null);
+  const [purchases, setPurchases] = useState<RoutePurchase[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState("");
 
   if (!route) {
     notFound();
+  }
+
+  useEffect(() => {
+    async function loadRouteState() {
+      setLoading(true);
+      setActionMessage("");
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserId(session?.user.id ?? null);
+
+      if (!session) {
+        setPurchases([]);
+        setSavedRoutes([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: purchaseData } = await supabase
+        .from("route_purchases")
+        .select("route_slug,user_id")
+        .eq("route_slug", route.slug)
+        .eq("user_id", session.user.id);
+
+      const { data: savedData } = await supabase
+        .from("saved_routes")
+        .select("route_slug,user_id")
+        .eq("route_slug", route.slug)
+        .eq("user_id", session.user.id);
+
+      setPurchases(purchaseData ?? []);
+      setSavedRoutes(savedData ?? []);
+      setLoading(false);
+    }
+
+    loadRouteState();
+  }, [route.slug]);
+
+  const purchased = useMemo(() => {
+    return Boolean(
+      userId &&
+        purchases.some(
+          (purchase) =>
+            purchase.user_id === userId && purchase.route_slug === route.slug,
+        ),
+    );
+  }, [purchases, route.slug, userId]);
+
+  const saved = useMemo(() => {
+    return Boolean(
+      userId &&
+        savedRoutes.some(
+          (savedRoute) =>
+            savedRoute.user_id === userId && savedRoute.route_slug === route.slug,
+        ),
+    );
+  }, [route.slug, savedRoutes, userId]);
+
+  function requireLogin() {
+    if (!userId) {
+      setActionMessage("Per acquistare o salvare un percorso devi prima accedere.");
+      return false;
+    }
+
+    setActionMessage("");
+    return true;
+  }
+
+  async function buyRoute() {
+    if (!requireLogin() || !userId) return;
+
+    if (purchased) {
+      setActionMessage("Hai già acquistato questo percorso.");
+      return;
+    }
+
+    const newPurchase = {
+      user_id: userId,
+      route_slug: route.slug,
+      route_title: route.title,
+      price: route.price,
+    };
+
+    const { error } = await supabase.from("route_purchases").insert(newPurchase);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setPurchases((current) => [
+      ...current,
+      { user_id: userId, route_slug: route.slug },
+    ]);
+
+    setActionMessage("Percorso acquistato. Lo trovi nei tuoi percorsi.");
+  }
+
+  async function toggleSavedRoute() {
+    if (!requireLogin() || !userId) return;
+
+    if (saved) {
+      const { error } = await supabase
+        .from("saved_routes")
+        .delete()
+        .eq("user_id", userId)
+        .eq("route_slug", route.slug);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setSavedRoutes((current) =>
+        current.filter(
+          (savedRoute) =>
+            !(savedRoute.user_id === userId && savedRoute.route_slug === route.slug),
+        ),
+      );
+
+      setActionMessage("Percorso rimosso dai salvati.");
+      return;
+    }
+
+    const newSavedRoute = {
+      user_id: userId,
+      route_slug: route.slug,
+      route_title: route.title,
+    };
+
+    const { error } = await supabase.from("saved_routes").insert(newSavedRoute);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setSavedRoutes((current) => [
+      ...current,
+      { user_id: userId, route_slug: route.slug },
+    ]);
+
+    setActionMessage("Percorso salvato.");
   }
 
   return (
@@ -141,21 +318,68 @@ export default function RouteDetailPage({ params }: PageProps) {
               </div>
             </div>
 
-            <button className="mt-5 w-full rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white">
-              Acquista percorso
+            {!userId && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  Accedi per acquistare o salvare questo percorso.
+                </p>
+
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Accedi
+                  </Link>
+
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                  >
+                    Registrati
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {actionMessage && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                {actionMessage}
+              </div>
+            )}
+
+            <button
+              onClick={buyRoute}
+              disabled={loading || purchased}
+              className={`mt-5 w-full rounded-full px-6 py-4 text-sm font-bold disabled:cursor-not-allowed ${
+                purchased
+                  ? "bg-[#F1F1EE] text-[#111111]"
+                  : "bg-[#111111] text-white"
+              }`}
+            >
+              {purchased ? "Percorso acquistato ✓" : "Acquista percorso"}
             </button>
 
-            <p className="mt-4 text-sm leading-6 text-[#55554F]">
-              Demo MVP: il pulsante simula l’acquisto. In una versione reale si
-              collegherebbe a Stripe o a un sistema di pagamento.
-            </p>
+            <button
+              onClick={toggleSavedRoute}
+              disabled={loading}
+              className="mt-3 w-full rounded-full bg-[#F1F1EE] px-6 py-4 text-sm font-bold text-[#111111] disabled:opacity-60"
+            >
+              {saved ? "Percorso salvato ✓" : "Salva percorso"}
+            </button>
 
             <Link
-              href="/premium"
-              className="mt-4 block rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+              href="/my-routes"
+              className="mt-3 block rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
             >
-              Vedi Premium
+              I miei percorsi
             </Link>
+
+            <p className="mt-4 text-sm leading-6 text-[#55554F]">
+              Demo MVP: l’acquisto viene salvato su Supabase. In una versione
+              reale il pulsante sarebbe collegato a Stripe o a un altro sistema
+              di pagamento.
+            </p>
           </aside>
         </section>
 
@@ -166,10 +390,7 @@ export default function RouteDetailPage({ params }: PageProps) {
 
           <div className="mt-5 grid gap-3 md:grid-cols-2">
             {route.stops.map((stop, index) => (
-              <div
-                key={stop}
-                className="rounded-[1.5rem] bg-[#F7F7F5] p-4"
-              >
+              <div key={stop} className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
                 <p className="text-sm font-bold text-[#7A7A73]">
                   Tappa {index + 1}
                 </p>
