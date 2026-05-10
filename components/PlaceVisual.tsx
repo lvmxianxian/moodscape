@@ -74,6 +74,67 @@ const visualByVibe: Record<string, { emoji: string; label: string; gradient: str
     label: "Local soul",
     gradient: "from-[#0E3532] via-[#425653] to-[#2A160E]",
   },
+  // Vibe mancanti — aggiunti
+  "Cozy café": {
+    emoji: "☕",
+    label: "Warm inside",
+    gradient: "from-[#2A160E] via-[#D8B77A] to-[#C99A57]",
+  },
+  "Quiet luxury": {
+    emoji: "🪞",
+    label: "Still elegance",
+    gradient: "from-[#F4EFE5] via-[#C99A57] to-[#0E3532]",
+  },
+  "Minimal chic": {
+    emoji: "🪴",
+    label: "Clean calm",
+    gradient: "from-[#F4EFE5] via-[#D8B77A] to-[#F4EFE5]",
+  },
+  "Rainy day": {
+    emoji: "🌧️",
+    label: "Grey softness",
+    gradient: "from-[#425653] via-[#0E3532] to-[#2A160E]",
+  },
+  "Slow morning": {
+    emoji: "🌤️",
+    label: "Gentle start",
+    gradient: "from-[#F4EFE5] via-[#D8B77A] to-[#C99A57]",
+  },
+  "Secret garden": {
+    emoji: "🌺",
+    label: "Hidden bloom",
+    gradient: "from-[#0E3532] via-[#425653] to-[#D8B77A]",
+  },
+  "Soft nightlife": {
+    emoji: "🌙",
+    label: "Gentle evening",
+    gradient: "from-[#0E3532] via-[#2A160E] to-[#425653]",
+  },
+  "Museum date": {
+    emoji: "🏺",
+    label: "Art & quiet",
+    gradient: "from-[#2A160E] via-[#C99A57] to-[#F4EFE5]",
+  },
+  "Sunset walk": {
+    emoji: "🌄",
+    label: "Evening glow",
+    gradient: "from-[#C99A57] via-[#2A160E] to-[#0E3532]",
+  },
+  "City break": {
+    emoji: "🏙️",
+    label: "Urban escape",
+    gradient: "from-[#0E3532] via-[#425653] to-[#C99A57]",
+  },
+  "Percorso": {
+    emoji: "🗺️",
+    label: "Itinerario",
+    gradient: "from-[#0E3532] via-[#2A160E] to-[#D8B77A]",
+  },
+  "Salvato": {
+    emoji: "🔖",
+    label: "Salvato",
+    gradient: "from-[#D8B77A] via-[#C99A57] to-[#0E3532]",
+  },
 };
 
 export default function PlaceVisual({ vibe, className = "" }: PlaceVisualProps) {

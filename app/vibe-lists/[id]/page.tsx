@@ -41,6 +41,7 @@ export default function VibeListDetailPage() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [saved, setSaved] = useState(false);
+  const [routeCreated, setRouteCreated] = useState(false);
 
   useEffect(() => {
     async function loadList() {
@@ -121,14 +122,10 @@ export default function VibeListDetailPage() {
     return (
       <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
         <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Lista non trovata.
-          </h1>
-
+          <h1 className="text-3xl font-bold tracking-tight">Lista non trovata.</h1>
           <p className="mt-3 leading-7 text-[#55554F]">
             Questa Vibe List non esiste oppure non è più disponibile.
           </p>
-
           <Link
             href="/vibe-lists"
             className="mt-6 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
@@ -139,6 +136,8 @@ export default function VibeListDetailPage() {
       </main>
     );
   }
+
+  const routesHref = `/routes?vibe=${encodeURIComponent(list.vibe)}`;
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
@@ -179,7 +178,7 @@ export default function VibeListDetailPage() {
               </span>
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
               <button
                 onClick={() => setSaved(!saved)}
                 className={`rounded-full px-6 py-4 text-sm font-bold ${
@@ -190,6 +189,14 @@ export default function VibeListDetailPage() {
               >
                 {saved ? "Lista salvata ✓" : "Salva lista"}
               </button>
+
+              <Link
+                href={routesHref}
+                onClick={() => setRouteCreated(true)}
+                className="rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+              >
+                {routeCreated ? "Percorso aperto ✓" : "🗺️ Crea percorso"}
+              </Link>
 
               <Link
                 href="/feed"
@@ -205,6 +212,27 @@ export default function VibeListDetailPage() {
                 Apri community
               </Link>
             </div>
+
+            {/* Banner crea percorso */}
+            {places.length >= 2 && (
+              <div className="mt-6 rounded-[1.5rem] bg-[#111111] p-5 text-white">
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-white/50">
+                  Vibe Route
+                </p>
+                <p className="mt-2 text-lg font-bold leading-snug">
+                  Hai {places.length} luoghi — trasformali in un percorso acquistabile.
+                </p>
+                <p className="mt-2 text-sm leading-6 text-white/70">
+                  Sfoglia i percorsi con vibe {list.vibe} già pronti da MoodScape, o usa questa lista come ispirazione.
+                </p>
+                <Link
+                  href={routesHref}
+                  className="mt-4 inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                >
+                  Vedi percorsi {list.vibe} →
+                </Link>
+              </div>
+            )}
           </div>
 
           <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
@@ -233,14 +261,27 @@ export default function VibeListDetailPage() {
                       vibe={place.vibe}
                       className="h-32 rounded-[1.25rem]"
                     />
-
-                    <p className="mt-3 line-clamp-2 text-sm font-bold">
-                      {place.name}
-                    </p>
+                    <p className="mt-3 line-clamp-2 text-sm font-bold">{place.name}</p>
                   </Link>
                 ))}
               </div>
             )}
+
+            {/* Promo percorso nella sidebar */}
+            <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+              <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#9A9A92]">
+                Percorsi correlati
+              </p>
+              <p className="mt-2 text-sm font-semibold leading-6 text-[#55554F]">
+                Trova percorsi con vibe {list.vibe} già curati da MoodScape.
+              </p>
+              <Link
+                href={routesHref}
+                className="mt-3 inline-flex rounded-full bg-[#111111] px-4 py-2 text-xs font-bold text-white"
+              >
+                Sfoglia percorsi
+              </Link>
+            </div>
           </aside>
         </section>
 
@@ -253,10 +294,7 @@ export default function VibeListDetailPage() {
 
         <section className="mt-8 pb-10">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold tracking-tight">
-              Luoghi nella lista
-            </h2>
-
+            <h2 className="text-2xl font-bold tracking-tight">Luoghi nella lista</h2>
             <Link href="/feed" className="text-sm font-bold text-[#7A7A73]">
               Feed
             </Link>
@@ -264,15 +302,10 @@ export default function VibeListDetailPage() {
 
           {places.length === 0 ? (
             <div className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-              <h3 className="text-2xl font-bold tracking-tight">
-                Questa lista è ancora vuota.
-              </h3>
-
+              <h3 className="text-2xl font-bold tracking-tight">Questa lista è ancora vuota.</h3>
               <p className="mt-3 leading-7 text-[#55554F]">
-                Vai nel Feed, apri un luogo e usa “Aggiungi alla lista” per
-                costruire questa board.
+                Vai nel Feed, apri un luogo e usa "Aggiungi alla lista" per costruire questa board.
               </p>
-
               <Link
                 href="/feed"
                 className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
@@ -300,9 +333,7 @@ export default function VibeListDetailPage() {
                       {place.city} · {place.area}
                     </p>
 
-                    <h3 className="mt-2 text-2xl font-bold tracking-tight">
-                      {place.name}
-                    </h3>
+                    <h3 className="mt-2 text-2xl font-bold tracking-tight">{place.name}</h3>
 
                     <p className="mt-3 line-clamp-3 text-sm leading-6 text-[#55554F]">
                       {place.description}
@@ -312,11 +343,9 @@ export default function VibeListDetailPage() {
                       <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
                         {place.mood}
                       </span>
-
                       <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
                         {place.price}
                       </span>
-
                       <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
                         {place.time}
                       </span>
