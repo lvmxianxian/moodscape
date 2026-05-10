@@ -95,107 +95,66 @@ export default function EventsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F4EFE5] px-6 py-10 text-[#0E3532]">
+    <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
-        <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-[2rem] bg-[#0E3532] p-8 text-[#F4EFE5] shadow-2xl shadow-[#0E3532]/10">
-            <p className="inline-flex rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
-              Events
-            </p>
+        <section className="mx-auto max-w-md lg:max-w-7xl">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="text-sm font-semibold text-[#7A7A73]">
+                Eventi MoodScape
+              </p>
 
-            <h1 className="mt-8 max-w-4xl font-serif text-5xl font-bold leading-tight tracking-tight md:text-7xl">
-              Eventi scelti in base al mood, non solo alla data.
-            </h1>
+              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Eventi scelti in base al mood.
+              </h1>
 
-            <div className="mt-6 flex max-w-3xl items-center gap-3">
-              <div className="h-px flex-1 bg-[#C99A57]" />
-              <div className="h-3 w-3 rounded-full bg-[#C99A57]" />
+              <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
+                Esperienze locali, creator, date, prezzi e posti disponibili.
+                Filtra per mood e vibe, poi scegli cosa vivere.
+              </p>
             </div>
 
-            <p className="mt-6 max-w-3xl text-lg leading-8 text-[#F4EFE5]/75">
-              La parte Eventbrite di MoodScape: esperienze locali, date,
-              creator, posti disponibili e CTA per partecipare. Ogni evento è
-              collegato a mood e vibe.
-            </p>
+            <Link
+              href="/community"
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-white text-xl shadow-sm ring-1 ring-black/5"
+            >
+              ✦
+            </Link>
+          </div>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <a
-                href="#events-list"
-                className="rounded-full bg-[#D8B77A] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
-              >
-                Scopri eventi
-              </a>
+          <div className="mt-6 grid grid-cols-3 gap-3">
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">{events.length}</p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Eventi
+              </p>
+            </div>
 
-              <Link
-                href="/community"
-                className="rounded-full border border-[#D8B77A] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
-              >
-                Apri community
-              </Link>
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">
+                {new Set(events.map((event) => event.organizer)).size}
+              </p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Creator
+              </p>
+            </div>
+
+            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+              <p className="text-2xl font-bold">
+                {events.reduce((total, event) => total + event.spots_left, 0)}
+              </p>
+              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
+                Posti
+              </p>
             </div>
           </div>
 
-          <aside className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5">
-            <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-              Event pulse
-            </p>
-
-            <div className="mt-6 grid gap-4">
-              <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
-                <p className="font-serif text-5xl font-bold text-[#2A160E]">
-                  {events.length}
-                </p>
-                <p className="mt-1 text-sm font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                  Eventi attivi
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
-                <p className="font-serif text-5xl font-bold text-[#2A160E]">
-                  {new Set(events.map((event) => event.organizer)).size}
-                </p>
-                <p className="mt-1 text-sm font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                  Organizzatori
-                </p>
-              </div>
-
-              <div className="rounded-3xl border border-[#D8B77A]/50 bg-[#F4EFE5] p-5">
-                <p className="font-serif text-5xl font-bold text-[#2A160E]">
-                  {events.reduce((total, event) => total + event.spots_left, 0)}
-                </p>
-                <p className="mt-1 text-sm font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                  Posti disponibili
-                </p>
-              </div>
-            </div>
-          </aside>
-        </section>
-
-        <section
-          id="events-list"
-          className="mt-12 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-6 shadow-xl shadow-[#0E3532]/5"
-        >
-          <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase tracking-[0.18em] text-[#C99A57]">
-                Discover
-              </p>
-
-              <h2 className="mt-3 font-serif text-4xl font-bold text-[#2A160E]">
-                Eventi in arrivo.
-              </h2>
-
-              <p className="mt-3 max-w-2xl leading-7 text-[#425653]">
-                Filtra per mood e vibe, poi apri l’evento per vedere dettagli,
-                location e disponibilità.
-              </p>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row">
+          <section className="mt-6 rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <div className="grid gap-3 sm:grid-cols-2">
               <select
                 value={selectedMood}
                 onChange={(event) => setSelectedMood(event.target.value)}
-                className="rounded-full border border-[#D8B77A]/70 bg-[#F4EFE5] px-5 py-3 text-sm font-bold text-[#0E3532] outline-none"
+                className="rounded-full bg-[#F7F7F5] px-5 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
               >
                 {moodFilters.map((mood) => (
                   <option key={mood} value={mood}>
@@ -207,7 +166,7 @@ export default function EventsPage() {
               <select
                 value={selectedVibe}
                 onChange={(event) => setSelectedVibe(event.target.value)}
-                className="rounded-full border border-[#D8B77A]/70 bg-[#F4EFE5] px-5 py-3 text-sm font-bold text-[#0E3532] outline-none"
+                className="rounded-full bg-[#F7F7F5] px-5 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
               >
                 {vibeFilters.map((vibe) => (
                   <option key={vibe} value={vibe}>
@@ -216,91 +175,94 @@ export default function EventsPage() {
                 ))}
               </select>
             </div>
-          </div>
+          </section>
         </section>
 
         {loading && (
-          <section className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 text-[#425653]">
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
             Caricamento eventi...
           </section>
         )}
 
         {!loading && message && (
-          <section className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8 font-bold text-[#2A160E]">
-            {message}
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+            <h2 className="text-2xl font-bold tracking-tight">
+              Non riesco a caricare gli eventi.
+            </h2>
+            <p className="mt-3 leading-7 text-[#55554F]">{message}</p>
           </section>
         )}
 
         {!loading && !message && filteredEvents.length === 0 && (
-          <section className="mt-8 rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-8">
-            <h3 className="font-serif text-3xl font-bold text-[#2A160E]">
+          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
+            <h2 className="text-2xl font-bold tracking-tight">
               Nessun evento trovato.
-            </h3>
-
-            <p className="mt-4 max-w-xl leading-7 text-[#425653]">
-              Prova a cambiare mood o vibe. La sezione eventi può crescere con
-              nuovi format e creator.
+            </h2>
+            <p className="mt-3 leading-7 text-[#55554F]">
+              Prova a cambiare mood o vibe.
             </p>
           </section>
         )}
 
         {!loading && !message && filteredEvents.length > 0 && (
-          <section className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <section className="mx-auto mt-6 grid max-w-md gap-4 md:grid-cols-2 lg:max-w-7xl lg:grid-cols-3">
             {filteredEvents.map((event) => (
               <Link
                 key={event.id}
                 href={`/events/${event.slug}`}
-                className="group rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
+                className="group overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10"
               >
                 <PlaceImage
                   imageUrl={event.image_url}
                   name={event.title}
                   vibe={event.vibe}
-                  className="h-52"
+                  className="h-56"
                 />
 
-                <div className="mt-5 flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
-                      {event.city} · {event.area}
-                    </p>
+                <div className="p-2 pt-5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-[#7A7A73]">
+                        {event.city} · {event.area}
+                      </p>
 
-                    <h3 className="mt-3 font-serif text-3xl font-bold text-[#2A160E]">
-                      {event.title}
-                    </h3>
+                      <h2 className="mt-2 text-2xl font-bold tracking-tight text-[#111111]">
+                        {event.title}
+                      </h2>
+                    </div>
+
+                    <div className="shrink-0 rounded-[1.25rem] bg-[#111111] px-4 py-3 text-center text-white">
+                      <p className="text-xs font-bold uppercase text-white/50">
+                        {formatDate(event.event_date).split(" ")[0]}
+                      </p>
+                      <p className="mt-1 text-xl font-bold">
+                        {formatDate(event.event_date).split(" ")[1]}
+                      </p>
+                    </div>
                   </div>
 
-                  <div className="rounded-2xl bg-[#0E3532] px-4 py-3 text-center text-[#F4EFE5]">
-                    <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#D8B77A]">
-                      {formatDate(event.event_date).split(" ")[0]}
-                    </p>
-                    <p className="mt-1 font-serif text-2xl font-bold">
-                      {formatDate(event.event_date).split(" ")[1]}
-                    </p>
+                  <p className="mt-4 line-clamp-3 text-sm leading-6 text-[#55554F]">
+                    {event.description}
+                  </p>
+
+                  <div className="mt-5 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {event.event_time}
+                    </span>
+
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {event.price}
+                    </span>
+
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {event.spots_left} posti
+                    </span>
                   </div>
+
+                  <p className="mt-5 text-sm font-bold text-[#111111]">
+                    Apri evento →
+                  </p>
                 </div>
-
-                <p className="mt-4 text-sm leading-6 text-[#425653]">
-                  {event.description}
-                </p>
-
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                    {event.event_time}
-                  </span>
-
-                  <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                    {event.price}
-                  </span>
-
-                  <span className="rounded-full border border-[#D8B77A] bg-[#F4EFE5] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532]">
-                    {event.spots_left} posti
-                  </span>
-                </div>
-
-                <p className="mt-6 text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532] transition group-hover:text-[#C99A57]">
-                  Apri evento →
-                </p>
               </Link>
             ))}
           </section>
