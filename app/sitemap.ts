@@ -1,12 +1,19 @@
 import type { MetadataRoute } from "next";
 
-const baseUrl = "https://moodscape-tau-ten.vercel.app";
+const baseUrl = "https://moodscape-ai-project.vercel.app";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const routes = [
     "",
     "/demo",
     "/community",
+    "/creators",
+    "/u/slowroma",
+    "/u/bookishwalks",
+    "/u/hiddenverde",
+    "/u/afterdarkroma",
+    "/u/gallerymood",
+    "/u/goldenwalks",
     "/events",
     "/explore",
     "/feed",

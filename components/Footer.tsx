@@ -3,6 +3,7 @@ import Link from "next/link";
 const links = [
   { href: "/feed", label: "Feed" },
   { href: "/community", label: "Community" },
+  { href: "/creators", label: "Creator" },
   { href: "/events", label: "Eventi" },
   { href: "/map", label: "Mappa" },
   { href: "/vibe-lists", label: "Vibe Lists" },
@@ -40,8 +41,8 @@ export default function Footer() {
               </div>
 
               <p className="mt-5 max-w-xl text-base leading-7 text-[#55554F]">
-                Scopri luoghi, eventi, liste e community in base a come ti
-                senti e all’atmosfera che vuoi vivere.
+                Scopri luoghi, eventi, creator, liste e community in base a come
+                ti senti e all’atmosfera che vuoi vivere.
               </p>
             </div>
 
