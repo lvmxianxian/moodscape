@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type DbVibeList = {
   id: string;
@@ -268,11 +269,7 @@ export default function VibeListDetailPage() {
                   className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
                 >
                   <Link href={`/place/${place.slug}`}>
-                    <div className="flex h-44 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                      <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                        {place.vibe}
-                      </span>
-                    </div>
+                    <PlaceVisual vibe={place.vibe} className="h-44" />
 
                     <p className="mt-5 text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
                       {place.city} · {place.area}

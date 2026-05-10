@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import PlaceVisual from "@/components/PlaceVisual";
 
 type SavedPlaceRow = {
   place_slug: string;
@@ -22,7 +23,6 @@ type DbPlace = {
 
 export default function MoodboardPage() {
   const [email, setEmail] = useState<string | null>(null);
-  const [savedSlugs, setSavedSlugs] = useState<string[]>([]);
   const [savedPlaces, setSavedPlaces] = useState<DbPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
@@ -56,8 +56,6 @@ export default function MoodboardPage() {
       const slugs = savedData
         ? savedData.map((row: SavedPlaceRow) => row.place_slug)
         : [];
-
-      setSavedSlugs(slugs);
 
       if (slugs.length === 0) {
         setSavedPlaces([]);
@@ -187,11 +185,7 @@ export default function MoodboardPage() {
                 key={place.slug}
                 className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-xl shadow-[#0E3532]/5"
               >
-                <div className="flex h-48 items-end rounded-[1.5rem] bg-[#0E3532] p-4">
-                  <span className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]">
-                    {place.vibe}
-                  </span>
-                </div>
+                <PlaceVisual vibe={place.vibe} className="h-48" />
 
                 <div className="mt-5">
                   <p className="text-xs font-bold uppercase tracking-[0.14em] text-[#C99A57]">
