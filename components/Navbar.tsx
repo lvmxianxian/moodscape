@@ -23,7 +23,16 @@ const mainLinks: NavLink[] = [
 const menuLinks: NavLink[] = [
   { href: "/explore", label: "Mood Check", description: "Scegli mood e vibe" },
   { href: "/vibe-lists", label: "Vibe Lists", description: "Raccolte e board" },
-  { href: "/my-routes", label: "I miei percorsi", description: "Acquistati e salvati" },
+  {
+    href: "/my-routes",
+    label: "I miei percorsi",
+    description: "Acquistati e salvati",
+  },
+  {
+    href: "/my-events",
+    label: "I miei eventi",
+    description: "Partecipazioni e salvati",
+  },
   { href: "/moodboard", label: "Moodboard", description: "Luoghi salvati" },
   {
     href: "/profile",
