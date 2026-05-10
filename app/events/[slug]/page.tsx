@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import PlaceImage from "@/components/PlaceImage";
@@ -25,15 +25,37 @@ type DbEvent = {
   image_url: string | null;
 };
 
+type EventAttendance = {
+  event_slug: string;
+  user_id: string;
+};
+
+type SavedEvent = {
+  event_slug: string;
+  user_id: string;
+};
+
 export default function EventDetailPage() {
   const params = useParams<{ slug: string }>();
+
   const [event, setEvent] = useState<DbEvent | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [attendees, setAttendees] = useState<EventAttendance[]>([]);
+  const [savedEvents, setSavedEvents] = useState<SavedEvent[]>([]);
   const [loading, setLoading] = useState(true);
-  const [joined, setJoined] = useState(false);
-  const [saved, setSaved] = useState(false);
+  const [actionMessage, setActionMessage] = useState("");
 
   useEffect(() => {
     async function loadEvent() {
+      setLoading(true);
+      setActionMessage("");
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserId(session?.user.id ?? null);
+
       const { data } = await supabase
         .from("events")
         .select(
@@ -43,11 +65,149 @@ export default function EventDetailPage() {
         .maybeSingle();
 
       setEvent(data);
+
+      const { data: attendanceData } = await supabase
+        .from("event_attendees")
+        .select("event_slug,user_id")
+        .eq("event_slug", params.slug);
+
+      const { data: savedData } = await supabase
+        .from("saved_events")
+        .select("event_slug,user_id")
+        .eq("event_slug", params.slug);
+
+      setAttendees(attendanceData ?? []);
+      setSavedEvents(savedData ?? []);
       setLoading(false);
     }
 
     loadEvent();
   }, [params.slug]);
+
+  const joined = useMemo(() => {
+    return Boolean(
+      userId &&
+        attendees.some(
+          (attendance) =>
+            attendance.user_id === userId &&
+            attendance.event_slug === params.slug,
+        ),
+    );
+  }, [attendees, params.slug, userId]);
+
+  const saved = useMemo(() => {
+    return Boolean(
+      userId &&
+        savedEvents.some(
+          (savedEvent) =>
+            savedEvent.user_id === userId &&
+            savedEvent.event_slug === params.slug,
+        ),
+    );
+  }, [params.slug, savedEvents, userId]);
+
+  const remainingSpots = event
+    ? Math.max(event.spots_left - attendees.length, 0)
+    : 0;
+
+  function requireLogin() {
+    if (!userId) {
+      setActionMessage("Per partecipare o salvare un evento devi prima accedere.");
+      return false;
+    }
+
+    setActionMessage("");
+    return true;
+  }
+
+  async function toggleAttendance() {
+    if (!event || !requireLogin() || !userId) return;
+
+    if (joined) {
+      const { error } = await supabase
+        .from("event_attendees")
+        .delete()
+        .eq("user_id", userId)
+        .eq("event_slug", event.slug);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setAttendees((current) =>
+        current.filter(
+          (attendance) =>
+            !(
+              attendance.user_id === userId &&
+              attendance.event_slug === event.slug
+            ),
+        ),
+      );
+
+      setActionMessage("Partecipazione rimossa.");
+      return;
+    }
+
+    const newAttendance = {
+      user_id: userId,
+      event_slug: event.slug,
+    };
+
+    const { error } = await supabase
+      .from("event_attendees")
+      .insert(newAttendance);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setAttendees((current) => [...current, newAttendance]);
+    setActionMessage("Partecipazione salvata.");
+  }
+
+  async function toggleSavedEvent() {
+    if (!event || !requireLogin() || !userId) return;
+
+    if (saved) {
+      const { error } = await supabase
+        .from("saved_events")
+        .delete()
+        .eq("user_id", userId)
+        .eq("event_slug", event.slug);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setSavedEvents((current) =>
+        current.filter(
+          (savedEvent) =>
+            !(savedEvent.user_id === userId && savedEvent.event_slug === event.slug),
+        ),
+      );
+
+      setActionMessage("Evento rimosso dai salvati.");
+      return;
+    }
+
+    const newSavedEvent = {
+      user_id: userId,
+      event_slug: event.slug,
+    };
+
+    const { error } = await supabase.from("saved_events").insert(newSavedEvent);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setSavedEvents((current) => [...current, newSavedEvent]);
+    setActionMessage("Evento salvato.");
+  }
 
   function formatDate(date: string) {
     return new Intl.DateTimeFormat("it-IT", {
@@ -152,15 +312,50 @@ export default function EventDetailPage() {
 
                 <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
                   <p className="text-sm font-bold text-[#7A7A73]">Posti</p>
-                  <p className="mt-1 text-lg font-bold">
-                    {event.spots_left}
-                  </p>
+                  <p className="mt-1 text-lg font-bold">{remainingSpots}</p>
                 </div>
+              </div>
+
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">
+                  Partecipanti
+                </p>
+                <p className="mt-1 text-lg font-bold">{attendees.length}</p>
               </div>
             </div>
 
+            {!userId && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  Accedi per partecipare o salvare questo evento.
+                </p>
+
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Accedi
+                  </Link>
+
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                  >
+                    Registrati
+                  </Link>
+                </div>
+              </div>
+            )}
+
+            {actionMessage && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                {actionMessage}
+              </div>
+            )}
+
             <button
-              onClick={() => setJoined(true)}
+              onClick={toggleAttendance}
               className={`mt-5 w-full rounded-full px-6 py-4 text-sm font-bold ${
                 joined
                   ? "bg-[#F1F1EE] text-[#111111]"
@@ -171,7 +366,7 @@ export default function EventDetailPage() {
             </button>
 
             <button
-              onClick={() => setSaved(!saved)}
+              onClick={toggleSavedEvent}
               className="mt-3 w-full rounded-full bg-[#F1F1EE] px-6 py-4 text-sm font-bold text-[#111111]"
             >
               {saved ? "Evento salvato ✓" : "Salva evento"}
