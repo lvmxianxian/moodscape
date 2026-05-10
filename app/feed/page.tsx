@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
-import PlaceVisual from "@/components/PlaceVisual";
+import PlaceImage from "@/components/PlaceImage";
 
 type DbPlace = {
   slug: string;
@@ -16,6 +16,7 @@ type DbPlace = {
   description: string;
   price: string;
   time: string;
+  image_url: string | null;
 };
 
 function FeedContent() {
@@ -49,7 +50,9 @@ function FeedContent() {
       try {
         let query = supabase
           .from("places")
-          .select("slug,name,city,area,mood,vibe,description,price,time")
+          .select(
+            "slug,name,city,area,mood,vibe,description,price,time,image_url",
+          )
           .order("created_at", { ascending: true });
 
         if (selectedMood) {
@@ -75,7 +78,9 @@ function FeedContent() {
         if (exactPlaces.length === 0 && (selectedMood || selectedVibe)) {
           let suggestionQuery = supabase
             .from("places")
-            .select("slug,name,city,area,mood,vibe,description,price,time")
+            .select(
+              "slug,name,city,area,mood,vibe,description,price,time,image_url",
+            )
             .order("created_at", { ascending: true })
             .limit(8);
 
@@ -249,7 +254,11 @@ function FeedContent() {
                 href={`/place/${place.slug}`}
                 className="group overflow-hidden rounded-[2rem] border border-[#D8B77A]/40 bg-[#F8F2E8] p-4 shadow-xl shadow-[#0E3532]/5 transition hover:-translate-y-1 hover:border-[#C99A57]"
               >
-                <PlaceVisual vibe={place.vibe} />
+                <PlaceImage
+                  imageUrl={place.image_url}
+                  name={place.name}
+                  vibe={place.vibe}
+                />
 
                 <div className="mt-5">
                   <div className="flex items-start justify-between gap-3">
