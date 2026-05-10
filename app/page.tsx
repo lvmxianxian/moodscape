@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { useMemo, useState } from "react";
 
 const moods = [
   "Stressato",
@@ -6,7 +9,19 @@ const moods = [
   "Curioso",
   "Romantico",
   "Energico",
-  "In cerca di socialità",
+  "Introspettivo",
+  "Sociale",
+  "Creativo",
+  "Nostalgico",
+  "Avventuroso",
+  "Rilassato",
+  "In cerca di ispirazione",
+  "In cerca di comfort",
+  "In cerca di novità",
+  "Un po’ malinconico",
+  "Da solo ma non troppo",
+  "Con voglia di bellezza",
+  "Con voglia di muovermi",
 ];
 
 const vibes = [
@@ -16,6 +31,18 @@ const vibes = [
   "Vintage film",
   "Neon nightlife",
   "Romantic ruins",
+  "Cozy café",
+  "Art gallery mood",
+  "Old money",
+  "Hidden garden",
+  "Bookshop afternoon",
+  "Rooftop sunset",
+  "Indie sleaze",
+  "Minimal chic",
+  "Spiritual retreat",
+  "Local authentic",
+  "Rainy day",
+  "Golden hour walk",
 ];
 
 const features = [
@@ -52,6 +79,21 @@ const features = [
 ];
 
 export default function HomePage() {
+  const [selectedMood, setSelectedMood] = useState("");
+  const [selectedVibe, setSelectedVibe] = useState("");
+
+  const feedHref = useMemo(() => {
+    const params = new URLSearchParams();
+
+    if (selectedMood) params.set("mood", selectedMood);
+    if (selectedVibe) params.set("vibe", selectedVibe);
+
+    const query = params.toString();
+    return query ? `/feed?${query}` : "/feed";
+  }, [selectedMood, selectedVibe]);
+
+  const canExplore = selectedMood && selectedVibe;
+
   return (
     <main className="min-h-screen bg-[#F4EFE5] text-[#0E3532]">
       <section className="mx-auto grid max-w-7xl gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
@@ -79,16 +121,29 @@ export default function HomePage() {
               href="/explore"
               className="rounded-full bg-[#0E3532] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#F4EFE5]"
             >
-              Scegli il tuo mood
+              Apri Mood Check
             </Link>
 
             <Link
-              href="/feed"
-              className="rounded-full border border-[#C99A57] bg-[#F8F2E8] px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] text-[#0E3532]"
+              href={feedHref}
+              className={`rounded-full border px-7 py-3 text-center text-sm font-bold uppercase tracking-[0.14em] ${
+                canExplore
+                  ? "border-[#C99A57] bg-[#F8F2E8] text-[#0E3532]"
+                  : "pointer-events-none border-[#D8B77A]/60 bg-[#E8DDC8] text-[#0E3532]/40"
+              }`}
             >
-              Esplora il feed
+              Mostrami i posti
             </Link>
           </div>
+
+          {canExplore && (
+            <p className="mt-5 text-sm font-semibold text-[#425653]">
+              Scelta attiva:{" "}
+              <span className="font-bold text-[#0E3532]">{selectedMood}</span>{" "}
+              +{" "}
+              <span className="font-bold text-[#0E3532]">{selectedVibe}</span>
+            </p>
+          )}
         </div>
 
         <div className="rounded-[2rem] border border-[#D8B77A]/50 bg-[#F8F2E8] p-5 shadow-2xl shadow-[#0E3532]/10">
@@ -97,31 +152,64 @@ export default function HomePage() {
               Come ti senti oggi?
             </p>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              {moods.map((mood) => (
-                <div
-                  key={mood}
-                  className="rounded-2xl border border-[#D8B77A]/30 bg-[#F4EFE5] px-4 py-3 text-sm font-semibold text-[#0E3532]"
-                >
-                  {mood}
-                </div>
-              ))}
+            <div className="mt-5 max-h-72 overflow-y-auto pr-2">
+              <div className="grid grid-cols-2 gap-3">
+                {moods.map((mood) => {
+                  const active = selectedMood === mood;
+
+                  return (
+                    <button
+                      key={mood}
+                      onClick={() => setSelectedMood(mood)}
+                      className={`rounded-2xl border px-4 py-3 text-left text-sm font-semibold ${
+                        active
+                          ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
+                          : "border-[#D8B77A]/30 bg-[#F4EFE5] text-[#0E3532]"
+                      }`}
+                    >
+                      {mood}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <p className="mt-8 text-sm font-bold uppercase tracking-[0.18em] text-[#D8B77A]">
               Che vibe vuoi seguire?
             </p>
 
-            <div className="mt-5 flex flex-wrap gap-2">
-              {vibes.map((vibe) => (
-                <span
-                  key={vibe}
-                  className="rounded-full border border-[#D8B77A] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#F4EFE5]"
-                >
-                  {vibe}
-                </span>
-              ))}
+            <div className="mt-5 max-h-72 overflow-y-auto pr-2">
+              <div className="flex flex-wrap gap-2">
+                {vibes.map((vibe) => {
+                  const active = selectedVibe === vibe;
+
+                  return (
+                    <button
+                      key={vibe}
+                      onClick={() => setSelectedVibe(vibe)}
+                      className={`rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] ${
+                        active
+                          ? "border-[#D8B77A] bg-[#D8B77A] text-[#0E3532]"
+                          : "border-[#D8B77A] text-[#F4EFE5]"
+                      }`}
+                    >
+                      {vibe}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+
+            <Link
+              href={feedHref}
+              className={`mt-8 block rounded-full px-6 py-4 text-center text-sm font-bold uppercase tracking-[0.14em] ${
+                canExplore
+                  ? "bg-[#D8B77A] text-[#0E3532]"
+                  : "pointer-events-none bg-[#F4EFE5]/20 text-[#F4EFE5]/40"
+              }`}
+            >
+              Continua con questa vibe
+            </Link>
           </div>
         </div>
       </section>
@@ -137,9 +225,8 @@ export default function HomePage() {
           </h2>
 
           <p className="mt-4 max-w-2xl leading-7 text-[#425653]">
-            Questa versione è ancora una demo con dati finti, ma mostra il
-            flusso principale dell’app: mood, feed, mappa, liste, route,
-            moodboard, profilo e premium.
+            Questa versione mostra il flusso principale dell’app: mood, feed,
+            mappa, liste, route, moodboard, profilo e premium.
           </p>
 
           <div className="mt-8 grid gap-4 md:grid-cols-3">
