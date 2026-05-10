@@ -4,17 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import AuthButton from "./AuthButton";
 
-const links = [
+const primaryLinks = [
   { href: "/", label: "Home" },
-  { href: "/explore", label: "Explore" },
+  { href: "/explore", label: "Mood Check" },
   { href: "/feed", label: "Feed" },
   { href: "/map", label: "Map" },
   { href: "/vibe-lists", label: "Vibe Lists" },
-  { href: "/route", label: "Route" },
+];
+
+const secondaryLinks = [
   { href: "/moodboard", label: "Moodboard" },
   { href: "/profile", label: "Profile" },
   { href: "/premium", label: "Premium" },
-  { href: "/signup", label: "Signup" },
 ];
 
 export default function Navbar() {
@@ -28,7 +29,7 @@ export default function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-5 text-sm font-semibold lg:flex">
-          {links.map((link) => (
+          {primaryLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -39,7 +40,17 @@ export default function Navbar() {
           ))}
         </div>
 
-        <div className="hidden lg:block">
+        <div className="hidden items-center gap-3 lg:flex">
+          {secondaryLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="rounded-full border border-[#D8B77A]/50 bg-[#F8F2E8] px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-[#0E3532] transition hover:border-[#C99A57]"
+            >
+              {link.label}
+            </Link>
+          ))}
+
           <AuthButton />
         </div>
 
@@ -54,7 +65,7 @@ export default function Navbar() {
       {open && (
         <div className="border-t border-[#D8B77A]/30 bg-[#F4EFE5] px-6 py-4 lg:hidden">
           <div className="mx-auto grid max-w-6xl gap-3">
-            {links.map((link) => (
+            {[...primaryLinks, ...secondaryLinks].map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -64,6 +75,14 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
+
+            <Link
+              href="/vibe-lists/create"
+              onClick={() => setOpen(false)}
+              className="rounded-2xl bg-[#0E3532] px-4 py-3 text-sm font-bold text-[#F4EFE5]"
+            >
+              Crea Vibe List
+            </Link>
 
             <div className="pt-2">
               <AuthButton />
