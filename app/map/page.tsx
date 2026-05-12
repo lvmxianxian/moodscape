@@ -1,62 +1,91 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
-type DbPlace = {
-  slug: string;
-  name: string;
-  city: string;
-  area: string;
-  mood: string;
-  vibe: string;
-  description: string;
-  price: string;
-  time: string;
-  latitude: number;
-  longitude: number;
-};
+const places = [
+  {
+    name: "Giardino degli Aranci",
+    slug: "giardino-aranci",
+    city: "Roma",
+    area: "Aventino",
+    mood: "Romantico",
+    vibe: "Dolce vita",
+    type: "Vista panoramica",
+    coordinates: "41.8841, 12.4807",
+    description:
+      "Un punto panoramico morbido e luminoso, perfetto per una passeggiata lenta o un tramonto.",
+  },
+  {
+    name: "Biblioteca Angelica",
+    slug: "biblioteca-angelica",
+    city: "Roma",
+    area: "Centro storico",
+    mood: "Solo",
+    vibe: "Dark academia",
+    type: "Biblioteca",
+    coordinates: "41.9005, 12.4735",
+    description:
+      "Scaffali antichi, luce morbida e atmosfera silenziosa per una giornata introspettiva.",
+  },
+  {
+    name: "Galleria Sciarra",
+    slug: "galleria-sciarra",
+    city: "Roma",
+    area: "Trevi",
+    mood: "Curioso",
+    vibe: "Quiet luxury",
+    type: "Cortile storico",
+    coordinates: "41.9009, 12.4824",
+    description:
+      "Una galleria nascosta e decorata, ideale per una pausa visiva nel centro.",
+  },
+  {
+    name: "Neon Bar",
+    slug: "neon-bar",
+    city: "Roma",
+    area: "Monti",
+    mood: "In cerca di socialità",
+    vibe: "Neon nightlife",
+    type: "Locale serale",
+    coordinates: "41.8947, 12.4923",
+    description:
+      "Luci colorate, musica e atmosfera serale per una vibe più sociale e notturna.",
+  },
+  {
+    name: "Colosseo",
+    slug: "colosseo",
+    city: "Roma",
+    area: "Centro",
+    mood: "Curioso",
+    vibe: "Romantic ruins",
+    type: "Monumento",
+    coordinates: "41.8902, 12.4922",
+    description:
+      "Rovine iconiche, atmosfera cinematografica e una tappa forte per percorsi storici.",
+  },
+  {
+    name: "Villa Borghese",
+    slug: "villa-borghese",
+    city: "Roma",
+    area: "Pinciano",
+    mood: "Stressato",
+    vibe: "Natura selvaggia",
+    type: "Parco",
+    coordinates: "41.9142, 12.4922",
+    description:
+      "Verde, respiro e camminate morbide per rallentare senza uscire dalla città.",
+  },
+];
+
+const mapLayers = [
+  "Tutte le vibe",
+  "Dark academia",
+  "Dolce vita",
+  "Quiet luxury",
+  "Neon nightlife",
+  "Romantic ruins",
+  "Natura selvaggia",
+];
 
 export default function MapPage() {
-  const [places, setPlaces] = useState<DbPlace[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
-  const [selectedVibe, setSelectedVibe] = useState("Tutte");
-
-  useEffect(() => {
-    async function loadPlaces() {
-      setLoading(true);
-      setMessage("");
-
-      const { data, error } = await supabase
-        .from("places")
-        .select(
-          "slug,name,city,area,mood,vibe,description,price,time,latitude,longitude",
-        )
-        .order("created_at", { ascending: true });
-
-      if (error) {
-        setMessage(error.message);
-      } else {
-        setPlaces(data ?? []);
-      }
-
-      setLoading(false);
-    }
-
-    loadPlaces();
-  }, []);
-
-  const vibes = useMemo(() => {
-    return ["Tutte", ...Array.from(new Set(places.map((place) => place.vibe)))];
-  }, [places]);
-
-  const filteredPlaces = useMemo(() => {
-    if (selectedVibe === "Tutte") return places;
-    return places.filter((place) => place.vibe === selectedVibe);
-  }, [places, selectedVibe]);
-
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
       <div className="mx-auto max-w-7xl">
@@ -64,205 +93,207 @@ export default function MapPage() {
           <div className="flex items-start justify-between gap-4">
             <div>
               <p className="text-sm font-semibold text-[#7A7A73]">
-                Mappa MoodScape
+                Vibe Map
               </p>
 
-              <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
-                Esplora i luoghi sulla mappa.
+              <h1 className="mt-2 max-w-4xl text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Esplora la città per mood e atmosfera.
               </h1>
 
               <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
-                Visualizza i posti consigliati in città, filtra per vibe e apri
-                il dettaglio di ogni luogo.
+                Una mappa visuale per scoprire luoghi, percorsi e vibe nella
+                città. Puoi filtrare per atmosfera e suggerire nuovi posti alla
+                community.
               </p>
             </div>
 
             <Link
-              href="/feed"
+              href="/submit-place"
               className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xl text-white shadow-sm"
+              aria-label="Suggerisci un luogo"
             >
               +
             </Link>
           </div>
 
-          <div className="mt-6 grid grid-cols-3 gap-3">
-            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
-              <p className="text-2xl font-bold">{places.length}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                Luoghi
-              </p>
-            </div>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <Link
+              href="/submit-place"
+              className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+            >
+              Suggerisci un luogo
+            </Link>
 
-            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
-              <p className="text-2xl font-bold">{vibes.length - 1}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                Vibe
-              </p>
-            </div>
+            <Link
+              href="/feed"
+              className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+            >
+              Apri il Feed
+            </Link>
 
-            <div className="rounded-[1.5rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
-              <p className="text-2xl font-bold">{filteredPlaces.length}</p>
-              <p className="mt-1 text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                Visibili
-              </p>
-            </div>
+            <Link
+              href="/routes"
+              className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+            >
+              Vedi percorsi
+            </Link>
           </div>
 
-          <div className="mt-5 flex gap-2 overflow-x-auto pb-2">
-            {vibes.map((vibe) => {
-              const active = selectedVibe === vibe;
-
-              return (
-                <button
-                  key={vibe}
-                  onClick={() => setSelectedVibe(vibe)}
-                  className={`shrink-0 rounded-full px-5 py-3 text-sm font-bold transition ${
-                    active
-                      ? "bg-[#111111] text-white"
-                      : "bg-white text-[#111111] shadow-sm ring-1 ring-black/5"
-                  }`}
-                >
-                  {vibe}
-                </button>
-              );
-            })}
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
+            {mapLayers.map((layer) => (
+              <span
+                key={layer}
+                className="shrink-0 rounded-full bg-white px-4 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
+              >
+                {layer}
+              </span>
+            ))}
           </div>
         </section>
 
-        {loading && (
-          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 text-[#7A7A73] shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
-            Caricamento mappa...
-          </section>
-        )}
-
-        {!loading && message && (
-          <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
-            <h2 className="text-2xl font-bold">Errore nel caricamento.</h2>
-            <p className="mt-3 text-[#55554F]">{message}</p>
-          </section>
-        )}
-
-        {!loading && !message && (
-          <section className="mx-auto mt-6 grid max-w-md gap-5 lg:max-w-7xl lg:grid-cols-[1fr_380px]">
-            <div className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
-              <div className="relative min-h-[560px] overflow-hidden rounded-[1.5rem] bg-[#EDEDE8]">
-                <div className="absolute inset-0 opacity-60">
-                  <div className="absolute left-8 top-20 h-[620px] w-4 rotate-45 rounded-full bg-white" />
-                  <div className="absolute left-40 top-[-40px] h-[760px] w-4 -rotate-12 rounded-full bg-white" />
-                  <div className="absolute right-20 top-10 h-[760px] w-4 rotate-[28deg] rounded-full bg-white" />
-                  <div className="absolute left-0 top-72 h-4 w-full rounded-full bg-white" />
-                  <div className="absolute left-0 top-40 h-3 w-full -rotate-6 rounded-full bg-white" />
-                  <div className="absolute left-0 bottom-32 h-3 w-full rotate-3 rounded-full bg-white" />
-                </div>
-
-                <div className="absolute inset-0 p-6">
-                  <div className="rounded-[1.5rem] bg-white/80 p-4 backdrop-blur">
-                    <p className="text-sm font-bold text-[#7A7A73]">
-                      Vista mappa
-                    </p>
-                    <p className="mt-1 text-xl font-bold">
-                      {filteredPlaces.length} luoghi visibili
-                    </p>
-                  </div>
-
-                  {filteredPlaces.slice(0, 10).map((place, index) => {
-                    const positions = [
-                      ["18%", "28%"],
-                      ["52%", "22%"],
-                      ["72%", "40%"],
-                      ["30%", "55%"],
-                      ["58%", "62%"],
-                      ["80%", "72%"],
-                      ["20%", "78%"],
-                      ["44%", "42%"],
-                      ["66%", "84%"],
-                      ["36%", "18%"],
-                    ];
-
-                    const [left, top] = positions[index % positions.length];
-
-                    return (
-                      <Link
-                        key={place.slug}
-                        href={`/place/${place.slug}`}
-                        style={{ left, top }}
-                        className="absolute flex h-12 w-12 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-[#111111] text-sm font-bold text-white shadow-xl ring-4 ring-white"
-                        title={place.name}
-                      >
-                        {index + 1}
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
+        <section className="mx-auto mt-6 grid max-w-md gap-5 lg:max-w-7xl lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="relative min-h-[520px] overflow-hidden rounded-[2rem] bg-[#0E3532] p-5 text-white shadow-xl shadow-black/10">
+            <div className="absolute inset-0 opacity-20">
+              <div className="absolute left-10 top-16 h-40 w-40 rounded-full border border-white" />
+              <div className="absolute right-16 top-20 h-64 w-64 rounded-full border border-white" />
+              <div className="absolute bottom-10 left-1/3 h-72 w-72 rounded-full border border-white" />
+              <div className="absolute left-1/4 top-1/2 h-px w-2/3 rotate-12 bg-white" />
+              <div className="absolute left-10 top-1/3 h-px w-4/5 -rotate-6 bg-white" />
             </div>
 
-            <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
-              <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-bold tracking-tight">
-                  Luoghi sulla mappa
+            <div className="relative z-10 flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.16em] text-white/50">
+                  Roma · mappa demo
+                </p>
+                <h2 className="mt-2 text-3xl font-bold tracking-tight">
+                  Luoghi sulla Vibe Map
                 </h2>
-
-                <Link href="/feed" className="text-sm font-bold text-[#7A7A73]">
-                  Feed
-                </Link>
               </div>
 
-              {filteredPlaces.length === 0 ? (
-                <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-5">
-                  <h3 className="text-xl font-bold">Nessun luogo visibile.</h3>
-                  <p className="mt-2 text-sm leading-6 text-[#55554F]">
-                    Cambia filtro o aggiungi altri luoghi nel database.
+              <span className="rounded-full bg-white px-4 py-3 text-sm font-bold text-[#111111]">
+                {places.length} pin
+              </span>
+            </div>
+
+            <div className="relative z-10 mt-8 grid gap-3 md:grid-cols-2">
+              {places.map((place, index) => (
+                <Link
+                  key={place.slug}
+                  href={`/place/${place.slug}`}
+                  className="rounded-[1.5rem] bg-white/10 p-4 text-white ring-1 ring-white/10 backdrop-blur transition hover:bg-white hover:text-[#111111]"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-xs font-bold uppercase tracking-[0.14em] opacity-60">
+                        Pin {index + 1}
+                      </p>
+
+                      <h3 className="mt-2 text-xl font-bold tracking-tight">
+                        {place.name}
+                      </h3>
+
+                      <p className="mt-1 text-sm font-semibold opacity-70">
+                        {place.area} · {place.type}
+                      </p>
+                    </div>
+
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white text-sm font-bold text-[#111111]">
+                      {index + 1}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <span className="rounded-full bg-white/15 px-3 py-2 text-xs font-bold">
+                      {place.mood}
+                    </span>
+
+                    <span className="rounded-full bg-white/15 px-3 py-2 text-xs font-bold">
+                      {place.vibe}
+                    </span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+
+          <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Mappa collaborativa
+            </p>
+
+            <h2 className="mt-3 text-3xl font-bold tracking-tight">
+              Suggerisci nuovi luoghi alla community.
+            </h2>
+
+            <p className="mt-4 text-base leading-7 text-[#55554F]">
+              Nel PRD la Vibe Map è collaborativa: gli utenti possono proporre
+              nuovi pin, mood, vibe e descrizioni. Questa sezione aggiunge il
+              primo flusso demo per contribuire.
+            </p>
+
+            <Link
+              href="/submit-place"
+              className="mt-6 block rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
+            >
+              Suggerisci un luogo
+            </Link>
+
+            <div className="mt-6 grid gap-3">
+              {places.slice(0, 4).map((place) => (
+                <Link
+                  key={place.slug}
+                  href={`/place/${place.slug}`}
+                  className="rounded-[1.5rem] bg-[#F7F7F5] p-4 transition hover:bg-[#111111] hover:text-white"
+                >
+                  <p className="text-base font-bold">{place.name}</p>
+                  <p className="mt-1 text-sm font-semibold text-[#7A7A73]">
+                    {place.city} · {place.area}
                   </p>
-                </div>
-              ) : (
-                <div className="mt-5 grid max-h-[520px] gap-3 overflow-y-auto pr-1">
-                  {filteredPlaces.map((place, index) => (
-                    <Link
-                      key={place.slug}
-                      href={`/place/${place.slug}`}
-                      className="rounded-[1.5rem] bg-[#F7F7F5] p-4 transition hover:bg-white hover:ring-1 hover:ring-black/5"
-                    >
-                      <div className="flex items-start gap-3">
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xs font-bold text-white">
-                          {index + 1}
-                        </span>
+                  <p className="mt-2 text-xs font-bold uppercase tracking-[0.12em]">
+                    {place.vibe}
+                  </p>
+                </Link>
+              ))}
+            </div>
+          </aside>
+        </section>
 
-                        <div>
-                          <p className="text-sm font-semibold text-[#7A7A73]">
-                            {place.area} · {place.vibe}
-                          </p>
+        <section className="mx-auto mt-6 grid max-w-md gap-4 pb-10 md:grid-cols-2 lg:max-w-7xl lg:grid-cols-3">
+          {places.map((place) => (
+            <Link
+              key={place.slug}
+              href={`/place/${place.slug}`}
+              className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5 transition hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10"
+            >
+              <p className="text-sm font-bold text-[#7A7A73]">
+                {place.city} · {place.area}
+              </p>
 
-                          <h3 className="mt-1 text-lg font-bold tracking-tight">
-                            {place.name}
-                          </h3>
+              <h3 className="mt-2 text-2xl font-bold tracking-tight">
+                {place.name}
+              </h3>
 
-                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-[#55554F]">
-                            {place.description}
-                          </p>
-                        </div>
-                      </div>
+              <p className="mt-3 text-sm leading-6 text-[#55554F]">
+                {place.description}
+              </p>
 
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <span className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#55554F]">
-                          {place.mood}
-                        </span>
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                  {place.mood}
+                </span>
 
-                        <span className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#55554F]">
-                          {place.price}
-                        </span>
+                <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                  {place.vibe}
+                </span>
+              </div>
 
-                        <span className="rounded-full bg-white px-3 py-2 text-xs font-bold text-[#55554F]">
-                          {place.time}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              )}
-            </aside>
-          </section>
-        )}
+              <p className="mt-5 text-sm font-bold text-[#111111]">
+                Apri luogo →
+              </p>
+            </Link>
+          ))}
+        </section>
       </div>
     </main>
   );
