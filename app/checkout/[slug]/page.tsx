@@ -1,212 +1,150 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import { useMemo, useState } from "react";
+import { notFound, useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import PlaceImage from "@/components/PlaceImage";
 
 const routes = [
   {
     slug: "roma-romantica-tramonto",
     title: "Roma romantica al tramonto",
-    mood: "Romantico",
     vibe: "Dolce vita",
+    duration: "2h 30m",
+    stops: "4 tappe",
+    price: "€4,99",
+    numericPrice: "4,99",
+    area: "Aventino · Trastevere",
     description:
-      "Un percorso morbido tra viste panoramiche, scorci iconici e tappe perfette per una serata romantica.",
-    price: "€9",
-    numericPrice: 9,
-    duration: "2h 30min",
-    stops: "5 tappe",
-    image: "/places/giardino-aranci.webp",
-    includes: [
-      "Itinerario ordinato tappa per tappa",
-      "Mappa mentale del percorso",
-      "Suggerimenti su orari e momenti migliori",
-      "Moodboard estetica del percorso",
-      "Accesso permanente nella tua area personale",
-    ],
+      "Un percorso lento tra viste panoramiche, strade morbide e tappe perfette per una serata romantica.",
   },
   {
     slug: "dark-academia-walk",
     title: "Dark academia walk",
-    mood: "Curioso",
     vibe: "Dark academia",
-    description:
-      "Biblioteche, cortili silenziosi e luoghi con atmosfera letteraria per una giornata lenta e curiosa.",
-    price: "€7",
-    numericPrice: 7,
     duration: "2h",
-    stops: "4 tappe",
-    image: "/places/biblioteca-angelica.jpg",
-    includes: [
-      "Itinerario ordinato tappa per tappa",
-      "Luoghi silenziosi e suggestivi",
-      "Consigli per pause lettura e foto",
-      "Moodboard dark academia",
-      "Accesso permanente nella tua area personale",
-    ],
+    stops: "5 tappe",
+    price: "€3,99",
+    numericPrice: "3,99",
+    area: "Centro storico",
+    description:
+      "Biblioteche, cortili silenziosi, librerie e caffè raccolti per una giornata più intima e letteraria.",
   },
   {
     slug: "hidden-garden-route",
-    title: "Giardini nascosti",
-    mood: "Rilassato",
+    title: "Hidden garden route",
     vibe: "Hidden garden",
+    duration: "3h",
+    stops: "4 tappe",
+    price: "€4,99",
+    numericPrice: "4,99",
+    area: "Pinciano · Villa Borghese",
     description:
-      "Una selezione di spazi verdi, cortili e pause tranquille per staccare dal ritmo della città.",
-    price: "€8",
-    numericPrice: 8,
-    duration: "2h 15min",
-    stops: "5 tappe",
-    image: "/places/villa-borghese.jpg",
-    includes: [
-      "Itinerario rilassato e mobile-first",
-      "Tappe verdi e poco caotiche",
-      "Suggerimenti per pause lente",
-      "Moodboard natural e quiet luxury",
-      "Accesso permanente nella tua area personale",
-    ],
+      "Giardini, cortili verdi e luoghi tranquilli dove respirare lontano dal caos della città.",
   },
   {
     slug: "golden-hour-photo-walk",
     title: "Golden hour photo walk",
-    mood: "Creativo",
     vibe: "Golden hour walk",
+    duration: "1h 45m",
+    stops: "3 tappe",
+    price: "€2,99",
+    numericPrice: "2,99",
+    area: "Villa Borghese · Pincio",
     description:
-      "Un itinerario visivo pensato per foto, architetture, dettagli estetici e luce calda di fine giornata.",
-    price: "€10",
-    numericPrice: 10,
-    duration: "3h",
-    stops: "6 tappe",
-    image: "/places/chiostro-bramante.png",
-    includes: [
-      "Percorso pensato per foto e contenuti",
-      "Tappe ordinate per luce e atmosfera",
-      "Suggerimenti per orari golden hour",
-      "Moodboard visiva del percorso",
-      "Accesso permanente nella tua area personale",
-    ],
+      "Un percorso fotografico pensato per la luce più bella della giornata, con tappe panoramiche e visuali.",
   },
   {
     slug: "neon-nightlife-route",
     title: "Neon nightlife route",
-    mood: "Sociale",
     vibe: "Neon nightlife",
-    description:
-      "Una serata tra posti vivi, atmosfere notturne e tappe sociali da fare con amici o nuove conoscenze.",
-    price: "€12",
-    numericPrice: 12,
-    duration: "3h 30min",
+    duration: "3h",
     stops: "5 tappe",
-    image: "/places/galleria-sciarra.jpg",
-    includes: [
-      "Itinerario serale pronto da seguire",
-      "Tappe sociali e fotogeniche",
-      "Suggerimenti per iniziare e chiudere la serata",
-      "Moodboard nightlife",
-      "Accesso permanente nella tua area personale",
-    ],
+    price: "€5,99",
+    numericPrice: "5,99",
+    area: "Monti · Centro",
+    description:
+      "Una serata guidata tra luci, drink, locali e tappe sociali senza finire nel caos totale.",
   },
 ];
 
-export default function CheckoutRoutePage() {
+export default function CheckoutPage() {
   const params = useParams<{ slug: string }>();
   const router = useRouter();
 
+  const routeMatch = routes.find((item) => item.slug === params.slug);
+
+  if (!routeMatch) {
+    notFound();
+  }
+
+  const route = routeMatch;
+
+  const [userId, setUserId] = useState<string | null>(null);
   const [cardName, setCardName] = useState("");
   const [cardNumber, setCardNumber] = useState("");
   const [expiry, setExpiry] = useState("");
-  const [cvv, setCvv] = useState("");
-  const [discountCode, setDiscountCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [cvc, setCvc] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [paying, setPaying] = useState(false);
   const [message, setMessage] = useState("");
 
-  const route = useMemo(() => {
-    return routes.find((item) => item.slug === params.slug) ?? null;
-  }, [params.slug]);
+  useEffect(() => {
+    async function loadSession() {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
 
-  const discountApplied = discountCode.trim().toUpperCase() === "MOOD10";
-  const discount = route && discountApplied ? 1 : 0;
-  const subtotal = route?.numericPrice ?? 0;
-  const total = Math.max(subtotal - discount, 0);
+      setUserId(session?.user.id ?? null);
+      setLoading(false);
+    }
 
-  async function handlePurchase(event: React.FormEvent<HTMLFormElement>) {
+    loadSession();
+  }, []);
+
+  async function handleDemoPayment(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    if (!route) return;
-
-    setLoading(true);
-    setMessage("");
-
-    if (!cardName.trim() || !cardNumber.trim() || !expiry.trim() || !cvv.trim()) {
-      setMessage("Completa tutti i campi del pagamento demo.");
-      setLoading(false);
+    if (!userId) {
+      setMessage("Per acquistare un percorso devi prima accedere.");
       return;
     }
 
-    try {
-      const {
-        data: { user },
-        error: userError,
-      } = await supabase.auth.getUser();
-
-      if (userError) {
-        setMessage(userError.message);
-        return;
-      }
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      const { error } = await supabase.from("route_purchases").upsert(
-        {
-          user_id: user.id,
-          route_slug: route.slug,
-          route_title: route.title,
-          price: route.price,
-        },
-        {
-          onConflict: "user_id,route_slug",
-        },
-      );
-
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      router.push("/my-routes");
-      router.refresh();
-    } catch (error) {
-      console.error("Errore acquisto percorso:", error);
-      setMessage(
-        "Non siamo riusciti a completare il pagamento demo. Riprova tra poco.",
-      );
-    } finally {
-      setLoading(false);
+    if (!cardName || !cardNumber || !expiry || !cvc) {
+      setMessage("Compila tutti i campi demo del pagamento.");
+      return;
     }
+
+    setPaying(true);
+    setMessage("");
+
+    const { error } = await supabase.from("route_purchases").upsert(
+      {
+        user_id: userId,
+        route_slug: route.slug,
+        route_title: route.title,
+        price: route.price,
+      },
+      {
+        onConflict: "user_id,route_slug",
+      },
+    );
+
+    if (error) {
+      setMessage(error.message);
+      setPaying(false);
+      return;
+    }
+
+    router.push("/my-routes");
   }
 
-  if (!route) {
+  if (loading) {
     return (
       <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
-        <div className="mx-auto max-w-md">
-          <Link
-            href="/routes"
-            className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
-          >
-            ← Percorsi
-          </Link>
-
-          <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Percorso non trovato
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-[#7A7A73]">
-              Il percorso che stai cercando non è disponibile.
-            </p>
-          </section>
+        <div className="mx-auto max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          Caricamento checkout...
         </div>
       </main>
     );
@@ -214,220 +152,179 @@ export default function CheckoutRoutePage() {
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
-      <div className="mx-auto max-w-md pb-10">
+      <div className="mx-auto max-w-6xl">
         <Link
           href={`/routes/${route.slug}`}
-          className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
+          className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
         >
           ← Torna al percorso
         </Link>
 
-        <section className="mt-6 rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
-            Checkout sicuro
-          </p>
-
-          <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight">
-            Completa il tuo acquisto.
-          </h1>
-
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Pagamento demo per MVP: nessun addebito reale verrà effettuato.
-            Il percorso verrà aggiunto alla tua area personale.
-          </p>
-
-          <div className="mt-5 rounded-[1.5rem] bg-white/10 p-4 ring-1 ring-white/10">
-            <p className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">
-              Totale ordine
-            </p>
-            <p className="mt-2 text-5xl font-bold">€{total}</p>
-          </div>
-        </section>
-
-        <section className="mt-4 overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-52 bg-[#F1F1EE]">
-            <img
-              src={route.image}
-              alt={route.title}
-              className="h-full w-full object-cover"
+        <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_420px]">
+          <div className="rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
+            <PlaceImage
+              imageUrl={null}
+              name={route.title}
+              vibe={route.vibe}
+              className="min-h-[340px]"
             />
-          </div>
 
-          <div className="p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#7A7A73]">
-              Il tuo percorso
-            </p>
+            <div className="p-3 pt-6">
+              <p className="text-sm font-bold text-[#7A7A73]">
+                Checkout percorso · {route.area}
+              </p>
 
-            <h2 className="mt-3 text-2xl font-bold leading-tight tracking-tight">
-              {route.title}
-            </h2>
+              <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                Completa l’acquisto.
+              </h1>
 
-            <p className="mt-2 text-sm font-semibold text-[#7A7A73]">
-              {route.mood} · {route.vibe}
-            </p>
-
-            <p className="mt-4 text-sm leading-6 text-[#55554F]">
-              {route.description}
-            </p>
-
-            <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Prezzo</p>
-                <p className="mt-1 text-sm font-bold">{route.price}</p>
-              </div>
-
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Durata</p>
-                <p className="mt-1 text-sm font-bold">{route.duration}</p>
-              </div>
-
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Tappe</p>
-                <p className="mt-1 text-sm font-bold">{route.stops}</p>
-              </div>
+              <p className="mt-5 max-w-2xl text-base leading-7 text-[#55554F]">
+                Questa è una schermata checkout demo. Non inserire dati reali:
+                serve solo a simulare il flusso di acquisto per la demo MVP.
+              </p>
             </div>
           </div>
-        </section>
 
-        <section className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="text-lg font-bold tracking-tight">Cosa include</h2>
+          <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Carrello
+            </p>
 
-          <div className="mt-4 grid gap-3">
-            {route.includes.map((item) => (
-              <div
-                key={item}
-                className="flex gap-3 rounded-[1.25rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5"
-              >
-                <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#111111] text-xs font-bold text-white">
-                  ✓
-                </span>
-                <p className="text-sm font-semibold leading-6 text-[#55554F]">
-                  {item}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+            <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+              <p className="text-sm font-bold text-[#7A7A73]">
+                Percorso selezionato
+              </p>
 
-        <form
-          onSubmit={handlePurchase}
-          className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5"
-        >
-          <div className="flex items-center justify-between gap-4">
-            <div>
-              <h2 className="text-lg font-bold tracking-tight">
-                Metodo di pagamento
+              <h2 className="mt-2 text-2xl font-bold tracking-tight">
+                {route.title}
               </h2>
-              <p className="mt-1 text-sm font-medium text-[#7A7A73]">
-                Carta demo, nessun addebito reale.
+
+              <p className="mt-3 text-sm leading-6 text-[#55554F]">
+                {route.description}
+              </p>
+
+              <div className="mt-4 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white px-3 py-2 text-xs font-bold">
+                  {route.duration}
+                </span>
+
+                <span className="rounded-full bg-white px-3 py-2 text-xs font-bold">
+                  {route.stops}
+                </span>
+
+                <span className="rounded-full bg-white px-3 py-2 text-xs font-bold">
+                  {route.vibe}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-[1.5rem] bg-[#111111] p-5 text-white">
+              <p className="text-sm font-bold text-white/50">Totale</p>
+              <p className="mt-2 text-4xl font-bold">{route.price}</p>
+              <p className="mt-2 text-sm leading-6 text-white/60">
+                Pagamento una tantum per sbloccare il percorso nella tua area
+                personale.
               </p>
             </div>
 
-            <div className="rounded-full bg-[#F7F7F5] px-4 py-2 text-xs font-bold text-[#111111] ring-1 ring-black/5">
-              Demo
-            </div>
-          </div>
+            {!userId && (
+              <div className="mt-4 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  Accedi per completare l’acquisto.
+                </p>
 
-          <div className="mt-5 grid gap-4">
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-[#111111]">
-                Nome sulla carta
-              </span>
-              <input
-                value={cardName}
-                onChange={(event) => setCardName(event.target.value)}
-                placeholder="Valeria Marangella"
-                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
-              />
-            </label>
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Accedi
+                  </Link>
 
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-[#111111]">
-                Numero carta
-              </span>
-              <input
-                value={cardNumber}
-                onChange={(event) => setCardNumber(event.target.value)}
-                inputMode="numeric"
-                placeholder="4242 4242 4242 4242"
-                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
-              />
-            </label>
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                  >
+                    Registrati
+                  </Link>
+                </div>
+              </div>
+            )}
 
-            <div className="grid grid-cols-2 gap-3">
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-[#111111]">
-                  Scadenza
-                </span>
+            <form onSubmit={handleDemoPayment} className="mt-5 grid gap-3">
+              <div>
+                <label className="text-sm font-bold text-[#7A7A73]">
+                  Nome sulla carta
+                </label>
                 <input
-                  value={expiry}
-                  onChange={(event) => setExpiry(event.target.value)}
-                  placeholder="12/28"
-                  className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
+                  value={cardName}
+                  onChange={(event) => setCardName(event.target.value)}
+                  placeholder="Mario Rossi"
+                  className="mt-2 w-full rounded-[1.25rem] border border-black/10 bg-[#F7F7F5] px-4 py-4 text-sm font-semibold outline-none focus:border-[#111111]"
                 />
-              </label>
+              </div>
 
-              <label className="grid gap-2">
-                <span className="text-sm font-bold text-[#111111]">CVV</span>
+              <div>
+                <label className="text-sm font-bold text-[#7A7A73]">
+                  Numero carta demo
+                </label>
                 <input
-                  value={cvv}
-                  onChange={(event) => setCvv(event.target.value)}
+                  value={cardNumber}
+                  onChange={(event) => setCardNumber(event.target.value)}
+                  placeholder="4242 4242 4242 4242"
                   inputMode="numeric"
-                  placeholder="123"
-                  className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
+                  className="mt-2 w-full rounded-[1.25rem] border border-black/10 bg-[#F7F7F5] px-4 py-4 text-sm font-semibold outline-none focus:border-[#111111]"
                 />
-              </label>
-            </div>
+              </div>
 
-            <label className="grid gap-2">
-              <span className="text-sm font-bold text-[#111111]">
-                Codice sconto
-              </span>
-              <input
-                value={discountCode}
-                onChange={(event) => setDiscountCode(event.target.value)}
-                placeholder="Prova MOOD10"
-                className="rounded-[1.25rem] bg-[#F7F7F5] px-5 py-4 text-base outline-none ring-1 ring-black/5 focus:ring-[#111111]"
-              />
-            </label>
-          </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-sm font-bold text-[#7A7A73]">
+                    Scadenza
+                  </label>
+                  <input
+                    value={expiry}
+                    onChange={(event) => setExpiry(event.target.value)}
+                    placeholder="12/28"
+                    className="mt-2 w-full rounded-[1.25rem] border border-black/10 bg-[#F7F7F5] px-4 py-4 text-sm font-semibold outline-none focus:border-[#111111]"
+                  />
+                </div>
 
-          <section className="mt-6 rounded-[1.5rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5">
-            <div className="flex items-center justify-between text-sm font-semibold text-[#55554F]">
-              <span>Subtotale</span>
-              <span>{route.price}</span>
-            </div>
+                <div>
+                  <label className="text-sm font-bold text-[#7A7A73]">
+                    CVC
+                  </label>
+                  <input
+                    value={cvc}
+                    onChange={(event) => setCvc(event.target.value)}
+                    placeholder="123"
+                    inputMode="numeric"
+                    className="mt-2 w-full rounded-[1.25rem] border border-black/10 bg-[#F7F7F5] px-4 py-4 text-sm font-semibold outline-none focus:border-[#111111]"
+                  />
+                </div>
+              </div>
 
-            <div className="mt-3 flex items-center justify-between text-sm font-semibold text-[#55554F]">
-              <span>Sconto</span>
-              <span>{discountApplied ? "-€1" : "€0"}</span>
-            </div>
+              {message && (
+                <div className="rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                  {message}
+                </div>
+              )}
 
-            <div className="mt-3 flex items-center justify-between border-t border-black/10 pt-4">
-              <span className="text-base font-bold">Totale</span>
-              <span className="text-2xl font-bold">€{total}</span>
-            </div>
-          </section>
+              <button
+                type="submit"
+                disabled={paying}
+                className="mt-2 rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white disabled:opacity-60"
+              >
+                {paying ? "Pagamento demo..." : `Paga demo ${route.price}`}
+              </button>
 
-          {message ? (
-            <div className="mt-4 rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F] ring-1 ring-black/5">
-              {message}
-            </div>
-          ) : null}
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="mt-5 w-full rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {loading ? "Pagamento in corso..." : `Paga €${total}`}
-          </button>
-
-          <p className="mt-4 text-center text-xs font-semibold leading-5 text-[#7A7A73]">
-            Questo è un checkout demo per la presentazione MVP. Non inserire
-            dati reali della carta.
-          </p>
-        </form>
+              <p className="text-xs font-semibold leading-5 text-[#7A7A73]">
+                Demo MVP: nessun pagamento reale viene processato. In produzione
+                questo flusso andrebbe sostituito con Stripe Checkout.
+              </p>
+            </form>
+          </aside>
+        </section>
       </div>
     </main>
   );

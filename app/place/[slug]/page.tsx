@@ -333,7 +333,7 @@ export default function PlaceDetailPage() {
               </p>
 
               <Link
-                href={`/routes/${recommendedRoute.slug}`}
+                href={`/checkout/${recommendedRoute.slug}`}
                 className="mt-6 block rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
               >
                 Compra percorso

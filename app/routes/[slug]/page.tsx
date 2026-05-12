@@ -167,7 +167,8 @@ export default function RouteDetailPage() {
       userId &&
         savedRoutes.some(
           (savedRoute) =>
-            savedRoute.user_id === userId && savedRoute.route_slug === route.slug,
+            savedRoute.user_id === userId &&
+            savedRoute.route_slug === route.slug,
         ),
     );
   }, [route.slug, savedRoutes, userId]);
@@ -232,7 +233,10 @@ export default function RouteDetailPage() {
       setSavedRoutes((current) =>
         current.filter(
           (savedRoute) =>
-            !(savedRoute.user_id === userId && savedRoute.route_slug === route.slug),
+            !(
+              savedRoute.user_id === userId &&
+              savedRoute.route_slug === route.slug
+            ),
         ),
       );
 
@@ -360,16 +364,23 @@ export default function RouteDetailPage() {
               label="Segnala percorso"
             />
 
+            <Link
+              href={`/checkout/${route.slug}`}
+              className="mt-5 block rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
+            >
+              Vai al checkout
+            </Link>
+
             <button
               onClick={buyRoute}
               disabled={loading || purchased}
-              className={`mt-5 w-full rounded-full px-6 py-4 text-sm font-bold disabled:cursor-not-allowed ${
+              className={`mt-3 w-full rounded-full px-6 py-4 text-sm font-bold disabled:cursor-not-allowed ${
                 purchased
                   ? "bg-[#F1F1EE] text-[#111111]"
-                  : "bg-[#111111] text-white"
+                  : "bg-[#F1F1EE] text-[#111111]"
               }`}
             >
-              {purchased ? "Percorso acquistato ✓" : "Acquista percorso"}
+              {purchased ? "Percorso acquistato ✓" : "Acquista senza checkout demo"}
             </button>
 
             <button
@@ -388,9 +399,8 @@ export default function RouteDetailPage() {
             </Link>
 
             <p className="mt-4 text-sm leading-6 text-[#55554F]">
-              Demo MVP: l’acquisto viene salvato su Supabase. In una versione
-              reale il pulsante sarebbe collegato a Stripe o a un sistema di
-              pagamento.
+              Demo MVP: il checkout simula il carrello e il pagamento con carta.
+              In una versione reale verrebbe collegato a Stripe Checkout.
             </p>
           </aside>
         </section>
