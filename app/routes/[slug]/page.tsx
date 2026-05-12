@@ -365,10 +365,10 @@ export default function RouteDetailPage() {
             />
 
             <Link
-              href={`/checkout/${route.slug}`}
+              href={`/cart/${route.slug}`}
               className="mt-5 block rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
             >
-              Vai al checkout
+              Aggiungi al carrello
             </Link>
 
             <button
