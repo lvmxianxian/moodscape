@@ -1,353 +1,415 @@
 "use client";
 
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import PlaceImage from "@/components/PlaceImage";
 import { supabase } from "@/lib/supabase";
+import ReportButton from "@/components/ReportButton";
 
 const routes = [
   {
     slug: "roma-romantica-tramonto",
     title: "Roma romantica al tramonto",
-    mood: "Romantico",
     vibe: "Dolce vita",
-    description:
-      "Un percorso morbido tra viste panoramiche, scorci iconici e tappe perfette per una serata romantica.",
-    price: "€9",
-    duration: "2h 30min",
+    mood: "Romantico",
+    duration: "2h 30m",
     stops: [
       "Giardino degli Aranci",
       "Aventino",
       "Trastevere",
-      "Belvedere serale",
-      "Drink finale",
+      "Vista finale al tramonto",
     ],
-    image: "/places/giardino-aranci.webp",
+    price: "€4,99",
+    area: "Aventino · Trastevere",
+    description:
+      "Un percorso lento tra viste panoramiche, strade morbide e tappe perfette per una serata romantica.",
   },
   {
     slug: "dark-academia-walk",
     title: "Dark academia walk",
-    mood: "Curioso",
     vibe: "Dark academia",
-    description:
-      "Biblioteche, cortili silenziosi e luoghi con atmosfera letteraria per una giornata lenta e curiosa.",
-    price: "€7",
+    mood: "Introspettivo",
     duration: "2h",
     stops: [
       "Biblioteca Angelica",
       "Centro storico",
-      "Caffè letterario",
-      "Cortile nascosto",
+      "Caffè raccolto",
+      "Libreria indipendente",
+      "Cortile silenzioso",
     ],
-    image: "/places/biblioteca-angelica.jpg",
+    price: "€3,99",
+    area: "Centro storico",
+    description:
+      "Biblioteche, cortili silenziosi, librerie e caffè raccolti per una giornata più intima e letteraria.",
   },
   {
     slug: "hidden-garden-route",
-    title: "Giardini nascosti",
-    mood: "Rilassato",
+    title: "Hidden garden route",
     vibe: "Hidden garden",
+    mood: "Rilassato",
+    duration: "3h",
+    stops: ["Villa Borghese", "Pinciano", "Giardino nascosto", "Pausa verde"],
+    price: "€4,99",
+    area: "Pinciano · Villa Borghese",
     description:
-      "Una selezione di spazi verdi, cortili e pause tranquille per staccare dal ritmo della città.",
-    price: "€8",
-    duration: "2h 15min",
-    stops: [
-      "Villa Borghese",
-      "Giardino segreto",
-      "Passeggiata lenta",
-      "Pausa verde",
-      "Vista finale",
-    ],
-    image: "/places/villa-borghese.jpg",
+      "Giardini, cortili verdi e luoghi tranquilli dove respirare lontano dal caos della città.",
   },
   {
     slug: "golden-hour-photo-walk",
     title: "Golden hour photo walk",
-    mood: "Creativo",
     vibe: "Golden hour walk",
+    mood: "Creativo",
+    duration: "1h 45m",
+    stops: ["Pincio", "Villa Borghese", "Spot fotografico finale"],
+    price: "€2,99",
+    area: "Villa Borghese · Pincio",
     description:
-      "Un itinerario visivo pensato per foto, architetture, dettagli estetici e luce calda di fine giornata.",
-    price: "€10",
-    duration: "3h",
-    stops: [
-      "Chiostro del Bramante",
-      "Scorcio architettonico",
-      "Piazza nascosta",
-      "Golden hour spot",
-      "Galleria",
-      "Vista finale",
-    ],
-    image: "/places/chiostro-bramante.png",
+      "Un percorso fotografico pensato per la luce più bella della giornata, con tappe panoramiche e visuali.",
   },
   {
     slug: "neon-nightlife-route",
     title: "Neon nightlife route",
-    mood: "Sociale",
     vibe: "Neon nightlife",
-    description:
-      "Una serata tra posti vivi, atmosfere notturne e tappe sociali da fare con amici o nuove conoscenze.",
-    price: "€12",
-    duration: "3h 30min",
+    mood: "Sociale",
+    duration: "3h",
     stops: [
-      "Galleria Sciarra",
-      "Aperitivo",
-      "Locale notturno",
-      "Passeggiata neon",
-      "Chiusura serata",
+      "Monti",
+      "Neon Bar",
+      "Drink stop",
+      "Passeggiata serale",
+      "Tappa social finale",
     ],
-    image: "/places/galleria-sciarra.jpg",
+    price: "€5,99",
+    area: "Monti · Centro",
+    description:
+      "Una serata guidata tra luci, drink, locali e tappe sociali senza finire nel caos totale.",
   },
 ];
 
+type RoutePurchase = {
+  route_slug: string;
+  user_id: string;
+};
+
+type SavedRoute = {
+  route_slug: string;
+  user_id: string;
+};
+
 export default function RouteDetailPage() {
   const params = useParams<{ slug: string }>();
-  const router = useRouter();
 
-  const [saved, setSaved] = useState(false);
-  const [loadingSave, setLoadingSave] = useState(false);
-  const [message, setMessage] = useState("");
+  const routeMatch = routes.find((item) => item.slug === params.slug);
 
-  const route = useMemo(() => {
-    return routes.find((item) => item.slug === params.slug) ?? null;
-  }, [params.slug]);
-
-  useEffect(() => {
-    async function checkSaved() {
-      if (!route) return;
-
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) return;
-
-      const { data } = await supabase
-        .from("saved_routes")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("route_slug", route.slug)
-        .maybeSingle();
-
-      setSaved(Boolean(data));
-    }
-
-    checkSaved();
-  }, [route]);
-
-  async function handleSave() {
-    if (!route) return;
-
-    setLoadingSave(true);
-    setMessage("");
-
-    try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        router.push("/login");
-        return;
-      }
-
-      if (saved) {
-        const { error } = await supabase
-          .from("saved_routes")
-          .delete()
-          .eq("user_id", user.id)
-          .eq("route_slug", route.slug);
-
-        if (error) {
-          setMessage(error.message);
-          return;
-        }
-
-        setSaved(false);
-        setMessage("Percorso rimosso dai salvati.");
-        return;
-      }
-
-      const { error } = await supabase.from("saved_routes").upsert(
-        {
-          user_id: user.id,
-          route_slug: route.slug,
-          route_title: route.title,
-        },
-        {
-          onConflict: "user_id,route_slug",
-        },
-      );
-
-      if (error) {
-        setMessage(error.message);
-        return;
-      }
-
-      setSaved(true);
-      setMessage("Percorso salvato.");
-    } catch (error) {
-      console.error("Errore salvataggio percorso:", error);
-      setMessage("Non siamo riusciti a salvare il percorso. Riprova.");
-    } finally {
-      setLoadingSave(false);
-    }
+  if (!routeMatch) {
+    notFound();
   }
 
-  if (!route) {
-    return (
-      <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
-        <div className="mx-auto max-w-md">
-          <Link
-            href="/routes"
-            className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
-          >
-            ← Percorsi
-          </Link>
+  const route = routeMatch;
 
-          <section className="mt-6 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-            <h1 className="text-2xl font-bold tracking-tight">
-              Percorso non trovato
-            </h1>
-            <p className="mt-3 text-sm leading-6 text-[#7A7A73]">
-              Il percorso che stai cercando non è disponibile.
-            </p>
-          </section>
-        </div>
-      </main>
+  const [userId, setUserId] = useState<string | null>(null);
+  const [purchases, setPurchases] = useState<RoutePurchase[]>([]);
+  const [savedRoutes, setSavedRoutes] = useState<SavedRoute[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actionMessage, setActionMessage] = useState("");
+
+  useEffect(() => {
+    async function loadRouteState() {
+      setLoading(true);
+      setActionMessage("");
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      setUserId(session?.user.id ?? null);
+
+      if (!session) {
+        setPurchases([]);
+        setSavedRoutes([]);
+        setLoading(false);
+        return;
+      }
+
+      const { data: purchaseData } = await supabase
+        .from("route_purchases")
+        .select("route_slug,user_id")
+        .eq("route_slug", route.slug)
+        .eq("user_id", session.user.id);
+
+      const { data: savedData } = await supabase
+        .from("saved_routes")
+        .select("route_slug,user_id")
+        .eq("route_slug", route.slug)
+        .eq("user_id", session.user.id);
+
+      setPurchases(purchaseData ?? []);
+      setSavedRoutes(savedData ?? []);
+      setLoading(false);
+    }
+
+    loadRouteState();
+  }, [route.slug]);
+
+  const purchased = useMemo(() => {
+    return Boolean(
+      userId &&
+        purchases.some(
+          (purchase) =>
+            purchase.user_id === userId && purchase.route_slug === route.slug,
+        ),
     );
+  }, [purchases, route.slug, userId]);
+
+  const saved = useMemo(() => {
+    return Boolean(
+      userId &&
+        savedRoutes.some(
+          (savedRoute) =>
+            savedRoute.user_id === userId && savedRoute.route_slug === route.slug,
+        ),
+    );
+  }, [route.slug, savedRoutes, userId]);
+
+  function requireLogin() {
+    if (!userId) {
+      setActionMessage(
+        "Per acquistare o salvare un percorso devi prima accedere.",
+      );
+      return false;
+    }
+
+    setActionMessage("");
+    return true;
+  }
+
+  async function buyRoute() {
+    if (!requireLogin() || !userId) return;
+
+    if (purchased) {
+      setActionMessage("Hai già acquistato questo percorso.");
+      return;
+    }
+
+    const newPurchase = {
+      user_id: userId,
+      route_slug: route.slug,
+      route_title: route.title,
+      price: route.price,
+    };
+
+    const { error } = await supabase.from("route_purchases").insert(newPurchase);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setPurchases((current) => [
+      ...current,
+      { user_id: userId, route_slug: route.slug },
+    ]);
+
+    setActionMessage("Percorso acquistato. Lo trovi nei tuoi percorsi.");
+  }
+
+  async function toggleSavedRoute() {
+    if (!requireLogin() || !userId) return;
+
+    if (saved) {
+      const { error } = await supabase
+        .from("saved_routes")
+        .delete()
+        .eq("user_id", userId)
+        .eq("route_slug", route.slug);
+
+      if (error) {
+        setActionMessage(error.message);
+        return;
+      }
+
+      setSavedRoutes((current) =>
+        current.filter(
+          (savedRoute) =>
+            !(savedRoute.user_id === userId && savedRoute.route_slug === route.slug),
+        ),
+      );
+
+      setActionMessage("Percorso rimosso dai salvati.");
+      return;
+    }
+
+    const newSavedRoute = {
+      user_id: userId,
+      route_slug: route.slug,
+      route_title: route.title,
+    };
+
+    const { error } = await supabase.from("saved_routes").insert(newSavedRoute);
+
+    if (error) {
+      setActionMessage(error.message);
+      return;
+    }
+
+    setSavedRoutes((current) => [
+      ...current,
+      { user_id: userId, route_slug: route.slug },
+    ]);
+
+    setActionMessage("Percorso salvato.");
   }
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
-      <div className="mx-auto max-w-md pb-10">
+      <div className="mx-auto max-w-6xl">
         <Link
           href="/routes"
-          className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold shadow-sm ring-1 ring-black/5"
+          className="inline-flex rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111] shadow-sm ring-1 ring-black/5"
         >
-          ← Percorsi
+          ← Torna ai percorsi
         </Link>
 
-        <section className="mt-6 overflow-hidden rounded-[2rem] bg-white shadow-sm ring-1 ring-black/5">
-          <div className="h-64 bg-[#F1F1EE]">
+        <section className="mt-5 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="overflow-hidden rounded-[2rem] bg-white p-3 shadow-sm ring-1 ring-black/5">
             <PlaceImage
-              imageUrl={route.image}
+              imageUrl={null}
               name={route.title}
               vibe={route.vibe}
-              className="h-full w-full object-cover"
+              className="min-h-[360px]"
             />
+
+            <div className="p-3 pt-6">
+              <p className="text-sm font-bold text-[#7A7A73]">
+                {route.area} · {route.vibe}
+              </p>
+
+              <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
+                {route.title}
+              </h1>
+
+              <p className="mt-5 text-base leading-7 text-[#55554F]">
+                {route.description}
+              </p>
+            </div>
           </div>
 
-          <div className="p-6">
-            <p className="text-xs font-bold uppercase tracking-[0.18em] text-[#7A7A73]">
-              Percorso premium
+          <aside className="rounded-[2rem] bg-white p-5 shadow-sm ring-1 ring-black/5">
+            <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+              Acquisto percorso
             </p>
 
-            <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight">
-              {route.title}
-            </h1>
-
-            <p className="mt-3 text-sm font-semibold text-[#7A7A73]">
-              {route.mood} · {route.vibe}
-            </p>
-
-            <p className="mt-4 text-base leading-7 text-[#55554F]">
-              {route.description}
-            </p>
-
-            <div className="mt-5 grid grid-cols-3 gap-2 text-center">
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Prezzo</p>
-                <p className="mt-1 text-sm font-bold">{route.price}</p>
+            <div className="mt-5 grid gap-3">
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">Prezzo</p>
+                <p className="mt-1 text-3xl font-bold">{route.price}</p>
               </div>
 
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Durata</p>
-                <p className="mt-1 text-sm font-bold">{route.duration}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                  <p className="text-sm font-bold text-[#7A7A73]">Durata</p>
+                  <p className="mt-1 text-lg font-bold">{route.duration}</p>
+                </div>
+
+                <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                  <p className="text-sm font-bold text-[#7A7A73]">Tappe</p>
+                  <p className="mt-1 text-lg font-bold">{route.stops.length}</p>
+                </div>
               </div>
 
-              <div className="rounded-[1rem] bg-[#F7F7F5] px-3 py-3 ring-1 ring-black/5">
-                <p className="text-xs font-semibold text-[#7A7A73]">Tappe</p>
-                <p className="mt-1 text-sm font-bold">{route.stops.length}</p>
+              <div className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">Mood</p>
+                <p className="mt-1 text-lg font-bold">{route.mood}</p>
               </div>
             </div>
 
-            <div className="mt-6 grid gap-3">
-              <Link
-                href={`/checkout/${route.slug}`}
-                className="flex w-full items-center justify-center rounded-full bg-[#111111] px-6 py-4 text-sm font-bold text-white"
-              >
-                Acquista percorso
-              </Link>
+            {!userId && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-semibold leading-6 text-[#55554F]">
+                  Accedi per acquistare o salvare questo percorso.
+                </p>
 
-              <button
-                type="button"
-                onClick={handleSave}
-                disabled={loadingSave}
-                className="w-full rounded-full bg-[#F7F7F5] px-6 py-4 text-sm font-bold text-[#111111] ring-1 ring-black/5 disabled:opacity-50"
-              >
-                {loadingSave
-                  ? "Salvataggio..."
-                  : saved
-                    ? "Percorso salvato"
-                    : "Salva percorso"}
-              </button>
-            </div>
+                <div className="mt-4 flex gap-2">
+                  <Link
+                    href="/login"
+                    className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                  >
+                    Accedi
+                  </Link>
 
-            {message ? (
-              <div className="mt-4 rounded-[1.25rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F] ring-1 ring-black/5">
-                {message}
+                  <Link
+                    href="/signup"
+                    className="rounded-full bg-white px-5 py-3 text-sm font-bold text-[#111111]"
+                  >
+                    Registrati
+                  </Link>
+                </div>
               </div>
-            ) : null}
-          </div>
+            )}
+
+            {actionMessage && (
+              <div className="mt-5 rounded-[1.5rem] bg-[#F7F7F5] p-4 text-sm font-semibold leading-6 text-[#55554F]">
+                {actionMessage}
+              </div>
+            )}
+
+            <ReportButton
+              targetType="route"
+              targetId={route.slug}
+              label="Segnala percorso"
+            />
+
+            <button
+              onClick={buyRoute}
+              disabled={loading || purchased}
+              className={`mt-5 w-full rounded-full px-6 py-4 text-sm font-bold disabled:cursor-not-allowed ${
+                purchased
+                  ? "bg-[#F1F1EE] text-[#111111]"
+                  : "bg-[#111111] text-white"
+              }`}
+            >
+              {purchased ? "Percorso acquistato ✓" : "Acquista percorso"}
+            </button>
+
+            <button
+              onClick={toggleSavedRoute}
+              disabled={loading}
+              className="mt-3 w-full rounded-full bg-[#F1F1EE] px-6 py-4 text-sm font-bold text-[#111111] disabled:opacity-60"
+            >
+              {saved ? "Percorso salvato ✓" : "Salva percorso"}
+            </button>
+
+            <Link
+              href="/my-routes"
+              className="mt-3 block rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+            >
+              I miei percorsi
+            </Link>
+
+            <p className="mt-4 text-sm leading-6 text-[#55554F]">
+              Demo MVP: l’acquisto viene salvato su Supabase. In una versione
+              reale il pulsante sarebbe collegato a Stripe o a un sistema di
+              pagamento.
+            </p>
+          </aside>
         </section>
 
-        <section className="mt-4 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
-          <h2 className="text-lg font-bold tracking-tight">
-            Tappe del percorso
-          </h2>
+        <section className="mt-5 rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+          <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+            Tappe incluse
+          </p>
 
-          <div className="mt-4 grid gap-3">
+          <div className="mt-5 grid gap-3 md:grid-cols-2">
             {route.stops.map((stop, index) => (
-              <div
-                key={`${stop}-${index}`}
-                className="flex items-center gap-4 rounded-[1.25rem] bg-[#F7F7F5] p-4 ring-1 ring-black/5"
-              >
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#111111] text-sm font-bold text-white">
-                  {index + 1}
-                </div>
-
-                <div>
-                  <p className="text-sm font-bold text-[#111111]">{stop}</p>
-                  <p className="mt-1 text-xs font-semibold text-[#7A7A73]">
-                    Tappa consigliata
-                  </p>
-                </div>
+              <div key={stop} className="rounded-[1.5rem] bg-[#F7F7F5] p-4">
+                <p className="text-sm font-bold text-[#7A7A73]">
+                  Tappa {index + 1}
+                </p>
+                <p className="mt-1 text-lg font-bold">{stop}</p>
               </div>
             ))}
           </div>
-        </section>
-
-        <section className="mt-4 rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-white/50">
-            Come funziona
-          </p>
-
-          <h2 className="mt-3 text-2xl font-bold tracking-tight">
-            Acquista il percorso e ritrovalo nella tua area personale.
-          </h2>
-
-          <p className="mt-4 text-sm leading-6 text-white/65">
-            Il checkout è in modalità demo per l’MVP: nessun pagamento reale
-            viene effettuato. Dopo la conferma, il percorso viene aggiunto a “I
-            miei percorsi”.
-          </p>
-
-          <Link
-            href={`/checkout/${route.slug}`}
-            className="mt-5 flex w-full items-center justify-center rounded-full bg-white px-6 py-4 text-sm font-bold text-[#111111]"
-          >
-            Vai al checkout
-          </Link>
         </section>
       </div>
     </main>

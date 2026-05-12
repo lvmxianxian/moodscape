@@ -113,7 +113,9 @@ export default function EventDetailPage() {
 
   function requireLogin() {
     if (!userId) {
-      setActionMessage("Per partecipare o salvare un evento devi prima accedere.");
+      setActionMessage(
+        "Per partecipare o salvare un evento devi prima accedere.",
+      );
       return false;
     }
 
@@ -355,6 +357,12 @@ export default function EventDetailPage() {
               </div>
             )}
 
+            <ReportButton
+              targetType="event"
+              targetId={event.slug}
+              label="Segnala evento"
+            />
+
             <button
               onClick={toggleAttendance}
               className={`mt-5 w-full rounded-full px-6 py-4 text-sm font-bold ${
@@ -379,15 +387,6 @@ export default function EventDetailPage() {
             >
               Apri community
             </Link>
-
-            <div className="mt-5 flex justify-end">
-              <ReportButton
-                targetType="event"
-                targetId={event.slug}
-                variant="link"
-                label="Segnala evento"
-              />
-            </div>
           </aside>
         </section>
 
