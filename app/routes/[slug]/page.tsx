@@ -355,7 +355,7 @@ export default function RouteDetailPage() {
             )}
 
             <ReportButton
-              targetType="route"
+              targetType="place"
               targetId={route.slug}
               label="Segnala percorso"
             />
