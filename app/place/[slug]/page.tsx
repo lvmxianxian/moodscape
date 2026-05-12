@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 import AddToVibeListButton from "@/components/AddToVibeListButton";
 import PlaceImage from "@/components/PlaceImage";
+import ReportButton from "@/components/ReportButton";
 
 type DbPlace = {
   slug: string;
@@ -84,7 +85,8 @@ const routeRecommendations: RouteRecommendation[] = [
 ];
 
 function getRecommendedRoute(place: DbPlace): RouteRecommendation {
-  const text = `${place.vibe} ${place.mood} ${place.name} ${place.area}`.toLowerCase();
+  const text =
+    `${place.vibe} ${place.mood} ${place.name} ${place.area}`.toLowerCase();
 
   if (
     text.includes("dark") ||
@@ -92,7 +94,9 @@ function getRecommendedRoute(place: DbPlace): RouteRecommendation {
     text.includes("biblioteca") ||
     text.includes("libro")
   ) {
-    return routeRecommendations.find((route) => route.slug === "dark-academia-walk")!;
+    return routeRecommendations.find(
+      (route) => route.slug === "dark-academia-walk",
+    )!;
   }
 
   if (
@@ -103,7 +107,9 @@ function getRecommendedRoute(place: DbPlace): RouteRecommendation {
     text.includes("verde") ||
     text.includes("villa")
   ) {
-    return routeRecommendations.find((route) => route.slug === "hidden-garden-route")!;
+    return routeRecommendations.find(
+      (route) => route.slug === "hidden-garden-route",
+    )!;
   }
 
   if (
@@ -113,7 +119,9 @@ function getRecommendedRoute(place: DbPlace): RouteRecommendation {
     text.includes("creativo") ||
     text.includes("pincio")
   ) {
-    return routeRecommendations.find((route) => route.slug === "golden-hour-photo-walk")!;
+    return routeRecommendations.find(
+      (route) => route.slug === "golden-hour-photo-walk",
+    )!;
   }
 
   if (
@@ -123,10 +131,14 @@ function getRecommendedRoute(place: DbPlace): RouteRecommendation {
     text.includes("sociale") ||
     text.includes("drink")
   ) {
-    return routeRecommendations.find((route) => route.slug === "neon-nightlife-route")!;
+    return routeRecommendations.find(
+      (route) => route.slug === "neon-nightlife-route",
+    )!;
   }
 
-  return routeRecommendations.find((route) => route.slug === "roma-romantica-tramonto")!;
+  return routeRecommendations.find(
+    (route) => route.slug === "roma-romantica-tramonto",
+  )!;
 }
 
 export default function PlaceDetailPage() {
@@ -260,6 +272,12 @@ export default function PlaceDetailPage() {
             <SavePlaceButton placeSlug={place.slug} />
 
             <AddToVibeListButton placeSlug={place.slug} />
+
+            <ReportButton
+              targetType="place"
+              targetId={place.slug}
+              label="Segnala luogo"
+            />
 
             <Link
               href={`/map?place=${place.slug}`}
