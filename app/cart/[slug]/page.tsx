@@ -1,5 +1,7 @@
+"use client";
+
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, useParams } from "next/navigation";
 import PlaceImage from "@/components/PlaceImage";
 
 const routes = [
@@ -60,18 +62,16 @@ const routes = [
   },
 ];
 
-export default function CartPage({
-  params,
-}: {
-  params: {
-    slug: string;
-  };
-}) {
-  const route = routes.find((item) => item.slug === params.slug);
+export default function CartPage() {
+  const params = useParams<{ slug: string }>();
 
-  if (!route) {
+  const routeMatch = routes.find((item) => item.slug === params.slug);
+
+  if (!routeMatch) {
     notFound();
   }
+
+  const route = routeMatch;
 
   return (
     <main className="min-h-screen bg-[#F7F7F5] px-5 py-6 text-[#111111]">
