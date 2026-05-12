@@ -5,9 +5,17 @@ const links = [
   { href: "/community", label: "Community" },
   { href: "/creators", label: "Creator" },
   { href: "/events", label: "Eventi" },
+  { href: "/my-events", label: "I miei eventi" },
+  { href: "/routes", label: "Percorsi" },
+  { href: "/my-routes", label: "I miei percorsi" },
   { href: "/map", label: "Mappa" },
   { href: "/vibe-lists", label: "Vibe Lists" },
+  { href: "/moodboard", label: "Moodboard" },
   { href: "/profile", label: "Profilo" },
+  { href: "/premium", label: "Premium" },
+  { href: "/about", label: "About" },
+  { href: "/privacy", label: "Privacy" },
+  { href: "/terms", label: "Terms" },
 ];
 
 function LogoMark() {
@@ -27,7 +35,7 @@ export default function Footer() {
     <footer className="border-t border-black/5 bg-[#F7F7F5] px-5 py-10 text-[#111111]">
       <div className="mx-auto max-w-7xl">
         <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 md:p-8">
-          <div className="grid gap-8 md:grid-cols-[1.2fr_0.8fr]">
+          <div className="grid gap-8 md:grid-cols-[1.1fr_0.9fr]">
             <div>
               <div className="flex items-center gap-3">
                 <LogoMark />
@@ -41,9 +49,25 @@ export default function Footer() {
               </div>
 
               <p className="mt-5 max-w-xl text-base leading-7 text-[#55554F]">
-                Scopri luoghi, eventi, creator, liste e community in base a come
-                ti senti e all’atmosfera che vuoi vivere.
+                Scopri luoghi, eventi, creator, liste, percorsi e community in
+                base a come ti senti e all’atmosfera che vuoi vivere.
               </p>
+
+              <div className="mt-6 flex flex-wrap gap-2">
+                <Link
+                  href="/routes"
+                  className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
+                >
+                  Compra un percorso
+                </Link>
+
+                <Link
+                  href="/explore"
+                  className="rounded-full bg-[#F1F1EE] px-5 py-3 text-sm font-bold text-[#111111]"
+                >
+                  Scegli mood
+                </Link>
+              </div>
             </div>
 
             <div>
@@ -51,7 +75,7 @@ export default function Footer() {
                 Navigazione
               </p>
 
-              <div className="mt-4 grid grid-cols-2 gap-3">
+              <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-3">
                 {links.map((link) => (
                   <Link
                     key={link.href}
