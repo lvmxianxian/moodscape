@@ -1,13 +1,12 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import SavePlaceButton from "@/components/SavePlaceButton";
 import AddToVibeListButton from "@/components/AddToVibeListButton";
 import PlaceImage from "@/components/PlaceImage";
-import ReportButton from "@/components/ReportButton";
 
 type DbPlace = {
   slug: string;
@@ -26,6 +25,109 @@ type DbPlace = {
   longitude: number;
   image_url: string | null;
 };
+
+type RouteRecommendation = {
+  slug: string;
+  title: string;
+  price: string;
+  duration: string;
+  stops: string;
+  description: string;
+};
+
+const routeRecommendations: RouteRecommendation[] = [
+  {
+    slug: "roma-romantica-tramonto",
+    title: "Roma romantica al tramonto",
+    price: "€4,99",
+    duration: "2h 30m",
+    stops: "4 tappe",
+    description:
+      "Un percorso lento tra viste panoramiche, strade morbide e tappe perfette per una vibe dolce vita o romantica.",
+  },
+  {
+    slug: "dark-academia-walk",
+    title: "Dark academia walk",
+    price: "€3,99",
+    duration: "2h",
+    stops: "5 tappe",
+    description:
+      "Biblioteche, cortili silenziosi, librerie e caffè raccolti per una giornata introspettiva e letteraria.",
+  },
+  {
+    slug: "hidden-garden-route",
+    title: "Hidden garden route",
+    price: "€4,99",
+    duration: "3h",
+    stops: "4 tappe",
+    description:
+      "Giardini, cortili verdi e luoghi tranquilli dove respirare lontano dal caos della città.",
+  },
+  {
+    slug: "golden-hour-photo-walk",
+    title: "Golden hour photo walk",
+    price: "€2,99",
+    duration: "1h 45m",
+    stops: "3 tappe",
+    description:
+      "Un percorso fotografico pensato per la luce più bella della giornata, con tappe panoramiche e visuali.",
+  },
+  {
+    slug: "neon-nightlife-route",
+    title: "Neon nightlife route",
+    price: "€5,99",
+    duration: "3h",
+    stops: "5 tappe",
+    description:
+      "Una serata guidata tra luci, drink, locali e tappe sociali senza finire nel caos totale.",
+  },
+];
+
+function getRecommendedRoute(place: DbPlace): RouteRecommendation {
+  const text = `${place.vibe} ${place.mood} ${place.name} ${place.area}`.toLowerCase();
+
+  if (
+    text.includes("dark") ||
+    text.includes("academia") ||
+    text.includes("biblioteca") ||
+    text.includes("libro")
+  ) {
+    return routeRecommendations.find((route) => route.slug === "dark-academia-walk")!;
+  }
+
+  if (
+    text.includes("hidden") ||
+    text.includes("garden") ||
+    text.includes("giardino") ||
+    text.includes("natura") ||
+    text.includes("verde") ||
+    text.includes("villa")
+  ) {
+    return routeRecommendations.find((route) => route.slug === "hidden-garden-route")!;
+  }
+
+  if (
+    text.includes("golden") ||
+    text.includes("tramonto") ||
+    text.includes("photo") ||
+    text.includes("creativo") ||
+    text.includes("pincio")
+  ) {
+    return routeRecommendations.find((route) => route.slug === "golden-hour-photo-walk")!;
+  }
+
+  if (
+    text.includes("neon") ||
+    text.includes("nightlife") ||
+    text.includes("bar") ||
+    text.includes("sociale") ||
+    text.includes("drink")
+  ) {
+    return routeRecommendations.find((route) => route.slug === "neon-nightlife-route")!;
+  }
+
+  return routeRecommendations.find((route) => route.slug === "roma-romantica-tramonto")!;
+}
 
 export default function PlaceDetailPage() {
   const params = useParams<{ slug: string }>();
@@ -48,6 +150,11 @@ export default function PlaceDetailPage() {
 
     loadPlace();
   }, [params.slug]);
+
+  const recommendedRoute = useMemo(() => {
+    if (!place) return null;
+    return getRecommendedRoute(place);
+  }, [place]);
 
   if (loading) {
     return (
@@ -160,17 +267,69 @@ export default function PlaceDetailPage() {
             >
               Vedi sulla mappa
             </Link>
-
-            <div className="mt-5 flex justify-end">
-              <ReportButton
-                targetType="place"
-                targetId={place.slug}
-                variant="link"
-                label="Segnala luogo"
-              />
-            </div>
           </aside>
         </section>
+
+        {recommendedRoute && (
+          <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
+            <div className="rounded-[2rem] bg-[#111111] p-6 text-white shadow-xl shadow-black/10">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-white/50">
+                Percorso consigliato
+              </p>
+
+              <h2 className="mt-3 text-3xl font-bold tracking-tight">
+                Compra un percorso legato a questo luogo.
+              </h2>
+
+              <p className="mt-4 max-w-2xl text-base leading-7 text-white/70">
+                MoodScape ha associato questo posto a un itinerario coerente con
+                la sua vibe. Puoi aprirlo, vedere le tappe e acquistarlo.
+              </p>
+
+              <div className="mt-5 flex flex-wrap gap-2">
+                <span className="rounded-full bg-white/10 px-4 py-3 text-sm font-bold text-white">
+                  {recommendedRoute.duration}
+                </span>
+
+                <span className="rounded-full bg-white/10 px-4 py-3 text-sm font-bold text-white">
+                  {recommendedRoute.stops}
+                </span>
+
+                <span className="rounded-full bg-white/10 px-4 py-3 text-sm font-bold text-white">
+                  {recommendedRoute.price}
+                </span>
+              </div>
+            </div>
+
+            <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
+              <p className="text-sm font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
+                Vibe Route
+              </p>
+
+              <h3 className="mt-3 text-2xl font-bold tracking-tight">
+                {recommendedRoute.title}
+              </h3>
+
+              <p className="mt-4 text-sm leading-7 text-[#55554F]">
+                {recommendedRoute.description}
+              </p>
+
+              <Link
+                href={`/routes/${recommendedRoute.slug}`}
+                className="mt-6 block rounded-full bg-[#111111] px-6 py-4 text-center text-sm font-bold text-white"
+              >
+                Compra percorso
+              </Link>
+
+              <Link
+                href="/routes"
+                className="mt-3 block rounded-full bg-[#F1F1EE] px-6 py-4 text-center text-sm font-bold text-[#111111]"
+              >
+                Vedi tutti i percorsi
+              </Link>
+            </div>
+          </section>
+        )}
 
         <section className="mt-5 grid gap-5 lg:grid-cols-[1fr_360px]">
           <div className="rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5">
