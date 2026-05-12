@@ -20,31 +20,115 @@ type DbPlace = {
   image_url: string | null;
 };
 
+type PracticalFilter = {
+  budget: string;
+  time: string;
+  company: string;
+  area: string;
+};
+
 const budgetOptions = ["Tutti", "Gratis", "€", "€€", "€€€"];
-const tempoOptions = ["Tutti", "Fino a 60 min", "1-2h", "Più di 2h"];
-const compagniaOptions = [
-  "Tutti",
-  "Tranquillo",
-  "Silenzioso",
-  "Sociale",
-  "Affollato",
+const timeOptions = ["Tutti", "30 min", "1h", "2h", "Mezza giornata"];
+const companyOptions = ["Tutti", "Solo", "Coppia", "Amici", "Gruppo"];
+const areaOptions = [
+  "Tutte",
+  "Aventino",
+  "Centro",
+  "Centro storico",
+  "Monti",
+  "Pinciano",
+  "Trevi",
+  "Trastevere",
 ];
 
-function parseMinutes(time: string): number | null {
-  if (!time) return null;
-  const lower = time.toLowerCase();
-  // matches "45 min", "60min", "1h", "1h 30m", "2 ore", "2h30"
-  const hMatch = lower.match(/(\d+)\s*(?:h|ore|ora)/);
-  const mMatch = lower.match(/(\d+)\s*(?:m|min|minuti)/);
-  let total = 0;
-  if (hMatch) total += parseInt(hMatch[1], 10) * 60;
-  if (mMatch) total += parseInt(mMatch[1], 10);
-  if (total === 0) {
-    // fallback: just a bare number = minutes
-    const num = lower.match(/(\d+)/);
-    if (num) total = parseInt(num[1], 10);
+function matchesBudget(place: DbPlace, budget: string) {
+  if (budget === "Tutti") return true;
+  return place.price === budget;
+}
+
+function matchesTime(place: DbPlace, time: string) {
+  if (time === "Tutti") return true;
+
+  const value = place.time.toLowerCase();
+
+  if (time === "30 min") {
+    return (
+      value.includes("30") ||
+      value.includes("mezz") ||
+      value.includes("breve")
+    );
   }
-  return total > 0 ? total : null;
+
+  if (time === "1h") {
+    return value.includes("1h") || value.includes("60");
+  }
+
+  if (time === "2h") {
+    return value.includes("2h") || value.includes("120");
+  }
+
+  if (time === "Mezza giornata") {
+    return (
+      value.includes("3h") ||
+      value.includes("4h") ||
+      value.includes("mezza") ||
+      value.includes("giornata")
+    );
+  }
+
+  return true;
+}
+
+function matchesCompany(place: DbPlace, company: string) {
+  if (company === "Tutti") return true;
+
+  const text = `${place.social_level ?? ""} ${place.mood} ${place.vibe} ${
+    place.description
+  }`.toLowerCase();
+
+  if (company === "Solo") {
+    return (
+      text.includes("solo") ||
+      text.includes("silenz") ||
+      text.includes("calm") ||
+      text.includes("introspett")
+    );
+  }
+
+  if (company === "Coppia") {
+    return (
+      text.includes("romant") ||
+      text.includes("coppia") ||
+      text.includes("dolce vita") ||
+      text.includes("tramonto")
+    );
+  }
+
+  if (company === "Amici") {
+    return (
+      text.includes("social") ||
+      text.includes("amici") ||
+      text.includes("bar") ||
+      text.includes("drink") ||
+      text.includes("nightlife")
+    );
+  }
+
+  if (company === "Gruppo") {
+    return (
+      text.includes("gruppo") ||
+      text.includes("evento") ||
+      text.includes("social") ||
+      text.includes("affoll")
+    );
+  }
+
+  return true;
+}
+
+function matchesArea(place: DbPlace, area: string) {
+  if (area === "Tutte") return true;
+  return place.area === area;
 }
 
 function FeedContent() {
@@ -53,33 +137,23 @@ function FeedContent() {
   const selectedVibe = searchParams.get("vibe");
 
   const [places, setPlaces] = useState<DbPlace[]>([]);
-  const [fallbackPlaces, setFallbackPlaces] = useState<DbPlace[]>([]);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
 
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [budget, setBudget] = useState("Tutti");
-  const [tempo, setTempo] = useState("Tutti");
-  const [compagnia, setCompagnia] = useState("Tutti");
-  const [area, setArea] = useState("Tutte");
+  const [filters, setFilters] = useState<PracticalFilter>({
+    budget: "Tutti",
+    time: "Tutti",
+    company: "Tutti",
+    area: "Tutte",
+  });
 
   useEffect(() => {
     let cancelled = false;
-
-    const timeout = window.setTimeout(() => {
-      if (!cancelled) {
-        setLoading(false);
-        setMessage(
-          "Il caricamento sta impiegando troppo tempo. Controlla Supabase e riprova.",
-        );
-      }
-    }, 7000);
 
     async function loadPlaces() {
       setLoading(true);
       setMessage("");
       setPlaces([]);
-      setFallbackPlaces([]);
 
       try {
         let query = supabase
@@ -89,8 +163,13 @@ function FeedContent() {
           )
           .order("created_at", { ascending: true });
 
-        if (selectedMood) query = query.eq("mood", selectedMood);
-        if (selectedVibe) query = query.eq("vibe", selectedVibe);
+        if (selectedMood) {
+          query = query.eq("mood", selectedMood);
+        }
+
+        if (selectedVibe) {
+          query = query.eq("vibe", selectedVibe);
+        }
 
         const { data, error } = await query;
 
@@ -101,27 +180,7 @@ function FeedContent() {
           return;
         }
 
-        const exactPlaces = data ?? [];
-        setPlaces(exactPlaces);
-
-        if (exactPlaces.length === 0) {
-          const { data: fallbackData, error: fallbackError } = await supabase
-            .from("places")
-            .select(
-              "slug,name,city,area,mood,vibe,description,price,time,social_level,image_url",
-            )
-            .order("created_at", { ascending: true })
-            .limit(12);
-
-          if (cancelled) return;
-
-          if (fallbackError) {
-            setMessage(fallbackError.message);
-            return;
-          }
-
-          setFallbackPlaces(fallbackData ?? []);
-        }
+        setPlaces(data ?? []);
       } catch (error) {
         if (!cancelled) {
           setMessage(
@@ -131,8 +190,9 @@ function FeedContent() {
           );
         }
       } finally {
-        window.clearTimeout(timeout);
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+        }
       }
     }
 
@@ -140,60 +200,43 @@ function FeedContent() {
 
     return () => {
       cancelled = true;
-      window.clearTimeout(timeout);
     };
   }, [selectedMood, selectedVibe]);
 
-  const hasUrlFilters = Boolean(selectedMood || selectedVibe);
+  const hasMoodOrVibeFilters = Boolean(selectedMood || selectedVibe);
 
-  const baseFilterText = useMemo(() => {
+  const filterText = useMemo(() => {
     if (selectedMood && selectedVibe) return `${selectedMood} · ${selectedVibe}`;
     if (selectedMood) return selectedMood;
     if (selectedVibe) return selectedVibe;
     return "Tutti i mood e tutte le vibe";
   }, [selectedMood, selectedVibe]);
 
-  const sourcePlaces = places.length > 0 ? places : fallbackPlaces;
-
-  const areaOptions = useMemo(() => {
-    const set = new Set<string>();
-    sourcePlaces.forEach((place) => {
-      if (place.area) set.add(place.area);
-    });
-    return ["Tutte", ...Array.from(set).sort()];
-  }, [sourcePlaces]);
-
   const visiblePlaces = useMemo(() => {
-    return sourcePlaces.filter((place) => {
-      if (budget !== "Tutti" && place.price !== budget) return false;
-      if (area !== "Tutte" && place.area !== area) return false;
-      if (compagnia !== "Tutti" && place.social_level !== compagnia)
-        return false;
-
-      if (tempo !== "Tutti") {
-        const minutes = parseMinutes(place.time);
-        if (minutes === null) return false;
-        if (tempo === "Fino a 60 min" && minutes > 60) return false;
-        if (tempo === "1-2h" && (minutes <= 60 || minutes > 120)) return false;
-        if (tempo === "Più di 2h" && minutes <= 120) return false;
-      }
-
-      return true;
+    return places.filter((place) => {
+      return (
+        matchesBudget(place, filters.budget) &&
+        matchesTime(place, filters.time) &&
+        matchesCompany(place, filters.company) &&
+        matchesArea(place, filters.area)
+      );
     });
-  }, [sourcePlaces, budget, tempo, compagnia, area]);
+  }, [filters, places]);
 
-  const activeUiFilters = [
-    budget !== "Tutti" ? `Budget: ${budget}` : null,
-    tempo !== "Tutti" ? `Tempo: ${tempo}` : null,
-    compagnia !== "Tutti" ? `Compagnia: ${compagnia}` : null,
-    area !== "Tutte" ? `Zona: ${area}` : null,
-  ].filter(Boolean);
+  function updateFilter(key: keyof PracticalFilter, value: string) {
+    setFilters((current) => ({
+      ...current,
+      [key]: value,
+    }));
+  }
 
-  function resetUiFilters() {
-    setBudget("Tutti");
-    setTempo("Tutti");
-    setCompagnia("Tutti");
-    setArea("Tutte");
+  function resetPracticalFilters() {
+    setFilters({
+      budget: "Tutti",
+      time: "Tutti",
+      company: "Tutti",
+      area: "Tutte",
+    });
   }
 
   return (
@@ -209,6 +252,12 @@ function FeedContent() {
               <h1 className="mt-2 text-4xl font-bold leading-tight tracking-tight md:text-6xl">
                 Luoghi per la tua vibe del momento.
               </h1>
+
+              <p className="mt-4 max-w-2xl text-base leading-7 text-[#55554F]">
+                I risultati rispettano i criteri scelti: mood, estetica e filtri
+                pratici. Se non ci sono match, MoodScape non mostra alternative
+                generiche.
+              </p>
             </div>
 
             <Link
@@ -223,21 +272,21 @@ function FeedContent() {
             <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
-                  Filtro mood &amp; vibe
+                  Filtro attivo
                 </p>
 
                 <p className="mt-1 text-base font-bold text-[#111111]">
-                  {baseFilterText}
+                  {filterText}
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
-                {hasUrlFilters && (
+                {hasMoodOrVibeFilters && (
                   <Link
                     href="/feed"
                     className="rounded-full bg-[#111111] px-5 py-3 text-sm font-bold text-white"
                   >
-                    Rimuovi
+                    Rimuovi mood/vibe
                   </Link>
                 )}
 
@@ -251,130 +300,90 @@ function FeedContent() {
             </div>
           </div>
 
-          <div className="mt-3 rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
-            <button
-              type="button"
-              onClick={() => setFiltersOpen((current) => !current)}
-              className="flex w-full items-center justify-between gap-3 text-left"
-            >
+          <div className="mt-5 rounded-[2rem] bg-white p-4 shadow-sm ring-1 ring-black/5">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#9A9A92]">
                   Filtri pratici
                 </p>
-
-                <p className="mt-1 text-base font-bold text-[#111111]">
-                  {activeUiFilters.length === 0
-                    ? "Budget, tempo, compagnia, zona"
-                    : activeUiFilters.join(" · ")}
+                <p className="mt-1 text-sm font-semibold text-[#55554F]">
+                  Budget, tempo, compagnia e zona.
                 </p>
               </div>
 
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F1F1EE] text-base font-bold">
-                {filtersOpen ? "−" : "+"}
-              </span>
-            </button>
+              <button
+                onClick={resetPracticalFilters}
+                className="rounded-full bg-[#F1F1EE] px-4 py-3 text-sm font-bold text-[#111111]"
+              >
+                Reset
+              </button>
+            </div>
 
-            {filtersOpen && (
-              <div className="mt-5 grid gap-4">
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                    Budget
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {budgetOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setBudget(option)}
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${
-                          budget === option
-                            ? "bg-[#111111] text-white"
-                            : "bg-[#F7F7F5] text-[#111111]"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                    Tempo
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {tempoOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setTempo(option)}
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${
-                          tempo === option
-                            ? "bg-[#111111] text-white"
-                            : "bg-[#F7F7F5] text-[#111111]"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                    Compagnia
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {compagniaOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setCompagnia(option)}
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${
-                          compagnia === option
-                            ? "bg-[#111111] text-white"
-                            : "bg-[#F7F7F5] text-[#111111]"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-bold uppercase tracking-[0.12em] text-[#7A7A73]">
-                    Zona
-                  </p>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {areaOptions.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        onClick={() => setArea(option)}
-                        className={`rounded-full px-4 py-2 text-sm font-bold ${
-                          area === option
-                            ? "bg-[#111111] text-white"
-                            : "bg-[#F7F7F5] text-[#111111]"
-                        }`}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {activeUiFilters.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={resetUiFilters}
-                    className="mt-2 rounded-full bg-[#F1F1EE] px-5 py-3 text-sm font-bold text-[#111111]"
-                  >
-                    Azzera filtri pratici
-                  </button>
-                )}
+            <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-[#9A9A92]">
+                  Budget
+                </label>
+                <select
+                  value={filters.budget}
+                  onChange={(event) =>
+                    updateFilter("budget", event.target.value)
+                  }
+                  className="mt-2 w-full rounded-full bg-[#F7F7F5] px-4 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
+                >
+                  {budgetOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
               </div>
-            )}
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-[#9A9A92]">
+                  Tempo
+                </label>
+                <select
+                  value={filters.time}
+                  onChange={(event) => updateFilter("time", event.target.value)}
+                  className="mt-2 w-full rounded-full bg-[#F7F7F5] px-4 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
+                >
+                  {timeOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-[#9A9A92]">
+                  Compagnia
+                </label>
+                <select
+                  value={filters.company}
+                  onChange={(event) =>
+                    updateFilter("company", event.target.value)
+                  }
+                  className="mt-2 w-full rounded-full bg-[#F7F7F5] px-4 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
+                >
+                  {companyOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold uppercase tracking-[0.14em] text-[#9A9A92]">
+                  Zona
+                </label>
+                <select
+                  value={filters.area}
+                  onChange={(event) => updateFilter("area", event.target.value)}
+                  className="mt-2 w-full rounded-full bg-[#F7F7F5] px-4 py-3 text-sm font-bold text-[#111111] outline-none ring-1 ring-black/5"
+                >
+                  {areaOptions.map((option) => (
+                    <option key={option}>{option}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
           </div>
         </section>
 
@@ -401,41 +410,34 @@ function FeedContent() {
           </section>
         )}
 
-        {!loading && !message && sourcePlaces.length === 0 && (
+        {!loading && !message && visiblePlaces.length === 0 && (
           <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
             <h2 className="text-2xl font-bold tracking-tight">
-              Aggiungi luoghi al database.
+              Nessun luogo rispetta tutti i filtri scelti.
             </h2>
 
             <p className="mt-3 leading-7 text-[#55554F]">
-              Il Feed è pronto, ma in Supabase non ci sono ancora luoghi da
-              mostrare.
+              Prova a cambiare mood, estetica o filtri pratici. MoodScape ora
+              mostra solo i posti che corrispondono davvero ai criteri scelti.
             </p>
-          </section>
-        )}
 
-        {!loading &&
-          !message &&
-          sourcePlaces.length > 0 &&
-          visiblePlaces.length === 0 && (
-            <section className="mx-auto mt-6 max-w-md rounded-[2rem] bg-white p-6 shadow-sm ring-1 ring-black/5 lg:max-w-7xl">
-              <h2 className="text-2xl font-bold tracking-tight">
-                Nessun luogo con questi filtri.
-              </h2>
-
-              <p className="mt-3 leading-7 text-[#55554F]">
-                Prova ad allargare budget, tempo o zona.
-              </p>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Link
+                href="/"
+                className="rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
+              >
+                Cambia mood
+              </Link>
 
               <button
-                type="button"
-                onClick={resetUiFilters}
-                className="mt-5 inline-flex rounded-full bg-[#111111] px-6 py-3 text-sm font-bold text-white"
+                onClick={resetPracticalFilters}
+                className="rounded-full bg-[#F1F1EE] px-6 py-3 text-sm font-bold text-[#111111]"
               >
-                Azzera filtri pratici
+                Reset filtri pratici
               </button>
-            </section>
-          )}
+            </div>
+          </section>
+        )}
 
         {!loading && !message && visiblePlaces.length > 0 && (
           <section className="mx-auto mt-6 grid max-w-md gap-4 md:grid-cols-2 lg:max-w-7xl lg:grid-cols-3 xl:grid-cols-4">
@@ -479,14 +481,12 @@ function FeedContent() {
                     </span>
 
                     <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
-                      {place.time}
+                      {place.vibe}
                     </span>
 
-                    {place.social_level && (
-                      <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
-                        {place.social_level}
-                      </span>
-                    )}
+                    <span className="rounded-full bg-[#F7F7F5] px-3 py-2 text-xs font-bold text-[#55554F]">
+                      {place.time}
+                    </span>
                   </div>
                 </div>
               </Link>
